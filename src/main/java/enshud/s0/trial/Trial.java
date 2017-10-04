@@ -2,7 +2,7 @@ package enshud.s0.trial;
 
 public class Trial {
 	/**
-	 * サンプルmainクラス．
+	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
 	 */
 	public static void main(final String[] args) {

@@ -2,7 +2,7 @@ package enshud.s3.checker;
 
 public class Checker {
 	/**
-	 * サンプルmainクラス．
+	 * サンプルmainメソッド．
 	 * 単体テストの対象ではないので自由に改変しても良い．
 	 */
 	public static void main(final String[] args) {
