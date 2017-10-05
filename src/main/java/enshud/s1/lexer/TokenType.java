@@ -68,7 +68,7 @@ enum TokenType
     TokenType(int id, String pattern)
     {
         this.id = id;
-        this.pattern = Pattern.compile("^" + pattern);
+        this.pattern = Pattern.compile("^(" + pattern + ")");
     }
 
     int getId()

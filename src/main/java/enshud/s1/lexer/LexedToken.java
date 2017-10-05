@@ -5,32 +5,39 @@ package enshud.s1.lexer;
  */
 public class LexedToken
 {
-    private final Token token;
+	private final Token token;
     private final int line;
     private final int column;
 
-    String getString()
+    public String getString()
     {
         return token.str;
     }
-    TokenType getType()
+    public TokenType getType()
     {
         return token.type;
     }
 
-    int getLine()
+    public int getLine()
     {
         return line;
     }
 
-    int getColumn()
+    public int getColumn()
     {
         return column;
     }
 
-    LexedToken(Token token, int line, int column)
+    public LexedToken(Token token, int line, int column)
     {
         this.token = token;
+        this.line = line;
+        this.column = column;
+    }
+
+    public LexedToken(String str, TokenType type, int line, int column)
+    {
+        this.token = new Token(str, type);
         this.line = line;
         this.column = column;
     }
