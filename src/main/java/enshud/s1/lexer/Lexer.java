@@ -19,27 +19,23 @@ public class Lexer {
 	}
 
 	/**
-	 * 開発対象となるLexer実行メソッド．
-	 * 以下の仕様を満たすこと．
+	 * 開発対象となるLexer実行メソッド． 以下の仕様を満たすこと．
 	 * 
-	 * 仕様:
-	 * 第一引数で指定されたpasファイルを読み込み，トークン列に分割する．
-	 * トークン列は第二引数で指定されたtsファイルに書き出すこと．
-	 * 正常に処理が終了した場合は標準出力に"OK"を，
-	 * 入力ファイルが見つからない場合は標準エラーに"File not found"と出力して終了すること．
+	 * 仕様: 第一引数で指定されたpasファイルを読み込み，トークン列に分割する． トークン列は第二引数で指定されたtsファイルに書き出すこと．
+	 * 正常に処理が終了した場合は標準出力に"OK"を， 入力ファイルが見つからない場合は標準エラーに"File not
+	 * found"と出力して終了すること．
 	 * 
-	 * @param inputFileName 入力pasファイル名
-	 * @param outputFileName 出力tsファイル名
+	 * @param inputFileName
+	 *            入力pasファイル名
+	 * @param outputFileName
+	 *            出力tsファイル名
 	 */
 	public void run(final String inputFileName, final String outputFileName) {
-        Lexer lexer = new Lexer();
-
-        if(!lexer.lexFromFile(inputFileName))
-        {
-        	return;
-        }
-        lexer.outputToFile(outputFileName);
-        System.out.println("OK");
+		if (!lexFromFile(inputFileName)) {
+			return;
+		}
+		outputToFile(outputFileName);
+		System.out.println("OK");
 	}
 
 	private List<LexedToken> tokens;
@@ -55,8 +51,7 @@ public class Lexer {
 		List<String> lines = importFromFile(input_file);
 		if (lines != null) {
 			return lex(lines);
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -95,7 +90,7 @@ public class Lexer {
 		while (col_idx < line.length()) {
 			// when inside comment
 			if (is_in_comment) {
-				Token token = TokenType.SCOMMENTEND.lex(line.substring(col_idx));
+				final Token token = TokenType.SCOMMENTEND.lex(line.substring(col_idx));
 				if (token != null) {
 					is_in_comment = false; // finish ignoring
 				}
@@ -106,7 +101,7 @@ public class Lexer {
 
 			// when NOT inside comment
 			if (!is_in_comment) {
-				Token token = TokenType.lexOneToken(line.substring(col_idx));
+				final Token token = TokenType.lexOneToken(line.substring(col_idx));
 				switch (token.type) {
 				case SSPACE: // simply ignore
 					break;
@@ -149,7 +144,7 @@ public class Lexer {
 	@Override
 	public String toString() {
 		String str = "";
-		for (LexedToken t : tokens) {
+		for (final LexedToken t : tokens) {
 			str += t + System.lineSeparator();
 		}
 		return str;

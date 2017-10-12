@@ -1,15 +1,19 @@
 package enshud.s1.lexer;
 
+import java.util.Objects;
+
 /**
  * Simple token data
  */
 public class Token
 {
-    final String str;
+    final String    str;
     final TokenType type;
-    Token(String str, TokenType type)
+
+    public Token(String str, TokenType type)
     {
-        this.str = str;
-        this.type = type;
+        this.str = Objects.requireNonNull(str);
+        this.type = Objects.requireNonNull(type);
     }
 }
+
