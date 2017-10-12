@@ -150,4 +150,17 @@ public class Lexer {
 		return str;
 	}
 
+	public static List<LexedToken> importLexedFile(String input_file) {
+		List<String> lines = importFromFile(input_file);
+		if(lines != null){
+			List<LexedToken> tokens = new ArrayList<>();
+			for(String s: lines)
+			{
+				tokens.add(LexedToken.fromString(s));
+			}
+			return tokens;
+		}
+		return null;
+	}
+
 }
