@@ -40,23 +40,8 @@ public class Parser {
 		final List<LexedToken> tokens = Lexer.importLexedFile(inputFileName);
 		if (tokens != null) {
 			INode root = parse(tokens);
-			if (root.isSuccess()) {
+			if (root != null) {
 				System.out.println("OK");
-			} else {
-				// root.println();
-				System.err.println("Syntax error: line " + root.getLine());
-				/*
-				 * final LexedToken t = ((IParserNode)root).getToken();
-				 * 
-				 * // indicate error column // (when include multibyte char, // this
-				 * output will be wrong position) if( t.getLine() >= 2 ) {
-				 * System.out.println(lines.get(t.getLine() - 2)); }
-				 * System.out.println(lines.get(t.getLine() - 1)); for(int i = 1; i
-				 * < t.getColumn(); ++i) { System.out.print(" "); }
-				 * System.out.println("^");
-				 * 
-				 * System.out.println("Parser Failure!");
-				 */
 			}
 		}
 	}
@@ -73,7 +58,26 @@ public class Parser {
 	}
 
 	public INode parse(ParserInput input) {
-		return parser.parse(input);
+		INode root = parser.parse(input);
+		if (root.isSuccess()){
+			return root;
+		} else {
+			// root.println();
+			System.err.println("Syntax error: line " + root.getLine());
+			/*
+			 * final LexedToken t = ((IParserNode)root).getToken();
+			 * 
+			 * // indicate error column // (when include multibyte char, // this
+			 * output will be wrong position) if( t.getLine() >= 2 ) {
+			 * System.out.println(lines.get(t.getLine() - 2)); }
+			 * System.out.println(lines.get(t.getLine() - 1)); for(int i = 1; i
+			 * < t.getColumn(); ++i) { System.out.print(" "); }
+			 * System.out.println("^");
+			 * 
+			 * System.out.println("Parser Failure!");
+			 */
+			return null;
+		}
 	}
 	
 	public INode parse(List<LexedToken> input) {

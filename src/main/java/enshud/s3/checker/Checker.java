@@ -53,9 +53,8 @@ public class Checker {
         }
 
         final INode root = new Parser().parse(tokens);
-        if( root.isFailure() )
+        if( root == null )
         {
-            System.err.println("Syntax error: line " + root.getLine());
             return;
         }
         
@@ -63,10 +62,6 @@ public class Checker {
         if( isSuccess() )
         {
             System.out.println("OK");
-        }
-        else
-        {
-        	printErrorMessage(1);
         }
 	}
 
@@ -119,6 +114,7 @@ public class Checker {
         if( !isSuccess() )
         {
             program = null;
+            printErrorMessage(1);
         }
     }
     

@@ -59,7 +59,6 @@ public class Compiler {
         Checker c = new Checker();
         if( !c.isSuccess() )
         {
-        	c.printErrorMessage(1);
             return;
         }
         Procedure proc = c.getProgram();
