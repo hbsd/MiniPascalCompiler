@@ -37,6 +37,11 @@ public class SequenceNode implements IParserNode
         return (SequenceNode)get(index);
     }
 
+    public TokenNode getAsToken(int index)
+    {
+        return (TokenNode)get(index);
+    }
+
     public int length()
     {
         return children.size();

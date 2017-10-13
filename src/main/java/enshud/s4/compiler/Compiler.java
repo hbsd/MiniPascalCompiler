@@ -1,6 +1,18 @@
 package enshud.s4.compiler;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
 import enshud.casl.CaslSimulator;
+import enshud.s1.lexer.LexedToken;
+import enshud.s1.lexer.Lexer;
+import enshud.s2.parser.Parser;
+import enshud.s2.parser.node.INode;
+import enshud.s3.checker.Checker;
+import enshud.s3.checker.Procedure;
 
 public class Compiler {
 	/**
@@ -32,8 +44,40 @@ public class Compiler {
 	 * @param outputFileName 出力casファイル名
 	 */
 	public void run(final String inputFileName, final String outputFileName) {
+		List<LexedToken> tokens = Lexer.importLexedFile(inputFileName);
+        if( tokens == null )
+        {
+            return;
+        }
 
-		// TODO
-
+        final INode root = new Parser().parse(tokens);
+        if( root == null )
+        {
+            return;
+        }
+        
+        Checker c = new Checker();
+        if( !c.isSuccess() )
+        {
+        	c.printErrorMessage(1);
+            return;
+        }
+        Procedure proc = c.getProgram();
+        compiling(proc, outputFileName);
 	}
+	
+	void compiling(Procedure proc, String output_name)
+    {
+        StringBuilder sb = new StringBuilder();
+        //proc.compile(sb);
+        try
+        {
+            Files.write(Paths.get(output_name), Arrays.asList(sb.toString()));
+            System.out.println("OK");
+        }
+        catch(IOException e)
+        {
+            System.err.println("File not found");
+        }
+    }
 }

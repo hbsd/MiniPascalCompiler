@@ -12,604 +12,574 @@ import enshud.s2.parser.ParserInput;
 import enshud.s2.parser.node.INode;
 import enshud.s2.parser.node.basic.*;
 import enshud.s2.parser.parsers.IParser;
-//import enshud.s2.pascal.ast.*;
+import enshud.s3.checker.ast.*;
 
 import static enshud.s2.parser.parsers.basic.Parsers.*;
 
 public enum PascalParser2 implements IParser {
 	// to avoid circle reference, override the method
-	PROGRAM(1) { ///
+	PROGRAM(1) {
 		@Override
 		protected IParser rule() {
-			return end(seq(
-				tok(SPROGRAM), NAME,
-				tok(SLPAREN), NAME_LIST, tok(SRPAREN), tok(SSEMICOLON),
-				optseq(tok(SVAR), VAR_DECL_LIST),
-				SUBPROGRAM_DECL_LIST,
-				COMPOUND_STATEMENT, tok(SDOT)
-			));
+			return end(seq(tok(SPROGRAM),NAME,tok(SLPAREN),NAME_LIST,tok(SRPAREN),tok(SSEMICOLON),optseq(tok(SVAR),VAR_DECL_LIST),SUBPROGRAM_DECL_LIST,COMPOUND_STATEMENT,tok(SDOT)));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * return new Program( (Identifier)n.get(1), (NameList)n.get(3),
-		 * n.get(6) instanceof EmptyNode? new VariableDeclarationList() :
-		 * (VariableDeclarationList)n.getAsSeq(6).get(1),
-		 * (SubProgramDeclarationList)n.get(7), (StatementList)n.get(8) ); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	return new Program((Identifier)n.get(1),(NameList)n.get(3),n.get(6)instanceof EmptyNode?new VariableDeclarationList():(VariableDeclarationList)n.getAsSeq(6).get(1),(SubProgramDeclarationList)n.get(7),(StatementList)n.get(8));
+		}
 	},
-	NAME_LIST(2) { ///
+	NAME_LIST(2) {
 		@Override
 		protected IParser rule() {
-			return seq(NAME, rep0seq(tok(SCOMMA), NAME));
+			return seq(NAME,rep0seq(tok(SCOMMA),NAME));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * final NameList list = new NameList((Identifier)n.get(0));
-		 * 
-		 * for(final INode c: n.getAsSeq(1).getChildren()) {
-		 * list.add((Identifier)((SequenceNode)c).get(1)); } return list;
-		 * 
-		 * // if(n.get(1) instanceof EmptyNode) { return new NameList(id); } //
-		 * else { SequenceNode tail = n.getAsSeq(1); NameList list = //
-		 * (NameList)tail.get(1); list.getList().add(0, id); return list; } }
-		 */
+		@Override protected INode success(INode node) { final SequenceNode n
+		  = (SequenceNode)node;
+		  
+		  final NameList list = new NameList((Identifier)n.get(0));
+		  
+		  for(final INode c: n.getAsSeq(1).getChildren()) {
+		  list.add((Identifier)((SequenceNode)c).get(1)); } return list;
+		  
+		  /*// if(n.get(1) instanceof EmptyNode) { return new NameList(id); } //
+		  else { SequenceNode tail = n.getAsSeq(1); NameList list = //
+		  (NameList)tail.get(1); list.getList().add(0, id); return list; }*/ }
+
 	},
-	VAR_DECL_LIST(3) { ///
+	VAR_DECL_LIST(3) {
 		@Override
 		protected IParser rule() {
 			return rep1(VAR_DECL);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; final VariableDeclarationList list = new
-		 * VariableDeclarationList();
-		 * 
-		 * for(final INode c: n.getChildren()) {
-		 * list.add((VariableDeclaration)c); } return list; }
-		 */
-	},
-	VAR_DECL(4) { ///
 		@Override
-		protected IParser rule() {
-			return seq(NAME_LIST, tok(SCOLON), TYPE, tok(SSEMICOLON));
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;final VariableDeclarationList list=new VariableDeclarationList();
+
+	for(final INode c:n.getChildren()){list.add((VariableDeclaration)c);}return list;
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new
-		 * VariableDeclaration((NameList)n.get(0), (TypeLiteral)n.get(2)); }
-		 */
 	},
-	TYPE(5) { ///
+	VAR_DECL(4) {
 		@Override
 		protected IParser rule() {
-			return firstsel(REGULAR_TYPE, ARRAY_TYPE);
-		}
-	},
-	REGULAR_TYPE(6) { ///
-		@Override
-		protected IParser rule() {
-			return firstsel(tok(SINTEGER), tok(SCHAR), tok(SBOOLEAN));
+			return seq(NAME_LIST,tok(SCOLON),TYPE,tok(SSEMICOLON));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final LexedToken
-		 * token = ((TokenNode)node).getToken(); return new TypeLiteral(token);
-		 * }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(), "RegularType expected.");
-		 * }
-		 */
-	},
-	ARRAY_TYPE(7) { ///
 		@Override
-		protected IParser rule() {
-			return seq(tok(SARRAY), tok(SLBRACKET), INTEGER, tok(SRANGE), INTEGER, tok(SRBRACKET), tok(SOF),
-					REGULAR_TYPE);
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new VariableDeclaration((NameList)n.get(0),(TypeLiteral)n.get(2));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new TypeLiteral(
-		 * ((TypeLiteral)n.get(7)).getRegularType(), (SignedInteger)n.get(2),
-		 * (SignedInteger)n.get(4), ((TokenNode)n.get(0)).getToken() ); }
-		 */
 	},
-	INTEGER(8) { ///
+	TYPE(5) {
 		@Override
 		protected IParser rule() {
-			return seq(opt(SIGN), UNSIGNED_INT);
+			return firstsel(REGULAR_TYPE,ARRAY_TYPE);
 		}
-
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new SignedInteger( n.get(0) instanceof
-		 * EmptyNode? SignLiteral.NONE: (SignLiteral)n.get(0),
-		 * (UnsignedInteger)n.get(1) ); }
-		 */
 	},
-	SIGN(9) { ///
+	REGULAR_TYPE(6) {
 		@Override
 		protected IParser rule() {
-			return firstsel(tok(SPLUS), tok(SMINUS));
+			return firstsel(tok(SINTEGER),tok(SCHAR),tok(SBOOLEAN));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * SignLiteral(((TokenNode)node).getToken()); }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(), "Sign expected."); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final LexedToken token=((TokenNode)node).getToken();return new TypeLiteral(token);
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"RegularType expected.");
+		}
+
 	},
-	SUBPROGRAM_DECL_LIST(10) { ///
+	ARRAY_TYPE(7) {
+		@Override
+		protected IParser rule() {
+			return seq(tok(SARRAY),tok(SLBRACKET),INTEGER,tok(SRANGE),INTEGER,tok(SRBRACKET),tok(SOF),REGULAR_TYPE);
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new TypeLiteral(((TypeLiteral)n.get(7)).getRegularType(),(SignedInteger)n.get(2),(SignedInteger)n.get(4),((TokenNode)n.get(0)).getToken());
+		}
+
+	},
+	INTEGER(8) {
+		@Override
+		protected IParser rule() {
+			return seq(opt(SIGN),UNSIGNED_INT);
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new SignedInteger(n.get(0)instanceof EmptyNode?SignLiteral.NONE:(SignLiteral)n.get(0),(UnsignedInteger)n.get(1));
+		}
+
+	},
+	SIGN(9) {
+		@Override
+		protected IParser rule() {
+			return firstsel(tok(SPLUS),tok(SMINUS));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			return new SignLiteral(((TokenNode)node).getToken());
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"Sign expected.");
+		}
+
+	},
+	SUBPROGRAM_DECL_LIST(10) {
 		@Override
 		protected IParser rule() {
 			return rep0(SUBPROGRAM_DECL);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final
-		 * SubProgramDeclarationList list = new SubProgramDeclarationList();
-		 * 
-		 * for(final INode c: ((SequenceNode)node).getChildren()) {
-		 * list.add((SubProgramDeclaration)c); } return list; }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SubProgramDeclarationList list=new SubProgramDeclarationList();
+
+	for(final INode c:((SequenceNode)node).getChildren()){list.add((SubProgramDeclaration)c);}return list;
+		}
+
 	},
-	SUBPROGRAM_DECL(11) { ///
+	SUBPROGRAM_DECL(11) {
 		@Override
 		protected IParser rule() {
-			return seq(
-				tok(SPROCEDURE), NAME,
-				optseq(tok(SLPAREN), PARAMETER_LIST, tok(SRPAREN)), tok(SSEMICOLON),
-				optseq(tok(SVAR), VAR_DECL_LIST), COMPOUND_STATEMENT, tok(SSEMICOLON)
+			return seq(tok(SPROCEDURE),NAME,optseq(tok(SLPAREN),PARAMETER_LIST,tok(SRPAREN)),tok(SSEMICOLON),optseq(tok(SVAR),VAR_DECL_LIST),COMPOUND_STATEMENT,tok(SSEMICOLON));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new SubProgramDeclaration((Identifier)n.get(1),n.get(2)instanceof EmptyNode?new ParameterList():(ParameterList)n.getAsSeq(2).get(1),n.get(4)instanceof EmptyNode?new VariableDeclarationList():(VariableDeclarationList)n.getAsSeq(4).get(1),(StatementList)n.get(5));
+		}
+
+	},
+	PARAMETER_LIST(12) {
+		@Override
+		protected IParser rule() {
+			return seq(PARAMETER,rep0seq(tok(SSEMICOLON),PARAMETER));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	final ParameterList list=new ParameterList((Parameter)n.get(0));
+
+	for(final INode c:n.getAsSeq(1).getChildren()){list.add((Parameter)((SequenceNode)c).get(1));}return list;
+		}
+
+	},
+	PARAMETER(13) {
+		@Override
+		protected IParser rule() {
+			return seq(NAME_LIST,tok(SCOLON),REGULAR_TYPE);
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new Parameter((NameList)n.get(0),(TypeLiteral)n.get(2));
+		}
+
+	},
+	COMPOUND_STATEMENT(14) {
+		@Override
+		protected IParser rule() {
+			return seq(tok(SBEGIN),STATEMENT_LIST,tok(SEND));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			return((SequenceNode)node).get(1);
+		}
+
+	},
+	STATEMENT_LIST(15) {
+		@Override
+		protected IParser rule() {
+			return seq(STATEMENT,rep0seq(tok(SSEMICOLON),STATEMENT));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	final StatementList list=new StatementList((IStatement)n.get(0));
+
+	for(final INode c:n.getAsSeq(1).getChildren()){list.add((IStatement)((SequenceNode)c).get(1));}return list;
+		}
+
+	},
+	STATEMENT(16) {
+		@Override
+		protected IParser rule() {
+			return firstsel(
+				IF_STATEMENT, // if
+				WHILE_STATEMENT, // while
+				RW_STATEMENT,
+				COMPOUND_STATEMENT, // begin
+				looksel(
+					pair(seq(tok(SIDENTIFIER),firstsel(tok(SASSIGN),tok(SLBRACKET))), ASSIGN_STATEMENT),
+					pair(tok(SIDENTIFIER), PROCCALL_STATEMENT)
+				)
 			);
 		}
-
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new SubProgramDeclaration(
-		 * (Identifier)n.get(1), n.get(2) instanceof EmptyNode? new
-		 * ParameterList(): (ParameterList)n.getAsSeq(2).get(1), n.get(4)
-		 * instanceof EmptyNode? new VariableDeclarationList() :
-		 * (VariableDeclarationList)n.getAsSeq(4).get(1),
-		 * (StatementList)n.get(5) ); }
-		 */
 	},
-	PARAMETER_LIST(12) { ///
+	IF_STATEMENT(17) {
 		@Override
 		protected IParser rule() {
-			return seq(PARAMETER, rep0seq(tok(SSEMICOLON), PARAMETER));
+			return seq(tok(SIF),EXPRESSION,tok(STHEN),COMPOUND_STATEMENT,optseq(tok(SELSE),COMPOUND_STATEMENT));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * final ParameterList list = new ParameterList((Parameter)n.get(0));
-		 * 
-		 * for(final INode c: n.getAsSeq(1).getChildren()) {
-		 * list.add((Parameter)((SequenceNode)c).get(1)); } return list; }
-		 */
-	},
-	PARAMETER(13) { ///
 		@Override
-		protected IParser rule() {
-			return seq(NAME_LIST, tok(SCOLON), REGULAR_TYPE);
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;if(n.get(4)instanceof EmptyNode){return new IfStatement((Expression)n.get(1),(StatementList)n.get(3));}else{return new IfElseStatement((Expression)n.get(1),(StatementList)n.get(3),(StatementList)n.getAsSeq(4).get(1));}
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new Parameter((NameList)n.get(0),
-		 * (TypeLiteral)n.get(2)); }
-		 */
 	},
-	COMPOUND_STATEMENT(14) { ///
+	WHILE_STATEMENT(18) {
 		@Override
 		protected IParser rule() {
-			return seq(tok(SBEGIN), STATEMENT_LIST, tok(SEND));
+			return seq(tok(SWHILE),EXPRESSION,tok(SDO),STATEMENT);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return
-		 * ((SequenceNode)node).get(1); }
-		 */
-	},
-	STATEMENT_LIST(15) { ///
 		@Override
-		protected IParser rule() {
-			return seq(STATEMENT, rep0seq(tok(SSEMICOLON), STATEMENT));
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new WhileStatement((Expression)n.get(1),(IStatement)n.get(3));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * final StatementList list = new StatementList((IStatement)n.get(0));
-		 * 
-		 * for(final INode c: n.getAsSeq(1).getChildren()) {
-		 * list.add((IStatement)((SequenceNode)c).get(1)); } return list; }
-		 */
-	},
-	STATEMENT(16) { ///
-		@Override
-		protected IParser rule() {
-			return firstsel(IF_STATEMENT, // if
-					WHILE_STATEMENT, // while
-					READ_STATEMENT, // readln
-					WRITE_STATEMENT, // writeln
-					COMPOUND_STATEMENT, // begin
-					looksel(
-						pair(seq(tok(SIDENTIFIER), firstsel(tok(SASSIGN), tok(SLBRACKET))), ASSIGN_STATEMENT),
-						pair(tok(SIDENTIFIER), PROCCALL_STATEMENT))
-					);
-		}
-	},
-	IF_STATEMENT(17) { ///
-		@Override
-		protected IParser rule() {
-			return seq(tok(SIF), EXPRESSION, tok(STHEN), COMPOUND_STATEMENT, optseq(tok(SELSE), COMPOUND_STATEMENT));
-		}
-
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; if( n.get(4) instanceof EmptyNode ) { return
-		 * new IfStatement((Expression)n.get(1), (StatementList)n.get(3)); }
-		 * else { return new IfElseStatement( (Expression)n.get(1),
-		 * (StatementList)n.get(3), (StatementList)n.getAsSeq(4).get(1) ); } }
-		 */
-	},
-	WHILE_STATEMENT(18) { ///
-		@Override
-		protected IParser rule() {
-			return seq(tok(SWHILE), EXPRESSION, tok(SDO), STATEMENT);
-		}
-
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new WhileStatement((Expression)n.get(1),
-		 * (IStatement)n.get(3)); }
-		 */
 	},
 	/*
-	 * BASIC_STATEMENT (19){ ///
+	 * BASIC_STATEMENT (19){
 	 * 
 	 * @Override protected IParser rule() { return sel( ASSIGN_STATEMENT,
 	 * PROCCALL_STATEMENT, IO_STATEMENT, COMPOUND_STATEMENT ); } },
 	 */
-	ASSIGN_STATEMENT(20) { ///
+	ASSIGN_STATEMENT(20) {
 		@Override
 		protected IParser rule() {
-			return seq(VARIABLE, tok(SASSIGN), EXPRESSION);
+			return seq(VARIABLE,tok(SASSIGN),EXPRESSION);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new AssignStatement((IVariable)n.get(0),
-		 * (IExpression)n.get(2)); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new AssignStatement((IVariable)n.get(0),(IExpression)n.get(2));
+		}
+
 	},
-	VARIABLE(21) { ///
+	VARIABLE(21) {
 		@Override
 		protected IParser rule() {
-			return looksel(
-				pair(seq(tok(SIDENTIFIER), tok(SLBRACKET)), INDEXED_VARIABLE),
-				pair(seq(tok(SIDENTIFIER)), PURE_VARIABLE)
-			);
+			return looksel(pair(seq(tok(SIDENTIFIER),tok(SLBRACKET)),INDEXED_VARIABLE),pair(seq(tok(SIDENTIFIER)),PURE_VARIABLE));
 		}
 	},
-	PURE_VARIABLE(22) { ///
+	PURE_VARIABLE(22) {
 		@Override
 		protected IParser rule() {
 			return NAME;
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * PureVariable((Identifier)node); }
-		 */
-	},
-	INDEXED_VARIABLE(23) { ///
 		@Override
-		protected IParser rule() {
-			return seq(NAME, tok(SLBRACKET), EXPRESSION, tok(SRBRACKET));
+		protected INode success(INode node) {
+			return new PureVariable((Identifier)node);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new
-		 * IndexedVariable((Identifier)n.get(0), (Expression)n.get(2)); }
-		 */
 	},
-	PROCCALL_STATEMENT(24) { ///
+	INDEXED_VARIABLE(23) {
 		@Override
 		protected IParser rule() {
-			return seq(NAME, optseq(tok(SLPAREN), EXPRESSION_LIST, tok(SRPAREN)));
+			return seq(NAME,tok(SLBRACKET),EXPRESSION,tok(SRBRACKET));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new ProcCallStatement(
-		 * (Identifier)n.get(0), n.get(1) instanceof EmptyNode? new
-		 * ExpressionList(): (ExpressionList)n.getAsSeq(1).get(1) ); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new IndexedVariable((Identifier)n.get(0),(Expression)n.get(2));
+		}
+
 	},
-	EXPRESSION_LIST(25) { ///
+	PROCCALL_STATEMENT(24) {
 		@Override
 		protected IParser rule() {
-			return seq(EXPRESSION, rep0seq(tok(SCOMMA), EXPRESSION));
+			return seq(NAME,optseq(tok(SLPAREN),EXPRESSION_LIST,tok(SRPAREN)));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * final ExpressionList list = new ExpressionList((Expression)n.get(0));
-		 * 
-		 * for(final INode c: n.getAsSeq(1).getChildren()) {
-		 * list.add((Expression)((SequenceNode)c).get(1)); } return list; }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new ProcCallStatement((Identifier)n.get(0),n.get(1)instanceof EmptyNode?new ExpressionList():(ExpressionList)n.getAsSeq(1).get(1));
+		}
+
 	},
-	EXPRESSION(26) { ///
+	EXPRESSION_LIST(25) {
 		@Override
 		protected IParser rule() {
-			return seq(SIGNED_SIMPLE_EXPRESSION, optseq(COMP_OP, SIGNED_SIMPLE_EXPRESSION));
+			return seq(EXPRESSION,rep0seq(tok(SCOMMA),EXPRESSION));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * if( n.get(1) instanceof EmptyNode ) { return new
-		 * Expression((SignedSimpleExpression)n.get(0)); } else { final
-		 * SequenceNode right = n.getAsSeq(1); return new CompareExpression(
-		 * (SignedSimpleExpression)n.get(0), (CompareOperator)right.get(0),
-		 * (SignedSimpleExpression)right.get(1) ); } }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	final ExpressionList list=new ExpressionList((Expression)n.get(0));
+
+	for(final INode c:n.getAsSeq(1).getChildren()){list.add((Expression)((SequenceNode)c).get(1));}return list;
+		}
+
 	},
-	SIGNED_SIMPLE_EXPRESSION(27) { ///
+	EXPRESSION(26) {
 		@Override
 		protected IParser rule() {
-			return seq(opt(SIGN), SIMPLE_EXPRESSION);
+			return seq(SIGNED_SIMPLE_EXPRESSION,optseq(COMP_OP,SIGNED_SIMPLE_EXPRESSION));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; if( n.get(0) instanceof EmptyNode ) { return
-		 * new SignedSimpleExpression((ISimpleExpression)n.get(1)); } else {
-		 * return new SignedSimpleExpression((SignLiteral)n.get(0),
-		 * (ISimpleExpression)n.get(1)); } }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	if(n.get(1)instanceof EmptyNode){return new Expression((SignedSimpleExpression)n.get(0));}else{final SequenceNode right=n.getAsSeq(1);return new CompareExpression((SignedSimpleExpression)n.get(0),(CompareOperator)right.get(0),(SignedSimpleExpression)right.get(1));}
+		}
+
 	},
-	SIMPLE_EXPRESSION(28) { ///
+	SIGNED_SIMPLE_EXPRESSION(27) {
 		@Override
 		protected IParser rule() {
-			return seq(TERM, rep0seq(ADD_OP, TERM));
+			return seq(opt(SIGN),SIMPLE_EXPRESSION);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final Term head =
-		 * (Term)((SequenceNode)node).get(0); final SequenceNode tail =
-		 * ((SequenceNode)node).getAsSeq(1);
-		 * 
-		 * SimpleExpression exp = new SimpleExpression(head); for(final INode c:
-		 * tail.getChildren()) { final SequenceNode sn = (SequenceNode)c; exp =
-		 * new TailedSimpleExpression((Term)sn.get(1), (AddOperator)sn.get(0),
-		 * exp); } return exp; }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;if(n.get(0)instanceof EmptyNode){return new SignedSimpleExpression((ISimpleExpression)n.get(1));}else{return new SignedSimpleExpression((SignLiteral)n.get(0),(ISimpleExpression)n.get(1));}
+		}
+
 	},
-	TERM(29) { ///
+	SIMPLE_EXPRESSION(28) {
 		@Override
 		protected IParser rule() {
-			return seq(FACTOR, rep0seq(MUL_OP, FACTOR));
+			return seq(TERM,rep0seq(ADD_OP,TERM));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final IFactor head =
-		 * (IFactor)((SequenceNode)node).get(0); final SequenceNode tail =
-		 * ((SequenceNode)node).getAsSeq(1);
-		 * 
-		 * Term term = new Term(head); for(final INode c: tail.getChildren()) {
-		 * final SequenceNode sn = (SequenceNode)c; term = new
-		 * TailedTerm((IFactor)sn.get(1), (MultiplyOperator)sn.get(0), term); }
-		 * return term; }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final Term head=(Term)((SequenceNode)node).get(0);final SequenceNode tail=((SequenceNode)node).getAsSeq(1);
+
+	SimpleExpression exp=new SimpleExpression(head);for(final INode c:tail.getChildren()){final SequenceNode sn=(SequenceNode)c;exp=new TailedSimpleExpression((Term)sn.get(1),(AddOperator)sn.get(0),exp);}return exp;
+		}
+
 	},
-	FACTOR(30) { ///
+	TERM(29) {
 		@Override
 		protected IParser rule() {
-			return firstsel(VARIABLE, CONSTANT, NOT, seq(tok(SLPAREN), EXPRESSION, tok(SRPAREN)));
+			return seq(FACTOR,rep0seq(MUL_OP,FACTOR));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { if( node instanceof
-		 * SequenceNode ) { final SequenceNode n = (SequenceNode)node; return
-		 * n.get(1); } else { return node; } }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final IFactor head=(IFactor)((SequenceNode)node).get(0);final SequenceNode tail=((SequenceNode)node).getAsSeq(1);
+
+	Term term=new Term(head);for(final INode c:tail.getChildren()){final SequenceNode sn=(SequenceNode)c;term=new TailedTerm((IFactor)sn.get(1),(MultiplyOperator)sn.get(0),term);}return term;
+		}
+
 	},
-	NOT(31) { ///
+	FACTOR(30) {
 		@Override
 		protected IParser rule() {
-			return seq(tok(SNOT), FACTOR);
+			return firstsel(VARIABLE,CONSTANT,NOT,seq(tok(SLPAREN),EXPRESSION,tok(SRPAREN)));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new Not((IFactor)n.get(1),
-		 * ((TokenNode)n.get(0)).getToken()); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			if(node instanceof SequenceNode){final SequenceNode n=(SequenceNode)node;return n.get(1);}else{return node;}
+		}
+
 	},
-	COMP_OP(32) { ///
+	NOT(31) {
 		@Override
 		protected IParser rule() {
-			return firstsel(tok(SEQUAL), tok(SNOTEQUAL), tok(SLESS), tok(SLESSEQUAL), tok(SGREAT), tok(SGREATEQUAL));
+			return seq(tok(SNOT),FACTOR);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { switch(
-		 * ((TokenNode)node).getType() ) { case SEQUAL: return
-		 * CompareOperator.EQUAL; case SNOTEQUAL: return
-		 * CompareOperator.NOTEQUAL; case SLESS: return CompareOperator.LESS;
-		 * case SLESSEQUAL: return CompareOperator.LESSEQUAL; case SGREAT:
-		 * return CompareOperator.GREAT; case SGREATEQUAL: return
-		 * CompareOperator.GREATEQUAL; default: assert false; return null; } }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(),
-		 * "CompareOperator expected."); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new Not((IFactor)n.get(1),((TokenNode)n.get(0)).getToken());
+		}
+
 	},
-	ADD_OP(33) { ///
+	COMP_OP(32) {
 		@Override
 		protected IParser rule() {
-			return firstsel(tok(SPLUS), tok(SMINUS), tok(SOR));
+			return firstsel(tok(SEQUAL),tok(SNOTEQUAL),tok(SLESS),tok(SLESSEQUAL),tok(SGREAT),tok(SGREATEQUAL));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { switch(
-		 * ((TokenNode)node).getType() ) { case SPLUS: return AddOperator.ADD;
-		 * case SMINUS: return AddOperator.SUB; case SOR: return AddOperator.OR;
-		 * default: assert false; return null; }
-		 * 
-		 * }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(), "AddOperator expected.");
-		 * }
-		 */
+		@Override
+		protected INode success(INode node) {
+			switch(((TokenNode)node).getType()){case SEQUAL:return CompareOperator.EQUAL;case SNOTEQUAL:return CompareOperator.NOTEQUAL;case SLESS:return CompareOperator.LESS;case SLESSEQUAL:return CompareOperator.LESSEQUAL;case SGREAT:return CompareOperator.GREAT;case SGREATEQUAL:return CompareOperator.GREATEQUAL;default:assert false;return null;}
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"CompareOperator expected.");
+		}
+
 	},
-	MUL_OP(34) { ///
+	ADD_OP(33) {
 		@Override
 		protected IParser rule() {
-			return firstsel(tok(SSTAR), tok(SDIVD), tok(SMOD), tok(SAND));
+			return firstsel(tok(SPLUS),tok(SMINUS),tok(SOR));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { switch(
-		 * ((TokenNode)node).getType() ) { case SSTAR: return
-		 * MultiplyOperator.MUL; case SDIVD: return MultiplyOperator.DIV; case
-		 * SMOD: return MultiplyOperator.MOD; case SAND: return
-		 * MultiplyOperator.AND; default: assert false; return null; } }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(),
-		 * "MultiplyOperator expected."); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			switch(((TokenNode)node).getType()){case SPLUS:return AddOperator.ADD;case SMINUS:return AddOperator.SUB;case SOR:return AddOperator.OR;default:assert false;return null;}
+
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"AddOperator expected.");
+		}
+
 	},
-	/*
-	 * IO_STATEMENT(35) { ///
-	 * 
-	 * @Override protected IParser rule() { return sel(INPUT_STATEMENT,
-	 * OUTPUT_STATEMENT); } },
-	 */
-	READ_STATEMENT(36) { ///
+	MUL_OP(34) {
 		@Override
 		protected IParser rule() {
-			return seq(tok(SREADLN), optseq(tok(SLPAREN), VARIABLE_LIST, tok(SRPAREN)));
+			return firstsel(tok(SSTAR),tok(SDIVD),tok(SMOD),tok(SAND));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new InputStatement( n.get(1) instanceof
-		 * EmptyNode? new VariableList(): (VariableList)n.getAsSeq(1).get(1) );
-		 * }
-		 */
+		@Override
+		protected INode success(INode node) {
+			switch(((TokenNode)node).getType()){case SSTAR:return MultiplyOperator.MUL;case SDIVD:return MultiplyOperator.DIV;case SMOD:return MultiplyOperator.MOD;case SAND:return MultiplyOperator.AND;default:assert false;return null;}
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"MultiplyOperator expected.");
+		}
+
 	},
-	WRITE_STATEMENT(37) { ///
+
+	RW_STATEMENT(35) {
+
 		@Override
 		protected IParser rule() {
-			return seq(tok(SWRITELN), optseq(tok(SLPAREN), EXPRESSION_LIST, tok(SRPAREN)));
+			return firstsel(READ_STATEMENT,WRITE_STATEMENT);
 		}
-
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node; return new OutputStatement( n.get(1) instanceof
-		 * EmptyNode? new ExpressionList(): (ExpressionList)n.getAsSeq(1).get(1)
-		 * ); }
-		 */
 	},
-	VARIABLE_LIST(38) { ///
+
+	READ_STATEMENT(36) {
 		@Override
 		protected IParser rule() {
-			return seq(VARIABLE, rep0seq(tok(SCOMMA), VARIABLE));
+			return seq(tok(SREADLN),optseq(tok(SLPAREN),VARIABLE_LIST,tok(SRPAREN)));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { final SequenceNode n
-		 * = (SequenceNode)node;
-		 * 
-		 * final VariableList list = new VariableList((IVariable)n.get(0));
-		 * 
-		 * for(final INode c: n.getAsSeq(1).getChildren()) {
-		 * list.add((IVariable)((SequenceNode)c).get(1)); } return list; }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new ReadStatement(n.get(1)instanceof EmptyNode?new VariableList():(VariableList)n.getAsSeq(1).get(1));
+		}
+
 	},
-	CONSTANT(39) { ///
+	WRITE_STATEMENT(37) {
 		@Override
 		protected IParser rule() {
-			return firstsel(UNSIGNED_INT, STRING, BOOLEAN);
+			return seq(tok(SWRITELN),optseq(tok(SLPAREN),EXPRESSION_LIST,tok(SRPAREN)));
 		}
 
-		/*
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(), "Constant expected."); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;return new WriteStatement(n.get(1)instanceof EmptyNode?new ExpressionList():(ExpressionList)n.getAsSeq(1).get(1));
+		}
+
 	},
-	BOOLEAN(40) { ///
+	VARIABLE_LIST(38) {
 		@Override
 		protected IParser rule() {
-			return firstsel(tok(SFALSE), tok(STRUE));
+			return seq(VARIABLE,rep0seq(tok(SCOMMA),VARIABLE));
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * BooleanLiteral(((TokenNode)node).getToken()); }
-		 * 
-		 * @Override protected INode failure(INode node) { return new
-		 * FailureNode(((FailureNode)node).getChild(),
-		 * "BooleanLiteral expected."); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			final SequenceNode n=(SequenceNode)node;
+
+	final VariableList list=new VariableList((IVariable)n.get(0));
+
+	for(final INode c:n.getAsSeq(1).getChildren()){list.add((IVariable)((SequenceNode)c).get(1));}return list;
+		}
+
 	},
-	UNSIGNED_INT(41) { ///
+	CONSTANT(39) {
+		@Override
+		protected IParser rule() {
+			return firstsel(UNSIGNED_INT,STRING,BOOLEAN);
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"Constant expected.");
+		}
+
+	},
+	BOOLEAN(40) {
+		@Override
+		protected IParser rule() {
+			return firstsel(tok(SFALSE),tok(STRUE));
+		}
+
+		@Override
+		protected INode success(INode node) {
+			return new BooleanLiteral(((TokenNode)node).getToken());
+		}
+
+		@Override
+		protected INode failure(INode node) {
+			return new FailureNode(((FailureNode)node).getChild(),"BooleanLiteral expected.");
+		}
+
+	},
+	UNSIGNED_INT(41) {
 		@Override
 		protected IParser rule() {
 			return tok(SCONSTANT);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * UnsignedInteger((TokenNode)node); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			return new UnsignedInteger((TokenNode)node);
+		}
+
 	},
-	STRING(42) { ///
+	STRING(42) {
 		@Override
 		protected IParser rule() {
 			return tok(SSTRING);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * StringLiteral((TokenNode)node); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			return new StringLiteral((TokenNode)node);
+		}
+
 	},
-	NAME(44) { ///
+	NAME(44) {
 		@Override
 		protected IParser rule() {
 			return tok(SIDENTIFIER);
 		}
 
-		/*
-		 * @Override protected INode success(INode node) { return new
-		 * Identifier((TokenNode)node); }
-		 */
+		@Override
+		protected INode success(INode node) {
+			return new Identifier((TokenNode)node);
+		}
+
 	};
 
 	private IParser parser_memo;
@@ -646,7 +616,7 @@ public enum PascalParser2 implements IParser {
 	}
 
 	protected abstract IParser rule();
-	
+
 	protected void begin() {
 		// Empty
 	}
