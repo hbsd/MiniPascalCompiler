@@ -7,13 +7,14 @@ import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.StringType;
+import enshud.s4.compiler.LabelGenerator;
 
 public class CompareExpression extends Expression
 {
     final CompareOperator  op;
-    final SignedSimpleExpression right;
+    final SimpleExpression right;
 
-    public CompareExpression(SignedSimpleExpression left, CompareOperator op, SignedSimpleExpression right)
+    public CompareExpression(SimpleExpression left, CompareOperator op, SimpleExpression right)
     {
         super(left);
         this.op = Objects.requireNonNull(op);
@@ -21,7 +22,7 @@ public class CompareExpression extends Expression
         this.type = RegularType.BOOLEAN;
     }
 
-    public SignedSimpleExpression getRight()
+    public SimpleExpression getRight()
     {
         return right;
     }
@@ -82,20 +83,21 @@ public class CompareExpression extends Expression
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getLeft().compile(codebuilder, proc, l_gen);
         codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
+
         getRight().compile(codebuilder, proc, l_gen);
-        codebuilder.append(" LD GR1,GR2").append(System.lineSeparator());
-        codebuilder.append(" POP GR2").append(System.lineSeparator());
+        codebuilder.append(" POP GR1").append(System.lineSeparator());
+
         switch(getOp())
         {
         case EQUAL:
         {
             String label = l_gen.next();
-            codebuilder.append(" CPA GR2,GR1   ; v =").append(System.lineSeparator());
+            codebuilder.append(" CPL GR2,GR1   ; v =").append(System.lineSeparator());
             codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
             codebuilder.append(" XOR GR2,GR2").append(System.lineSeparator());
             codebuilder.append(" JUMP Q").append(label).append(System.lineSeparator());
@@ -106,7 +108,7 @@ public class CompareExpression extends Expression
         case NOTEQUAL:
         {
             String label = l_gen.next();
-            codebuilder.append(" CPA GR2,GR1   ; v <>").append(System.lineSeparator());
+            codebuilder.append(" CPL GR2,GR1   ; v <>").append(System.lineSeparator());
             codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
             codebuilder.append(" LAD GR2,1").append(System.lineSeparator());
             codebuilder.append(" JUMP Q").append(label).append(System.lineSeparator());
@@ -115,28 +117,28 @@ public class CompareExpression extends Expression
             break;
         }
         case LESS:
-            codebuilder.append(" SUBA GR2,GR1; <").append(System.lineSeparator());
+            codebuilder.append(" SUBA GR1,GR2; <").append(System.lineSeparator());
+            codebuilder.append(" LD GR2,GR1  ;").append(System.lineSeparator());
             codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
             break;
         case LESSEQUAL:
-            codebuilder.append(" SUBA GR1,GR2  ; <=").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR1    ;").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15    ;").append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,=1;").append(System.lineSeparator());
+            codebuilder.append(" SUBA GR2,GR1; <=").append(System.lineSeparator());
+            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
+            codebuilder.append(" XOR GR2,=1  ;").append(System.lineSeparator());
             break;
 
         case GREAT:
-            codebuilder.append(" SUBA GR1,GR2; >").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR4  ;").append(System.lineSeparator());
+            codebuilder.append(" SUBA GR2,GR1; >").append(System.lineSeparator());
             codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
             break;
         case GREATEQUAL:
-            codebuilder.append(" SUBA GR2,GR1  ; >=").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15    ;").append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,=#1;").append(System.lineSeparator());
+            codebuilder.append(" SUBA GR1,GR2; >=").append(System.lineSeparator());
+            codebuilder.append(" LD GR2,GR1  ;").append(System.lineSeparator());
+            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
+            codebuilder.append(" XOR GR2,=1  ;").append(System.lineSeparator());
             break;
         }
-    }*/
+    }
 
     @Override
     public void printBodyln(String indent)

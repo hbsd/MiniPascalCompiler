@@ -7,6 +7,7 @@ import enshud.s1.lexer.LexedToken;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class Not implements IFactor
@@ -72,12 +73,12 @@ public class Not implements IFactor
         return getType();
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         factor.compile(codebuilder, proc, l_gen);
         codebuilder.append(" XOR GR2,=1").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public void printBodyln(String indent)

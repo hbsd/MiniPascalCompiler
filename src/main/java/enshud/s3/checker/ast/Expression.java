@@ -6,20 +6,21 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.UnknownType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class Expression implements IExpression
 {
-    final SignedSimpleExpression left;
+    final SimpleExpression left;
     IType                  type;
 
-    public Expression(SignedSimpleExpression left)
+    public Expression(SimpleExpression left)
     {
         this.left = Objects.requireNonNull(left);
         this.type = UnknownType.UNKNOWN;
     }
 
-    public SignedSimpleExpression getLeft()
+    public SimpleExpression getLeft()
     {
         return left;
     }
@@ -45,11 +46,7 @@ public class Expression implements IExpression
     @Override
     public void retype(IType new_type)
     {
-        if( getType().isUnknown() )
-        {
-            type = new_type;
-        }
-
+    	type = new_type;
         left.retype(new_type);
     }
 
@@ -60,11 +57,11 @@ public class Expression implements IExpression
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getLeft().compile(codebuilder, proc, l_gen);
-    }*/
+    }
 
     @Override
     public String toString()

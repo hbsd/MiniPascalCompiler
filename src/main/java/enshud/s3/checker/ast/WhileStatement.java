@@ -6,6 +6,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class WhileStatement implements IStatement
@@ -60,7 +61,7 @@ public class WhileStatement implements IStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         final String label = l_gen.toString();
@@ -76,7 +77,7 @@ public class WhileStatement implements IStatement
         codebuilder.append(" JUMP C").append(label).append(System.lineSeparator());
 
         codebuilder.append("F").append(label).append(" NOP; end of WHILE").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public String toString()

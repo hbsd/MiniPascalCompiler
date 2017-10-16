@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import enshud.s3.checker.Checker;
+import enshud.s3.checker.ParameterDeclaration.Param;
 
 import java.util.ArrayList;
 
@@ -13,6 +14,7 @@ import enshud.s3.checker.type.ArrayType;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.UnknownType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class Procedure
@@ -58,6 +60,16 @@ public class Procedure
     public String getName()
     {
         return name;
+    }
+    
+    public Param getParam(String name)
+    {
+        return param_decls.get(name);
+    }
+    
+    public int getParamIndex(String name)
+    {
+        return param_decls.getIndex(name);
     }
 
     public RegularType getParamType(int index)
@@ -127,6 +139,20 @@ public class Procedure
         }
         return parent == null? null: parent.getSubProc(name);
     }
+    
+    public int getSubProcIndex(String name)
+    {
+    	int i = 1;
+        for(final Procedure sub: children)
+        {
+            if( sub.getName().equals(name) )
+            {
+                return i;
+            }
+            ++i;
+        }
+        return parent == null? -1: parent.getSubProcIndex(name);
+    }
 
     private void checkParams(List<Parameter> params, Checker checker)
     {
@@ -144,7 +170,6 @@ public class Procedure
                 else
                 {
                     param_decls.add(n, t);
-                    var_decls.add(n, t);
                     // subprocs.add(scope, name, pascal.type);
                 }
             }
@@ -170,7 +195,7 @@ public class Procedure
             for(final Identifier id: decl.getNames())
             {
                 final String n = id.toString();
-                if( var_decls.exists(n) )
+                if( var_decls.exists(n) || param_decls.exists(n) )
                 {
                     checker.addErrorMessage(this, id, "'" + n + "' is already defined.");
                 }
@@ -182,9 +207,9 @@ public class Procedure
         }
     }
 
-    /*public void compile(StringBuilder codebuilder)
+    public void compile(StringBuilder codebuilder)
     {
-        codebuilder.append(name).append(" START").append(System.lineSeparator());
+        codebuilder.append("PMAIN").append(" START").append(System.lineSeparator());
         codebuilder.append(" XOR GR6,GR6").append(System.lineSeparator());
         codebuilder.append(" LAD GR7,BUF").append(System.lineSeparator());
 
@@ -210,16 +235,18 @@ public class Procedure
         codebuilder.append("BUF DS 256").append(System.lineSeparator());
         codebuilder.append(" END");
 
+        int i = 1;
         for(Procedure c: children)
         {
             codebuilder.append(System.lineSeparator());
-            c.compileSubProgram(codebuilder);
+            c.compileSubProgram(codebuilder, i);
+            ++i;
         }
     }
 
-    private void compileSubProgram(StringBuilder codebuilder)
+    private void compileSubProgram(StringBuilder codebuilder, int proc_idx)
     {
-        codebuilder.append(name).append(" START").append(System.lineSeparator());
+        codebuilder.append("PSUB").append(proc_idx).append(" START").append(System.lineSeparator());
 
         // save parent frame
         codebuilder.append(" PUSH 0,GR5; save parent's frame pointer").append(System.lineSeparator());
@@ -251,7 +278,7 @@ public class Procedure
         codebuilder.append(" LD GR5,-1,GR5; restore parent's frame pointer").append(System.lineSeparator());
         codebuilder.append(" RET").append(System.lineSeparator());
         codebuilder.append(" END");
-    }*/
+    }
 }
 
 

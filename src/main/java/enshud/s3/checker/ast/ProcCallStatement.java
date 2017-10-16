@@ -7,6 +7,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.StringType;
+import enshud.s4.compiler.LabelGenerator;
 import enshud.s3.checker.type.RegularType;
 
 
@@ -97,20 +98,22 @@ public class ProcCallStatement implements IBasicStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        for(IExpression e: getExpressions())
+    	
+        for(int i = getExpressions().size() - 1; i >= 0; --i)
         {
+        	IExpression e = getExpressions().get(i);
             e.compile(codebuilder, proc, l_gen);
             codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
         }
-        codebuilder.append(" CALL ").append(name).append(System.lineSeparator());
+        codebuilder.append(" CALL PSUB").append(proc.getSubProcIndex(name.toString())).append(System.lineSeparator());
         if(args.size() > 0)
         {
             codebuilder.append(" LAD GR8,").append(args.size()).append(",GR8").append(System.lineSeparator());
         }
-    }*/
+    }
 
 
     @Override

@@ -107,7 +107,13 @@ public enum PascalParser2 implements IParser {
 
 		@Override
 		protected INode success(INode node) {
-			final SequenceNode n=(SequenceNode)node;return new TypeLiteral(((TypeLiteral)n.get(7)).getRegularType(),(SignedInteger)n.get(2),(SignedInteger)n.get(4),((TokenNode)n.get(0)).getToken());
+			final SequenceNode n=(SequenceNode)node;
+			return new TypeLiteral(
+				((TypeLiteral)n.get(7)).getRegularType(),
+				(SignedInteger)n.get(2),
+				(SignedInteger)n.get(4),
+				((TokenNode)n.get(0)).getToken()
+			);
 		}
 
 	},
@@ -119,7 +125,11 @@ public enum PascalParser2 implements IParser {
 
 		@Override
 		protected INode success(INode node) {
-			final SequenceNode n=(SequenceNode)node;return new SignedInteger(n.get(0)instanceof EmptyNode?SignLiteral.NONE:(SignLiteral)n.get(0),(UnsignedInteger)n.get(1));
+			final SequenceNode n=(SequenceNode)node;
+			return new SignedInteger(
+				n.get(0)instanceof EmptyNode?SignLiteral.NONE:(SignLiteral)n.get(0),
+				(UnsignedInteger)n.get(1)
+			);
 		}
 
 	},
@@ -340,18 +350,27 @@ public enum PascalParser2 implements IParser {
 	EXPRESSION(26) {
 		@Override
 		protected IParser rule() {
-			return seq(SIGNED_SIMPLE_EXPRESSION,optseq(COMP_OP,SIGNED_SIMPLE_EXPRESSION));
+			return seq(SIMPLE_EXPRESSION,optseq(COMP_OP,SIMPLE_EXPRESSION));
 		}
 
 		@Override
 		protected INode success(INode node) {
 			final SequenceNode n=(SequenceNode)node;
 
-	if(n.get(1)instanceof EmptyNode){return new Expression((SignedSimpleExpression)n.get(0));}else{final SequenceNode right=n.getAsSeq(1);return new CompareExpression((SignedSimpleExpression)n.get(0),(CompareOperator)right.get(0),(SignedSimpleExpression)right.get(1));}
+			if(n.get(1)instanceof EmptyNode){
+				return new Expression((SimpleExpression)n.get(0));
+			}else{
+				final SequenceNode right = n.getAsSeq(1);
+				return new CompareExpression(
+					(SimpleExpression)n.get(0),
+					(CompareOperator)right.get(0),
+					(SimpleExpression)right.get(1)
+				);
+				}
 		}
 
 	},
-	SIGNED_SIMPLE_EXPRESSION(27) {
+	/*SIGNED_SIMPLE_EXPRESSION(27) {
 		@Override
 		protected IParser rule() {
 			return seq(opt(SIGN),SIMPLE_EXPRESSION);
@@ -359,21 +378,35 @@ public enum PascalParser2 implements IParser {
 
 		@Override
 		protected INode success(INode node) {
-			final SequenceNode n=(SequenceNode)node;if(n.get(0)instanceof EmptyNode){return new SignedSimpleExpression((ISimpleExpression)n.get(1));}else{return new SignedSimpleExpression((SignLiteral)n.get(0),(ISimpleExpression)n.get(1));}
+			final SequenceNode n=(SequenceNode)node;
+			if(n.get(0) instanceof EmptyNode){
+				return new SignedSimpleExpression((ISimpleExpression)n.get(1));
+			}else{
+				return new SignedSimpleExpression((SignLiteral)n.get(0), (ISimpleExpression)n.get(1));
+			}
 		}
 
-	},
+	},*/
 	SIMPLE_EXPRESSION(28) {
 		@Override
 		protected IParser rule() {
-			return seq(TERM,rep0seq(ADD_OP,TERM));
+			return seq(opt(SIGN), TERM, rep0seq(ADD_OP, TERM));
 		}
 
 		@Override
 		protected INode success(INode node) {
-			final Term head=(Term)((SequenceNode)node).get(0);final SequenceNode tail=((SequenceNode)node).getAsSeq(1);
+			final SequenceNode n = (SequenceNode)node;
+			final Term head = (Term)n.get(1);
+			final SequenceNode tail = n.getAsSeq(2);
+			final SignLiteral sign_lit = (n.get(0) instanceof EmptyNode)? SignLiteral.NONE: (SignLiteral)n.get(0);
 
-	SimpleExpression exp=new SimpleExpression(head);for(final INode c:tail.getChildren()){final SequenceNode sn=(SequenceNode)c;exp=new TailedSimpleExpression((Term)sn.get(1),(AddOperator)sn.get(0),exp);}return exp;
+			SimpleExpression exp = new SimpleExpression(sign_lit, head);
+			for(final INode c: tail.getChildren())
+			{
+				final SequenceNode sn = (SequenceNode)c;
+				exp = new TailedSimpleExpression((Term)sn.get(1), (AddOperator)sn.get(0), exp);
+			}
+			return exp;
 		}
 
 	},

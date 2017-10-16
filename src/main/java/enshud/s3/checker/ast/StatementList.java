@@ -7,6 +7,7 @@ import java.util.Objects;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 
@@ -46,14 +47,14 @@ public class StatementList implements IBasicStatement, IList<IStatement>
         return null;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator f_gen)
     {
         for(IStatement s: list)
         {
             s.compile(codebuilder, proc, f_gen);
         }
-    }*/
+    }
 
     @Override
     public void printHead(String indent, String msg)

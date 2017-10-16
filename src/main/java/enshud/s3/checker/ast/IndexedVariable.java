@@ -4,9 +4,12 @@ import java.util.Objects;
 
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s3.checker.VariableDeclaration.Variable;
+import enshud.s3.checker.type.ArrayType;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.UnknownType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class IndexedVariable implements IVariable, ILiteral
@@ -94,59 +97,52 @@ public class IndexedVariable implements IVariable, ILiteral
         return type.getRegularType();
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         compileForData(codebuilder, proc, l_gen);
     }
     
+    private void _compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    {
+        codebuilder.append(";idx v").append(System.lineSeparator());
+    	getIndex().compile(codebuilder, proc, l_gen);
+
+    	final String nm = getName().toString();
+        final Variable var = proc.getLocalVar(nm);
+        if(var != null)
+        {
+            final int align = var.getAlignment();
+
+            final int max = ((ArrayType)var.getType()).getMax();
+            codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(",GR5").append(System.lineSeparator());
+        }
+        else
+        {
+            final Variable var_g = proc.getGlobalVar(nm);
+            final int align = var_g.getAlignment();
+
+            final int max = ((ArrayType)var_g.getType()).getMax();
+            codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(",GR4").append(System.lineSeparator());
+        }
+        codebuilder.append(" ADDL GR1,GR2; add index").append(System.lineSeparator());
+    }
+
+    @Override
     public void compileForData(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        getIndex().compile(codebuilder, proc, l_gen);
-
-        final Variable var = proc.getLocalVar(getName().toString());
-        if(var != null)
-        {
-            final int align = var.getAlignment();
-
-            final int min = ((ArrayType)var.getType()).getMin();
-            codebuilder.append(" LAD GR1,").append(-align - 2 + min).append(",GR5").append(System.lineSeparator());
-        }
-        else
-        {
-            final Variable var_g = proc.getGlobalVar(getName().toString());
-            final int align = var_g.getAlignment();
-
-            final int min = ((ArrayType)var_g.getType()).getMin();
-            codebuilder.append(" LAD GR1,").append(-align - 2 + min).append(",GR4").append(System.lineSeparator());
-        }
-        codebuilder.append(" SUBL GR1,GR2").append(System.lineSeparator());
+        _compile(codebuilder, proc, l_gen);
         codebuilder.append(" LD GR2,0,GR1").append(System.lineSeparator());
+        codebuilder.append(";idx ^").append(System.lineSeparator());
     }
-    
+
+    @Override
     public void compileForAddr(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        getIndex().compile(codebuilder, proc, l_gen);
-
-        final Variable var = proc.getLocalVar(getName().toString());
-        if(var != null)
-        {
-            final int align = var.getAlignment();
-
-            final int min = ((ArrayType)var.getType()).getMin();
-            codebuilder.append(" LAD GR1,").append(-align - 2 + min).append(",GR5").append(System.lineSeparator());
-        }
-        else
-        {
-            final Variable var_g = proc.getGlobalVar(getName().toString());
-            final int align = var_g.getAlignment();
-
-            final int min = ((ArrayType)var_g.getType()).getMin();
-            codebuilder.append(" LAD GR1,").append(-align - 2 + min).append(",GR4").append(System.lineSeparator());
-        }
-        codebuilder.append(" SUBL GR1,GR2").append(System.lineSeparator());
+        _compile(codebuilder, proc, l_gen);
         codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
-    }*/
+        codebuilder.append(";idx ^").append(System.lineSeparator());
+    }
 
     @Override
     public void printHead(String indent, String msg)

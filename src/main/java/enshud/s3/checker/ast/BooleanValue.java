@@ -4,6 +4,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public enum BooleanValue implements IConstant
@@ -53,11 +54,11 @@ public enum BooleanValue implements IConstant
         throw new UnsupportedOperationException();
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         throw new UnsupportedOperationException();
-    }*/
+    }
 
     public abstract boolean getBool();
 }

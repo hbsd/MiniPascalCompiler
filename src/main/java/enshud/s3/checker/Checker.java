@@ -6,7 +6,6 @@ import java.util.List;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
-import enshud.s2.parser.node.INode;
 import enshud.s3.checker.ast.IASTNode;
 import enshud.s3.checker.ast.Program;
 
@@ -52,19 +51,20 @@ public class Checker {
             return;
         }
 
-        final INode root = new Parser().parse(tokens);
+        final Program root = new Parser().parse(tokens);
         if( root == null )
         {
             return;
         }
         
-        check((Program)root);
+        check(root);
         if( isSuccess() )
         {
             System.out.println("OK");
         }
 	}
 
+	static final boolean SIMPLE_ERROR_MSG = true;
 
     Procedure program = null;
     List<String> errors = new ArrayList<>();
@@ -72,8 +72,11 @@ public class Checker {
     
     public void addErrorMessage(Procedure proc, IASTNode node, String msg)
     {
-    	errors.add("Semantic error: line " + node.getLine());
-        //errors.add(String.format("(near line %4d, col %4d in %8s): %s", node.getLine(), node.getColumn(), proc.getName(), msg));
+    	if(SIMPLE_ERROR_MSG){
+        	errors.add("Semantic error: line " + node.getLine());
+    	} else {
+            errors.add(String.format("(near line %4d, col %4d in %8s): %s", node.getLine(), node.getColumn(), proc.getName(), msg));
+    	}
     }
 
     public void printErrorMessage()
@@ -108,7 +111,7 @@ public class Checker {
 	}
 
 
-    public void check(Program prg)
+    public Procedure check(Program prg)
     {
         program = new Procedure(this, prg);
         if( !isSuccess() )
@@ -116,6 +119,7 @@ public class Checker {
             program = null;
             printErrorMessage(1);
         }
+        return program;
     }
     
     public static String getOrderString(int num)

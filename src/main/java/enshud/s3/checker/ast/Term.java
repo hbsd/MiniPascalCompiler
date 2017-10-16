@@ -6,6 +6,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.UnknownType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class Term implements ITerm
@@ -45,10 +46,7 @@ public class Term implements ITerm
     @Override
     public void retype(IType new_type)
     {
-        if( getType().isUnknown() )
-        {
-            type = new_type;
-        }
+    	type = new_type;
         factor.retype(new_type);
     }
 
@@ -59,11 +57,11 @@ public class Term implements ITerm
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getHead().compile(codebuilder, proc, l_gen);
-    }*/
+    }
 
     @Override
     public String toString()

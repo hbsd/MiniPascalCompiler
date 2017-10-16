@@ -8,6 +8,7 @@ import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.node.INode;
 import enshud.s2.parser.parsers.IParser;
 import enshud.s2.parser.parsers.PascalParser2;
+import enshud.s3.checker.ast.Program;
 
 public class Parser {
 	/**
@@ -57,10 +58,10 @@ public class Parser {
 		this(PascalParser2.getFullParser());
 	}
 
-	public INode parse(ParserInput input) {
+	public Program parse(ParserInput input) {
 		INode root = parser.parse(input);
 		if (root.isSuccess()){
-			return root;
+			return (Program)root;
 		} else {
 			// root.println();
 			System.err.println("Syntax error: line " + root.getLine());
@@ -80,7 +81,7 @@ public class Parser {
 		}
 	}
 	
-	public INode parse(List<LexedToken> input) {
+	public Program parse(List<LexedToken> input) {
 		return parse(new ParserInput(input));
 	}
 

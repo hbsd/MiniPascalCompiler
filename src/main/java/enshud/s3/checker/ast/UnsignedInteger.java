@@ -7,6 +7,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class UnsignedInteger implements IConstant
@@ -57,7 +58,7 @@ public class UnsignedInteger implements IConstant
         return getType();
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         if(getInt() == 0)
@@ -68,7 +69,7 @@ public class UnsignedInteger implements IConstant
         {
             codebuilder.append(" LAD GR2,").append(getInt()).append(System.lineSeparator());
         }
-    }*/
+    }
 }
 
 

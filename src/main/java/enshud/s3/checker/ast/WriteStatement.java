@@ -7,6 +7,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.StringType;
+import enshud.s4.compiler.LabelGenerator;
 import enshud.s3.checker.type.RegularType;
 
 
@@ -34,7 +35,10 @@ public class WriteStatement implements IReadWriteStatement
 
             if( type instanceof StringType )
             {
-                type = ((StringType)type).getSize() == 1? RegularType.CHAR: type;
+            	if(((StringType)type).getSize() == 1)
+            	{
+            		type = RegularType.CHAR;
+            	}
                 exp.retype(type);
             }
             else if( type != RegularType.INTEGER && type != RegularType.CHAR && !type.isArrayOf(RegularType.CHAR) )
@@ -55,7 +59,7 @@ public class WriteStatement implements IReadWriteStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         for(IExpression e: getExpressions())
@@ -80,7 +84,7 @@ public class WriteStatement implements IReadWriteStatement
             }
         }
         codebuilder.append(" CALL WRTLN").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public String toString()

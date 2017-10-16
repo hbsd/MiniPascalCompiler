@@ -7,11 +7,11 @@ import java.util.Objects;
 import enshud.s3.checker.type.RegularType;
 
 
-class ParameterDeclaration
+public class ParameterDeclaration
 {
     final List<Param> params = new ArrayList<>();
 
-    class Param
+    public class Param
     {
         final String      name;
         final RegularType type;
@@ -23,6 +23,18 @@ class ParameterDeclaration
             this.type = Objects.requireNonNull(type);
             this.alignment = alignment;
         }
+        
+        public String getName() {
+			return name;
+		}
+        
+        public RegularType getType() {
+			return type;
+		}
+
+		public int getAlignment() {
+			return alignment;
+		}
     }
 
     void add(String name, RegularType type)
@@ -45,6 +57,20 @@ class ParameterDeclaration
             }
         }
         return null;
+    }
+
+    int getIndex(String name)
+    {
+    	int i = 0;
+        for(final Param p: params)
+        {
+            if( p.name.equals(name) )
+            {
+                return i;
+            }
+            ++i;
+        }
+        return -1;
     }
 
     int length()

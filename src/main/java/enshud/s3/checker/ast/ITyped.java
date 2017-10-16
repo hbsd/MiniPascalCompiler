@@ -3,9 +3,10 @@ package enshud.s3.checker.ast;
 import enshud.s3.checker.IChecker;
 import enshud.s2.parser.node.INode;
 import enshud.s3.checker.type.IType;
+import enshud.s4.compiler.ICompiler;
 
 
-public interface ITyped extends IASTNode, IChecker//, ICompiler
+public interface ITyped extends IASTNode, IChecker, ICompiler
 {
     IType getType();
     void retype(IType new_type);

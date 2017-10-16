@@ -7,6 +7,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.StringType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class AssignStatement implements IBasicStatement
@@ -103,7 +104,7 @@ public class AssignStatement implements IBasicStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getRight().compile(codebuilder, proc, l_gen);
@@ -112,7 +113,7 @@ public class AssignStatement implements IBasicStatement
         getLeft().compileForAddr(codebuilder, proc, l_gen);
         codebuilder.append(" POP GR1").append(System.lineSeparator());
         codebuilder.append(" ST GR1,0,GR2").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public String toString()

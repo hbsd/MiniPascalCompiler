@@ -6,6 +6,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 public class TailedTerm extends Term
 {
@@ -103,36 +104,34 @@ public class TailedTerm extends Term
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getTail().compile(codebuilder, proc, l_gen);
         codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
+
         getHead().compile(codebuilder, proc, l_gen);
+        codebuilder.append(" POP GR1").append(System.lineSeparator());
 
         switch( getOp() )
         {
         case MUL:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" CALL MULT").append(System.lineSeparator());
             break;
         case DIV:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" CALL DIV").append(System.lineSeparator());
             break;
         case MOD:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" CALL DIV").append(System.lineSeparator());
             codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
             break;
         case AND:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" AND GR2,GR1").append(System.lineSeparator());
             break;
         default:
             assert false;
         }
-    }*/
+    }
 
     @Override
     public void printBodyln(String indent)

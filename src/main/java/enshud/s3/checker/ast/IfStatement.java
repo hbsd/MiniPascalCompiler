@@ -6,6 +6,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class IfStatement implements IStatement
@@ -61,7 +62,7 @@ public class IfStatement implements IStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         final String label = l_gen.toString();
@@ -75,7 +76,7 @@ public class IfStatement implements IStatement
         then_statements.compile(codebuilder, proc, l_gen);
 
         codebuilder.append("F").append(label).append(" NOP; end of IF").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public String toString()

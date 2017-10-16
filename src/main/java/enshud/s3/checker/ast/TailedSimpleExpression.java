@@ -7,6 +7,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.UnknownType;
+import enshud.s4.compiler.LabelGenerator;
 
 public class TailedSimpleExpression extends SimpleExpression
 {
@@ -41,12 +42,6 @@ public class TailedSimpleExpression extends SimpleExpression
     {
         return tail;
     }
-
-    /*public void addToTail(Term term, AddOperator op)
-    {
-        this.op = op;
-        tail = new SimpleExpression(term, null, null);
-    }*/
 
     @Override
     public void retype(IType new_type)
@@ -98,32 +93,31 @@ public class TailedSimpleExpression extends SimpleExpression
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getTail().compile(codebuilder, proc, l_gen);
         codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
+
         getHead().compile(codebuilder, proc, l_gen);
+        codebuilder.append(" POP GR1").append(System.lineSeparator());
 
         switch( getOp() )
         {
         case ADD:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" ADDA GR2,GR1").append(System.lineSeparator());
             break;
         case SUB:
-            codebuilder.append(" LD GR1,GR2").append(System.lineSeparator());
-            codebuilder.append(" POP GR2").append(System.lineSeparator());
-            codebuilder.append(" SUBA GR2,GR1").append(System.lineSeparator());
+            codebuilder.append(" SUBA GR1,GR2").append(System.lineSeparator());
+            codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
             break;
         case OR:
-            codebuilder.append(" POP GR1").append(System.lineSeparator());
             codebuilder.append(" OR GR2,GR1").append(System.lineSeparator());
             break;
         default:
             assert false;
         }
-    }*/
+    }
 
     @Override
     public void printBodyln(String indent)

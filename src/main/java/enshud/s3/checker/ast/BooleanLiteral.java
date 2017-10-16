@@ -7,6 +7,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s1.lexer.LexedToken;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class BooleanLiteral implements IConstant
@@ -69,11 +70,11 @@ public class BooleanLiteral implements IConstant
         return getType();
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         codebuilder.append(" LAD GR2,").append(getBool()? "1": "0").append(System.lineSeparator());
-    }*/
+    }
 }
 
 

@@ -5,6 +5,7 @@ import java.util.Objects;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class IfElseStatement extends IfStatement
@@ -30,7 +31,7 @@ public class IfElseStatement extends IfStatement
         return null;
     }
 
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         final String label = l_gen.toString();
@@ -48,7 +49,7 @@ public class IfElseStatement extends IfStatement
         else_statements.compile(codebuilder, proc, l_gen);
 
         codebuilder.append("F").append(label).append(" NOP; end of IF").append(System.lineSeparator());
-    }*/
+    }
 
     @Override
     public String toString()

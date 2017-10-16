@@ -7,6 +7,7 @@ import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class ReadStatement implements IReadWriteStatement
@@ -61,7 +62,7 @@ public class ReadStatement implements IReadWriteStatement
         return null;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         if(getVariables().isEmpty())
@@ -90,7 +91,7 @@ public class ReadStatement implements IReadWriteStatement
                 assert false: "type error";
             }
         }
-    }*/
+    }
 
     @Override
     public String toString()

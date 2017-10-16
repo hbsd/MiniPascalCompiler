@@ -8,6 +8,7 @@ import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.type.IType;
 import enshud.s3.checker.type.RegularType;
 import enshud.s3.checker.type.StringType;
+import enshud.s4.compiler.LabelGenerator;
 
 
 public class StringLiteral implements IConstant
@@ -29,7 +30,7 @@ public class StringLiteral implements IConstant
 
     public int length()
     {
-        return toString().length();
+        return toString().length() - 2;
     }
 
     @Override
@@ -53,10 +54,7 @@ public class StringLiteral implements IConstant
     @Override
     public void retype(IType new_type)
     {
-        if( type instanceof StringType )
-        {
-            type = new_type;
-        }
+    	type = new_type;
     }
 
     @Override
@@ -65,12 +63,16 @@ public class StringLiteral implements IConstant
         return type;
     }
     
-    /*@Override
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        codebuilder.append(" LAD GR2,=").append(toString()).append(System.lineSeparator());
-        if(type != RegularType.CHAR)
+        if(type == RegularType.CHAR)
         {
+        	codebuilder.append(" LAD GR2,").append((int)toString().charAt(1)).append(System.lineSeparator());
+        }
+        else
+        {
+        	codebuilder.append(" LAD GR2,=").append(toString()).append(System.lineSeparator());
             if(length() == 0)
             {
                 codebuilder.append(" XOR GR1,GR1").append(System.lineSeparator());
@@ -80,7 +82,7 @@ public class StringLiteral implements IConstant
                 codebuilder.append(" LAD GR1,").append(length()).append(System.lineSeparator());
             }
         }
-    }*/
+    }
 }
 
 
