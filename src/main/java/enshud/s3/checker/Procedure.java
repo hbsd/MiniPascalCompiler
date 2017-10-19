@@ -3,17 +3,17 @@ package enshud.s3.checker;
 import java.util.List;
 import java.util.Objects;
 
+import enshud.pascal.ast.*;
+import enshud.pascal.type.ArrayType;
+import enshud.pascal.type.IType;
+import enshud.pascal.type.RegularType;
+import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.ParameterDeclaration.Param;
 
 import java.util.ArrayList;
 
 import enshud.s3.checker.VariableDeclaration.Variable;
-import enshud.s3.checker.ast.*;
-import enshud.s3.checker.type.ArrayType;
-import enshud.s3.checker.type.IType;
-import enshud.s3.checker.type.RegularType;
-import enshud.s3.checker.type.UnknownType;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -176,9 +176,9 @@ public class Procedure
         }
     }
 
-    private void checkVarDecls(List<enshud.s3.checker.ast.VariableDeclaration> vars, Checker checker)
+    private void checkVarDecls(List<enshud.pascal.ast.VariableDeclaration> vars, Checker checker)
     {
-        for(final enshud.s3.checker.ast.VariableDeclaration decl: vars)
+        for(final enshud.pascal.ast.VariableDeclaration decl: vars)
         {
             if( decl.getType() instanceof ArrayType )
             {

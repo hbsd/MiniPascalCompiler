@@ -3,12 +3,12 @@ package enshud.s2.parser;
 import java.util.List;
 import java.util.Objects;
 
+import enshud.pascal.PascalParser;
+import enshud.pascal.ast.Program;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.node.INode;
 import enshud.s2.parser.parsers.IParser;
-import enshud.s2.parser.parsers.PascalParser2;
-import enshud.s3.checker.ast.Program;
 
 public class Parser {
 	/**
@@ -55,7 +55,7 @@ public class Parser {
 	}
 
 	public Parser() {
-		this(PascalParser2.getFullParser());
+		this(PascalParser.getFullParser());
 	}
 
 	public Program parse(ParserInput input) {

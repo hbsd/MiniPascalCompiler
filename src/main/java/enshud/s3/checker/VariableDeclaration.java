@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import enshud.s3.checker.type.IType;
+import enshud.pascal.type.IType;
 
 
 public class VariableDeclaration

@@ -7,12 +7,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import enshud.casl.CaslSimulator;
+import enshud.pascal.ast.Program;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
-import enshud.s3.checker.ast.Program;
 
 public class Compiler {
 	/**
@@ -20,7 +20,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		new Lexer().run("data/pas/test.pas", "tmp/out.ts");
+		new Lexer().run("test.pas", "tmp/out.ts");
 		new Compiler().run("tmp/out.ts", "tmp/out.cas");
 		//new Compiler().run("data/ts/normal03.ts", "tmp/out.cas");
 

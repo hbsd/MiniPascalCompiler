@@ -3,11 +3,11 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 
+import enshud.pascal.ast.IASTNode;
+import enshud.pascal.ast.Program;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
-import enshud.s3.checker.ast.IASTNode;
-import enshud.s3.checker.ast.Program;
 
 public class Checker {
 	/**
