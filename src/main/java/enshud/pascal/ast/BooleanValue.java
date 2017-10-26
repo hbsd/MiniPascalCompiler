@@ -1,7 +1,7 @@
 package enshud.pascal.ast;
 
 import enshud.pascal.type.IType;
-import enshud.pascal.type.RegularType;
+import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
@@ -15,6 +15,16 @@ public enum BooleanValue implements IConstant
         {
             return false;
         }
+        @Override
+        public BooleanValue not()
+        {
+            return TRUE;
+        }
+        @Override
+        public int getInt()
+        {
+            return 0;
+        }
     },
     TRUE {
         @Override
@@ -22,20 +32,34 @@ public enum BooleanValue implements IConstant
         {
             return true;
         }
+        @Override
+        public BooleanValue not()
+        {
+            return FALSE;
+        }
+        @Override
+        public int getInt()
+        {
+            return 1;
+        }
     };
     
     @Override
     public IType getType()
     {
-        return RegularType.BOOLEAN;
+        return BasicType.BOOLEAN;
     }
-
+    
+    public abstract boolean getBool();
+    public abstract int getInt();
+    public abstract BooleanValue not();
+    
     @Override
     public int getLine()
     {
         throw new UnsupportedOperationException();
     }
-
+    
     @Override
     public int getColumn()
     {
@@ -47,7 +71,7 @@ public enum BooleanValue implements IConstant
     {
         throw new UnsupportedOperationException();
     }
-
+    
     @Override
     public IType check(Procedure proc, Checker checker)
     {
@@ -59,8 +83,5 @@ public enum BooleanValue implements IConstant
     {
         throw new UnsupportedOperationException();
     }
-
-    public abstract boolean getBool();
 }
-
 

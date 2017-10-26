@@ -10,7 +10,7 @@ import enshud.pascal.type.IType;
 public class VariableDeclaration
 {
     final List<Variable> vars = new ArrayList<>();
-
+    
     public class Variable
     {
         final String name;
@@ -31,7 +31,7 @@ public class VariableDeclaration
         {
             return alignment;
         }
-
+        
         public Variable(String name, IType type, int alignment)
         {
             this.name = Objects.requireNonNull(name);
@@ -39,42 +39,42 @@ public class VariableDeclaration
             this.alignment = alignment;
         }
     }
-
+    
     void add(String name, IType type)
     {
         vars.add(new Variable(name, type, getAllSize()));
     }
-
+    
     Variable get(int num)
     {
         return vars.get(num);
     }
-
+    
     Variable get(String name)
     {
-        for(final Variable p: vars)
+        for (final Variable p: vars)
         {
-            if( p.name.equals(name) )
+            if (p.name.equals(name))
             {
                 return p;
             }
         }
         return null;
     }
-
+    
     int getSize(int index)
     {
         return vars.get(index).type.getSize();
     }
-
+    
     int length()
     {
         return vars.size();
     }
-
+    
     int getAllSize()
     {
-        if(vars.isEmpty())
+        if (vars.isEmpty())
         {
             return 0;
         }
@@ -83,7 +83,7 @@ public class VariableDeclaration
             return vars.get(length() - 1).alignment + getSize(length() - 1);
         }
     }
-
+    
     boolean exists(String name)
     {
         return get(name) != null;

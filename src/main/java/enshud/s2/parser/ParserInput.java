@@ -6,44 +6,50 @@ import java.util.Objects;
 
 import enshud.s1.lexer.LexedToken;
 
-public class ParserInput {
-	List<LexedToken> list;
-	int index;
 
-	public ParserInput(List<LexedToken> list) {
-		this.list = Objects.requireNonNull(list);
-		this.index = 0;
-	}
+public class ParserInput
+{
+    List<LexedToken> list;
+    int              index;
 
-	public List<LexedToken> getList() {
-		return list;
-	}
+    public ParserInput(List<LexedToken> list)
+    {
+        this.list = Objects.requireNonNull(list);
+        this.index = 0;
+    }
 
-	public int size() {
-		return list.size();
-	}
+    public List<LexedToken> getList() {
+        return list;
+    }
 
-	public boolean isEmpty() {
-		return index >= list.size();
-	}
+    public int size() {
+        return list.size();
+    }
 
-	public LexedToken getFront() {
-		if (!isEmpty()) {
-			return list.get(index);
-		} else {
-			throw new NoSuchElementException();
-		}
-	}
+    public boolean isEmpty() {
+        return index >= list.size();
+    }
 
-	public void popFront() {
-		++index;
-	}
+    public LexedToken getFront() {
+        if (!isEmpty())
+        {
+            return list.get(index);
+        }
+        else
+        {
+            throw new NoSuchElementException();
+        }
+    }
 
-	public int getIndex() {
-		return index;
-	}
+    public void popFront() {
+        ++index;
+    }
 
-	public void setIndex(int index) {
-		this.index = index;
-	}
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
 }

@@ -4,53 +4,54 @@ public class StringType implements IType
 {
     public static final StringType CHAR = new StringType(1);
     
-    final int size;
-
+    final int                      size;
+    
     public StringType(int size)
     {
         this.size = size;
     }
     
-    public static boolean isCharOrCharArray(IType type)
+    public static boolean isCharOrCharArray(IType bype)
     {
-        return type == RegularType.CHAR || type.isArrayOf(RegularType.CHAR);
+        return bype == BasicType.CHAR || bype.isArrayOf(BasicType.CHAR);
     }
-
+    
+    @Override
     public int getSize()
     {
         return size;
     }
-
+    
     @Override
-    public RegularType getRegularType()
+    public BasicType getBasicType()
     {
-        return RegularType.CHAR;
+        return BasicType.CHAR;
     }
-
+    
     @Override
-    public boolean isArrayOf(RegularType rtype)
+    public boolean isArrayOf(BasicType rtype)
     {
-        return rtype == RegularType.CHAR;
+        return rtype == BasicType.CHAR;
     }
-
+    
     @Override
     public boolean isArrayType()
     {
         return true;
     }
-
+    
     @Override
-    public boolean isRegularType()
+    public boolean isBasicType()
     {
         return false;
     }
-
+    
     @Override
     public boolean isUnknown()
     {
         return false;
     }
-
+    
     @Override
     public String toString()
     {

@@ -7,33 +7,33 @@ import java.util.NoSuchElementException;
 public class LabelGenerator implements Iterator<String>
 {
     final StringBuilder builder;
-
+    
     public LabelGenerator()
     {
         builder = new StringBuilder("A");
     }
-
+    
     @Override
     public boolean hasNext()
     {
         return builder.length() != 8 || '9' != builder.charAt(builder.length() - 1);
     }
-
+    
     @Override
     public String next()
     {
         final char c = builder.charAt(builder.length() - 1);
-        if(!hasNext())
+        if (!hasNext())
         {
             throw new NoSuchElementException();
         }
-        if( c == '9' )
+        if (c == '9')
         {
             builder.append('A');
         }
         else
         {
-            char next_c = ((c >= 'A' && c <= 'Y') || (c >= '0' && c <= '8'))? (char)((int)c + 1): c == 'Z'? '0': '_';
+            final char next_c = ((c >= 'A' && c <= 'Y') || (c >= '0' && c <= '8'))? (char)(c + 1): c == 'Z'? '0': '_';
             builder.setCharAt(builder.length() - 1, next_c);
         }
         return builder.toString();
@@ -43,7 +43,7 @@ public class LabelGenerator implements Iterator<String>
     {
         builder.delete(0, builder.length());
     }
-
+    
     @Override
     public String toString()
     {

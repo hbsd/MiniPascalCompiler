@@ -8,7 +8,7 @@ public class ParserPair
 {
     final IParser look;
     final IParser parser;
-
+    
     public ParserPair(IParser look, IParser parser)
     {
         this.look = Parsers.test(look);

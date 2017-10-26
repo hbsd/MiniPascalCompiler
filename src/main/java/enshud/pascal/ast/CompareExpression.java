@@ -3,77 +3,79 @@ package enshud.pascal.ast;
 import java.util.Objects;
 
 import enshud.pascal.type.IType;
-import enshud.pascal.type.RegularType;
+import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
+import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
+
 public class CompareExpression extends Expression
 {
-    final CompareOperator  op;
-    final SimpleExpression right;
-
+    final CompareOperator op;
+    SimpleExpression      right;
+    
     public CompareExpression(SimpleExpression left, CompareOperator op, SimpleExpression right)
     {
         super(left);
         this.op = Objects.requireNonNull(op);
         this.right = Objects.requireNonNull(right);
-        this.type = RegularType.BOOLEAN;
+        this.type = BasicType.BOOLEAN;
     }
-
+    
     public SimpleExpression getRight()
     {
         return right;
     }
-
+    
     public CompareOperator getOp()
     {
         return op;
     }
-
+    
     @Override
     public void retype(IType new_type)
     {
         super.retype(new_type);
         right.retype(new_type);
     }
-
+    
     @Override
     public IType check(Procedure proc, Checker checker)
     {
         IType left_type = getLeft().check(proc, checker);
         IType right_type = getRight().check(proc, checker);
-
-        if( left_type.isUnknown() && !right_type.isUnknown() )
+        
+        if (left_type.isUnknown() && !right_type.isUnknown())
         {
             left_type = right_type;
             getLeft().retype(right_type);
         }
-        else if( !left_type.isUnknown() && right_type.isUnknown() )
+        else if (!left_type.isUnknown() && right_type.isUnknown())
         {
             right_type = left_type;
             getRight().retype(left_type);
         }
-        else if( left_type.isUnknown() && right_type.isUnknown() )
+        else if (left_type.isUnknown() && right_type.isUnknown())
         {
-        	return type;
+            return type;
         }
         else
         {
-            if( left_type instanceof StringType && StringType.isCharOrCharArray(right_type) )
+            if (left_type instanceof StringType && StringType.isCharOrCharArray(right_type))
             {
                 left_type = right_type;
                 getLeft().retype(right_type);
             }
-            if( right_type instanceof StringType && StringType.isCharOrCharArray(left_type) )
+            if (right_type instanceof StringType && StringType.isCharOrCharArray(left_type))
             {
                 right_type = left_type;
                 getRight().retype(left_type);
             }
         }
-
-        if( !left_type.equals(right_type) )
+        
+        if (!left_type.equals(right_type))
         {
             checker.addErrorMessage(
                 proc, this,
@@ -84,19 +86,59 @@ public class CompareExpression extends Expression
     }
     
     @Override
+    public IConstant preeval(Procedure proc, Context context)
+    {
+        IConstant l = left.preeval(proc, context);
+        if (l != null)
+        {
+            left = new SimpleExpression(new Term(l));
+        }
+        
+        IConstant r = right.preeval(proc, context);
+        if (r != null)
+        {
+            right = new SimpleExpression(new Term(r));
+        }
+        
+        if (l == null || r == null)
+        {
+            return null;
+        }
+        else
+        {
+            if (l instanceof IntegerLiteral)
+            {
+                int lv = ((IntegerLiteral)l).getInt();
+                int rv = ((IntegerLiteral)r).getInt();
+                return new BooleanLiteral(op.eval(lv, rv));
+            }
+            else if (l instanceof BooleanLiteral)
+            {
+                int lv = ((BooleanLiteral)l).val.getInt();
+                int rv = ((BooleanLiteral)r).val.getInt();
+                return new BooleanLiteral(op.eval(lv, rv));
+            }
+            else
+            {
+                assert false;
+                return null;
+            }
+        }
+    }
+    
+    @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         getLeft().compile(codebuilder, proc, l_gen);
         codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
-
+        
         getRight().compile(codebuilder, proc, l_gen);
         codebuilder.append(" POP GR1").append(System.lineSeparator());
-
-        switch(getOp())
+        
+        switch (getOp())
         {
-        case EQUAL:
-        {
-            String label = l_gen.next();
+        case EQUAL: {
+            final String label = l_gen.next();
             codebuilder.append(" CPL GR2,GR1   ; v =").append(System.lineSeparator());
             codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
             codebuilder.append(" XOR GR2,GR2").append(System.lineSeparator());
@@ -105,9 +147,8 @@ public class CompareExpression extends Expression
             codebuilder.append("Q").append(label).append(" NOP    ; ^ =").append(System.lineSeparator());
             break;
         }
-        case NOTEQUAL:
-        {
-            String label = l_gen.next();
+        case NOTEQUAL: {
+            final String label = l_gen.next();
             codebuilder.append(" CPL GR2,GR1   ; v <>").append(System.lineSeparator());
             codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
             codebuilder.append(" LAD GR2,1").append(System.lineSeparator());
@@ -126,7 +167,7 @@ public class CompareExpression extends Expression
             codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
             codebuilder.append(" XOR GR2,=1  ;").append(System.lineSeparator());
             break;
-
+        
         case GREAT:
             codebuilder.append(" SUBA GR2,GR1; >").append(System.lineSeparator());
             codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
@@ -139,7 +180,7 @@ public class CompareExpression extends Expression
             break;
         }
     }
-
+    
     @Override
     public void printBodyln(String indent)
     {

@@ -1,12 +1,12 @@
 package enshud.pascal.type;
 
 
-public enum RegularType implements IType
+public enum BasicType implements IType
 {
     INTEGER,
     CHAR,
     BOOLEAN,
-
+    
     UNKNOWN {
         @Override
         public boolean isUnknown()
@@ -20,42 +20,41 @@ public enum RegularType implements IType
     {
         return 1;
     }
-
+    
     @Override
-    public final RegularType getRegularType()
+    public final BasicType getBasicType()
     {
         return this;
     }
-
+    
     @Override
-    public final boolean isArrayOf(RegularType rtype)
+    public final boolean isArrayOf(BasicType btype)
     {
         return false;
     }
-
+    
     @Override
-    public final boolean isRegularType()
+    public final boolean isBasicType()
     {
         return true;
     }
-
+    
     @Override
     public boolean equals(IType rval)
     {
-        return rval == this || rval == RegularType.UNKNOWN || rval == UnknownType.UNKNOWN;
+        return rval == this || rval == BasicType.UNKNOWN || rval == UnknownType.UNKNOWN;
     }
-
+    
     @Override
     public boolean isArrayType()
     {
         return false;
     }
-
+    
     @Override
     public boolean isUnknown()
     {
         return false;
     }
 }
-
 

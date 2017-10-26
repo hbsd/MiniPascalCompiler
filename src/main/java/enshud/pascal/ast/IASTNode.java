@@ -10,7 +10,7 @@ public interface IASTNode extends INode
     {
         return true;
     }
-
+    
     @Override
     default boolean isFailure()
     {

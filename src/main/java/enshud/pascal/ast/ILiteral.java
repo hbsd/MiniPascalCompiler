@@ -15,4 +15,3 @@ public interface ILiteral extends IASTNode
     }
 }
 
-

@@ -14,15 +14,15 @@ public interface IParserNode extends INode
         System.out.print(": ");
         INode.printGreenln(msg != null? msg: toString());
     }
-
+    
     LexedToken getToken();
-
+    
     @Override
     default int getLine()
     {
         return getToken().getLine();
     }
-
+    
     @Override
     default int getColumn()
     {

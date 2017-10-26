@@ -11,38 +11,51 @@ import enshud.s2.parser.ParserInput;
 import enshud.s2.parser.node.INode;
 import enshud.s2.parser.node.basic.SequenceNode;
 
-class SequenceParser implements IParser {
-	private final IParser[] parsers;
 
-	SequenceParser(IParser[] parsers) {
-		this.parsers = Objects.requireNonNull(parsers);
-	}
-
-	@Override
-	public Set<TokenType> getFirst() {
-		return parsers[0].getFirst();
-	}
-
-	@Override
-	public INode parse(ParserInput input) {
-		final int save = input.getIndex();
-		final List<INode> childs = new ArrayList<>();
-
-		IParser.verbose("(&");
-
-		for (final IParser parser : parsers) {
-			final INode n = parser.parse(input);
-			if (n.isSuccess()) {
-				childs.add(n);
-			} else {
-				IParser.verboseln("!)");
-				input.setIndex(save);
-				return n;
-			}
-
-		}
-		IParser.verboseln(")");
-
-		return new SequenceNode(childs);
-	}
+class SequenceParser implements IParser
+{
+    private final IParser[] parsers;
+    
+    SequenceParser(IParser[] parsers)
+    {
+        this.parsers = Objects.requireNonNull(parsers);
+        if (parsers.length == 0)
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    @Override
+    public Set<TokenType> getFirstSet()
+    {
+        return parsers[0].getFirstSet();
+    }
+    
+    @Override
+    public INode parse(ParserInput input)
+    {
+        final int save = input.getIndex();
+        final List<INode> childs = new ArrayList<>();
+        
+        IParser.verbose("(&");
+        
+        for (final IParser parser: parsers)
+        {
+            final INode n = parser.parse(input);
+            if (n.isSuccess())
+            {
+                childs.add(n);
+            }
+            else
+            {
+                IParser.verboseln("!)");
+                input.setIndex(save);
+                return n;
+            }
+            
+        }
+        IParser.verboseln(")");
+        
+        return new SequenceNode(childs);
+    }
 }

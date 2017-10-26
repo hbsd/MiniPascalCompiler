@@ -10,21 +10,22 @@ import enshud.s2.parser.node.INode;
 public interface IParser
 {
     INode parse(ParserInput input);
-    Set<TokenType> getFirst();
-
+    
+    Set<TokenType> getFirstSet();
+    
     boolean enable_verbose = false;
     
     static void verboseln(String msg)
     {
-        if( enable_verbose )
+        if (enable_verbose)
         {
             System.out.println(msg);
         }
     }
-
+    
     static void verbose(String msg)
     {
-        if( enable_verbose )
+        if (enable_verbose)
         {
             System.out.print(msg);
         }

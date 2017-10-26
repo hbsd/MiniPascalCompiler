@@ -12,11 +12,11 @@ public class UnknownType implements IType
     {
         return -1;
     }
-
+    
     @Override
-    public RegularType getRegularType()
+    public BasicType getBasicType()
     {
-        return RegularType.UNKNOWN;
+        return BasicType.UNKNOWN;
     }
     
     @Override
@@ -24,9 +24,9 @@ public class UnknownType implements IType
     {
         return false;
     }
-
+    
     @Override
-    public boolean isArrayOf(RegularType rtype)
+    public boolean isArrayOf(BasicType btype)
     {
         return true;
     }
@@ -36,9 +36,9 @@ public class UnknownType implements IType
     {
         return true;
     }
-
+    
     @Override
-    public boolean isRegularType()
+    public boolean isBasicType()
     {
         return true;
     }
@@ -48,7 +48,7 @@ public class UnknownType implements IType
     {
         return true;
     }
-
+    
     @Override
     public String toString()
     {

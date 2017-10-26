@@ -6,4 +6,3 @@ public interface IFactor extends ITyped
     // Empty
 }
 
-

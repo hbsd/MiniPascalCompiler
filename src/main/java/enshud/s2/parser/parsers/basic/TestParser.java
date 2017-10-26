@@ -16,24 +16,25 @@ import enshud.s2.parser.node.INode;
 class TestParser implements IParser
 {
     final IParser parser;
-
+    
     TestParser(IParser parser)
     {
         this.parser = Objects.requireNonNull(parser);
     }
     
     @Override
-    public Set<TokenType> getFirst() {
-    	return parser.getFirst();
+    public Set<TokenType> getFirstSet()
+    {
+        return parser.getFirstSet();
     }
-
+    
     @Override
     public INode parse(ParserInput input)
     {
         final int save = input.getIndex();
-
+        
         final INode n = parser.parse(input);
-        if( n.isSuccess() )
+        if (n.isSuccess())
         {
             input.setIndex(save);
         }

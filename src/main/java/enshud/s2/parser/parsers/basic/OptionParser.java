@@ -14,28 +14,29 @@ import enshud.s2.parser.node.basic.EmptyNode;
 class OptionParser implements IParser
 {
     final IParser parser;
-
+    
     OptionParser(IParser parser)
     {
         this.parser = Parsers.rep(0, 1, parser);
     }
     
     @Override
-    public Set<TokenType> getFirst() {
-    	return parser.getFirst();
+    public Set<TokenType> getFirstSet()
+    {
+        return parser.getFirstSet();
     }
-
+    
     @Override
     public INode parse(ParserInput input)
     {
         final INode node = parser.parse(input);
-        if( node.isFailure() )
+        if (node.isFailure())
         {
             return node;
         }
-
+        
         final SequenceNode n = (SequenceNode)node;
-
+        
         return n.isEmpty()? new EmptyNode(): n.get(0);
     }
 }

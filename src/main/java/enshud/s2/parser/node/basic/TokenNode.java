@@ -9,39 +9,38 @@ import enshud.s1.lexer.TokenType;
 public class TokenNode implements IParserNode
 {
     final LexedToken token;
-
+    
     public TokenNode(LexedToken token)
     {
         this.token = Objects.requireNonNull(token);
     }
-
+    
     @Override
     public LexedToken getToken()
     {
         return token;
     }
-
+    
     public String getString()
     {
         return token.getString();
     }
-
+    
     public TokenType getType()
     {
         return token.getType();
     }
-
+    
     @Override
     public boolean isSuccess()
     {
         return true;
     }
-
+    
     @Override
     public String toString()
     {
         return "" + token;
     }
 }
-
 

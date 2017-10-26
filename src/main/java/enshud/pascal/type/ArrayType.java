@@ -7,75 +7,76 @@ import enshud.pascal.ast.SignedInteger;
 
 public class ArrayType implements IType
 {
-    public static final ArrayType CHAR = new ArrayType(RegularType.CHAR, 0, 0);
-
-    final RegularType type;
-    final int         min;
-    final int         max;
-
-    public ArrayType(RegularType type, int min, int max)
+    public static final ArrayType CHAR = new ArrayType(BasicType.CHAR, 0, 0);
+    
+    final BasicType               type;
+    final int                     min;
+    final int                     max;
+    
+    public ArrayType(BasicType type, int min, int max)
     {
-        assert type != RegularType.UNKNOWN: "no Unknown";
+        assert type != BasicType.UNKNOWN: "no Unknown";
         this.type = Objects.requireNonNull(type);
         this.min = Objects.requireNonNull(min);
         this.max = Objects.requireNonNull(max);
     }
-
-    public ArrayType(RegularType type, SignedInteger min, SignedInteger max)
+    
+    public ArrayType(BasicType type, SignedInteger min, SignedInteger max)
     {
         this(type, min.getInt(), max.getInt());
     }
-
+    
     @Override
-    public RegularType getRegularType()
+    public BasicType getBasicType()
     {
         return type;
     }
-
+    
     public int getMin()
     {
         return min;
     }
-
+    
     public int getMax()
     {
         return max;
     }
-
+    
+    @Override
     public int getSize()
     {
         return max - min + 1;
     }
-
+    
     @Override
     public String toString()
     {
         return "[" + min + ".." + max + "] of " + type;
     }
-
+    
     @Override
     public boolean equals(IType rval)
     {
-        if( rval == null )
+        if (rval == null)
         {
             return false;
         }
-        if( this == rval || rval instanceof UnknownType )
+        if (this == rval || rval instanceof UnknownType)
         {
             return true;
         }
-        if( rval instanceof ArrayType )
+        if (rval instanceof ArrayType)
         {
             final ArrayType rv = (ArrayType)rval;
             return type == rv.type && getSize() == rv.getSize();
         }
         return false;
     }
-
+    
     @Override
-    public boolean isArrayOf(RegularType rtype)
+    public boolean isArrayOf(BasicType btype)
     {
-        return type.equals(rtype);
+        return type.equals(btype);
     }
     
     @Override
@@ -83,9 +84,9 @@ public class ArrayType implements IType
     {
         return true;
     }
-
+    
     @Override
-    public final boolean isRegularType()
+    public final boolean isBasicType()
     {
         return false;
     }
@@ -96,5 +97,4 @@ public class ArrayType implements IType
         return false;
     }
 }
-
 

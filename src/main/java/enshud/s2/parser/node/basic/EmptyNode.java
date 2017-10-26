@@ -10,18 +10,17 @@ public class EmptyNode implements IParserNode
     {
         return true;
     }
-
+    
     @Override
     public LexedToken getToken()
     {
         return LexedToken.DUMMY;
     }
-
+    
     @Override
     public String toString()
     {
         return "";
     }
 }
-
 

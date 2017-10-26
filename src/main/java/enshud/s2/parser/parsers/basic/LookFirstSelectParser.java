@@ -15,58 +15,64 @@ import enshud.s2.parser.parsers.IParser;
 public class LookFirstSelectParser implements IParser
 {
     final IParser[] parsers;
-
+    
     public LookFirstSelectParser(IParser[] parsers)
     {
         this.parsers = Objects.requireNonNull(parsers);
-        
-        int len = 0;
-        for(IParser p: parsers)
-    	{
-    		len += p.getFirst().size();
-    	}
-        if(getFirst().size() < len)
+        if (parsers.length == 0)
         {
-        	System.err.println("Not LL(1): ");
-        	for(IParser p: parsers)
-        	{
-        		System.err.println("\t" + p);
-        	}
+            throw new IllegalArgumentException();
+        }
+        
+        // check this is LL(1)
+        int len = 0;
+        for (final IParser p: parsers)
+        {
+            len += p.getFirstSet().size();
+        }
+        if (getFirstSet().size() < len)
+        {
+            System.err.println("Not LL(1): ");
+            for (final IParser p: parsers)
+            {
+                System.err.println("\t" + p);
+            }
         }
     }
     
     @Override
-    public Set<TokenType> getFirst() {
-    	Set<TokenType> set = new HashSet<>();
-    	for(IParser p: parsers)
-    	{
-    		set.addAll(p.getFirst());
-    	}
-    	return set;
+    public Set<TokenType> getFirstSet()
+    {
+        final Set<TokenType> set = new HashSet<>();
+        for (final IParser p: parsers)
+        {
+            set.addAll(p.getFirstSet());
+        }
+        return set;
     }
-
+    
     @Override
     public INode parse(ParserInput input)
     {
-        for(IParser p: parsers)
+        for (final IParser p: parsers)
         {
-        	TokenType next = input.getFront().getType();
-            if( p.getFirst().contains(next) )
+            final TokenType next = input.getFront().getType();
+            if (p.getFirstSet().contains(next))
             {
                 return p.parse(input);
             }
         }
-
-        if( !input.isEmpty() )
+        
+        if (!input.isEmpty())
         {
-            LexedToken tk = input.getFront();
+            final LexedToken tk = input.getFront();
             return new FailureNode(tk, "Selection Not Found.");
         }
         else
         {
             return new FailureNode("Selection Not Found.");
         }
-
+        
     }
-
+    
 }

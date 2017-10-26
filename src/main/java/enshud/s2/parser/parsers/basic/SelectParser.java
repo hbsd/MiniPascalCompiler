@@ -14,38 +14,43 @@ import enshud.s2.parser.node.INode;
 class SelectParser implements IParser
 {
     final IParser[] parsers;
-
+    
     SelectParser(IParser[] parsers)
     {
         this.parsers = Objects.requireNonNull(parsers);
+        if (parsers.length == 0)
+        {
+            throw new IllegalArgumentException();
+        }
     }
     
     @Override
-    public Set<TokenType> getFirst() {
-    	Set<TokenType> set = new HashSet<>();
-    	for(IParser p: parsers)
-    	{
-    		set.addAll(p.getFirst());
-    	}
-    	return set;
+    public Set<TokenType> getFirstSet()
+    {
+        final Set<TokenType> set = new HashSet<>();
+        for (final IParser p: parsers)
+        {
+            set.addAll(p.getFirstSet());
+        }
+        return set;
     }
-
+    
     @Override
     public INode parse(ParserInput input)
     {
         IParser.verbose("(|");
         INode n = null; // everytime rewritten, won't be null
-        for(final IParser parser: parsers)
+        for (final IParser parser: parsers)
         {
             n = parser.parse(input);
-            if( n.isSuccess() )
+            if (n.isSuccess())
             {
                 IParser.verbose(")");
                 return n;
             }
         }
         assert n != null;
-
+        
         IParser.verboseln("!)");
         return n;
     }

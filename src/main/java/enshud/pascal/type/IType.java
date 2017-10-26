@@ -3,17 +3,20 @@ package enshud.pascal.type;
 public interface IType
 {
     int getSize();
-    RegularType getRegularType();
-
+    
+    BasicType getBasicType();
+    
     default boolean equals(IType rval)
     {
         return this == rval;
     }
-
-    boolean isArrayOf(RegularType rtype);
+    
+    boolean isArrayOf(BasicType btype);
+    
     boolean isArrayType();
-    boolean isRegularType();
+    
+    boolean isBasicType();
+    
     boolean isUnknown();
 }
-
 

@@ -9,11 +9,10 @@ public class SuccessNode extends SingleNode
     {
         super(child);
     }
-
+    
     public SuccessNode()
     {
         super();
     }
 }
-
 

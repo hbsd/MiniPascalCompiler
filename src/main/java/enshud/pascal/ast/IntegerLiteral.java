@@ -5,53 +5,61 @@ import java.util.Objects;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
 import enshud.pascal.type.IType;
-import enshud.pascal.type.RegularType;
-import enshud.s2.parser.node.basic.TokenNode;
+import enshud.s1.lexer.LexedToken;
+import enshud.pascal.type.BasicType;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class UnsignedInteger implements IConstant
+public class IntegerLiteral implements IConstant
 {
-    final TokenNode num;
-
-    public UnsignedInteger(TokenNode num)
+    int             num;
+    final LexedToken token;
+    
+    public IntegerLiteral(LexedToken token)
     {
-        this.num = Objects.requireNonNull(num);
+        this.num = Integer.parseInt(token.getString());
+        this.token = Objects.requireNonNull(token);
     }
-
+    
+    IntegerLiteral(int num)
+    {
+        this.num = num;
+        this.token = LexedToken.DUMMY;
+    }
+    
     public int getInt()
     {
-        return Integer.parseInt(num.getString());
+        return num;
     }
     
     @Override
     public IType getType()
     {
-        return RegularType.INTEGER;
+        return BasicType.INTEGER;
     }
-
+    
     @Override
     public int getLine()
     {
-        return num.getLine();
+        return token.getLine();
     }
-
+    
     @Override
     public int getColumn()
     {
-        return num.getColumn();
+        return token.getColumn();
     }
-
+    
     @Override
     public String toString()
     {
-        return num.getString();
+        return token.getString();
     }
     
     @Override
     public void retype(IType new_type)
     {}
-
+    
     @Override
     public IType check(Procedure proc, Checker checker)
     {
@@ -61,7 +69,7 @@ public class UnsignedInteger implements IConstant
     @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        if(getInt() == 0)
+        if (getInt() == 0)
         {
             codebuilder.append(" XOR GR2,GR2").append(System.lineSeparator());
         }
@@ -71,5 +79,4 @@ public class UnsignedInteger implements IConstant
         }
     }
 }
-
 

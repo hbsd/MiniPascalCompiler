@@ -6,4 +6,3 @@ public interface IBasicStatement extends IStatement
     // Empty
 }
 
-

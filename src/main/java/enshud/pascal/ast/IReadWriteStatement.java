@@ -6,4 +6,3 @@ public interface IReadWriteStatement extends IBasicStatement
     // Empty
 }
 
-

@@ -55,31 +55,31 @@ public enum TokenType
     SIDENTIFIER(43, "[a-zA-Z][a-zA-Z0-9]*"),
     SCONSTANT(44, "[0-9]+"),
     SSTRING(45, "'[^'$]+'"),
-
+    
     SSPACE(-1, "( |\\t|$)+"),
     SCOMMENTBEG(-2, "\\{"),
     SCOMMENTEND(-3, "\\}"),
-
+    
     SUNKNOWN(-4, ".");
-
+    
     private int     id;
     private Pattern pattern;
-
+    
     TokenType(int id, String pattern)
     {
         this.id = id;
         this.pattern = Pattern.compile("^(" + pattern + ")");
     }
-
+    
     int getId()
     {
         return id;
     }
-
+    
     Token lex(String input)
     {
         final Matcher m = pattern.matcher(input);
-        if( m.find() )
+        if (m.find())
         {
             final String str = m.group();
             return new Token(str, this);
@@ -89,25 +89,25 @@ public enum TokenType
             return null;
         }
     }
-
+    
     static Token lexOneToken(String input)
     {
-        for(final TokenType type: TokenType.values())
+        for (final TokenType type: TokenType.values())
         {
             final Token token = type.lex(input);
-            if( token != null )
+            if (token != null)
             {
                 return token;
             }
         }
         return new Token(input.substring(0, 1), SUNKNOWN);
     }
-
+    
     static TokenType getById(int id)
     {
-        for(TokenType type: values())
+        for (final TokenType type: values())
         {
-            if( type.getId() == id )
+            if (type.getId() == id)
             {
                 return type;
             }
@@ -115,5 +115,4 @@ public enum TokenType
         return null;
     }
 }
-
 

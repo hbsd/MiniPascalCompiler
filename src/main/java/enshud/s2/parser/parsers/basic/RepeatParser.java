@@ -17,10 +17,10 @@ class RepeatParser implements IParser
     private final IParser parser;
     private final int     beg;
     private final int     end;
-
+    
     RepeatParser(int beg, int end, IParser parser)
     {
-        if( beg < 0 || (end >= 0 && beg > end) )
+        if (beg < 0 || (end >= 0 && beg > end))
         {
             throw new IllegalArgumentException("beg >= 0 && (end < 0 || beg <= end)");
         }
@@ -28,21 +28,23 @@ class RepeatParser implements IParser
         this.beg = beg;
         this.end = end;
     }
-
+    
     RepeatParser(int beg, IParser parser)
     {
         this(beg, -1, parser);
     }
     
     @Override
-    public Set<TokenType> getFirst() {
-    	Set<TokenType> set = parser.getFirst();
-    	if(beg == 0){
-    		set.add(TokenType.SUNKNOWN);
-    	}
-    	return set;
+    public Set<TokenType> getFirstSet()
+    {
+        final Set<TokenType> set = parser.getFirstSet();
+        if (beg == 0)
+        {
+            set.add(TokenType.SUNKNOWN);
+        }
+        return set;
     }
-
+    
     @Override
     public INode parse(ParserInput input)
     {
@@ -50,31 +52,31 @@ class RepeatParser implements IParser
         int count = 0;
         final int save = input.getIndex();
         final List<INode> childs = new ArrayList<>();
-
+        
         INode n = null;
-        while(end < 0 || count <= end)
+        while (end < 0 || count <= end)
         {
-        	TokenType next = input.getFront().getType();
-            if( !parser.getFirst().contains(next) )
+            final TokenType next = input.getFront().getType();
+            if (!parser.getFirstSet().contains(next))
             {
-            	break;
+                break;
             }
-
+            
             n = parser.parse(input);
-            if( n.isSuccess() )
+            if (n.isSuccess())
             {
                 ++count;
                 childs.add(n);
             }
             else
             {
-            	IParser.verboseln("!}");
+                IParser.verboseln("!}");
                 input.setIndex(save);
                 return n;
             }
         }
-
-        if( count >= beg && (end < 0 || count <= end) )
+        
+        if (count >= beg && (end < 0 || count <= end))
         {
             IParser.verboseln("}");
             return new SequenceNode(childs);
