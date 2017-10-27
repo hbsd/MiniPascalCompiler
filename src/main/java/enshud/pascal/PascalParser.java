@@ -799,7 +799,8 @@ public enum PascalParser implements IParser
     public final INode parse(ParserInput input) {
         begin();
         final INode node = getRule().parse(input);
-        return node.isSuccess()? success(node): failure(node);
+        INode res = node.isSuccess()? success(node): failure(node);
+        return res;
     }
 
     protected abstract IParser rule();
@@ -813,6 +814,8 @@ public enum PascalParser implements IParser
     }
 
     protected INode failure(INode node) {
+        node.println();
+        System.out.println();
         final String msg = "Found in " + toString() + ".";
         if (node instanceof FailureNode)
         {

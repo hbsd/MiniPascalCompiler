@@ -9,6 +9,7 @@ import enshud.s2.parser.parsers.IParser;
 import enshud.s1.lexer.TokenType;
 import enshud.s2.parser.ParserInput;
 import enshud.s2.parser.node.INode;
+import enshud.s2.parser.node.basic.FailureNode;
 import enshud.s2.parser.node.basic.SequenceNode;
 
 
@@ -48,12 +49,17 @@ class RepeatParser implements IParser
     @Override
     public INode parse(ParserInput input)
     {
+        if(input.isEmpty() && beg == 0)
+        {
+            return new SequenceNode();
+        }
+
         IParser.verbose("{");
         int count = 0;
         final int save = input.getIndex();
         final List<INode> childs = new ArrayList<>();
         
-        INode n = null;
+        INode n = new FailureNode(input.getFront());
         while (end < 0 || count <= end)
         {
             final TokenType next = input.getFront().getType();

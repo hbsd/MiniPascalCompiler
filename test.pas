@@ -1,6 +1,7 @@
 program testBasic(input, output);
 var a: integer;
     b: boolean;
+    variable: char;
 begin
     a := 1+6-(33/4-7 mod 3)*(-4211+3);
     b := true and false or true <> false or false and true;

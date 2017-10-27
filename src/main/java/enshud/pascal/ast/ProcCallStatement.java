@@ -54,7 +54,13 @@ public class ProcCallStatement implements IBasicStatement
         
         if (sub == null)
         {
-            checker.addErrorMessage(proc, this, "procedure '" + name + "' is not defined.");
+            List<Procedure> p = proc.getSubProcFuzzy(name);
+            checker.addErrorMessage(
+                proc, getName(),
+                "procedure '" + name + "' is not defined."
+              + (p.isEmpty()? "" : (" you did mean " + p +  "?"))
+            );
+
             for (final IExpression exp: exps)
             {
                 exp.check(proc, checker);

@@ -65,10 +65,12 @@ public class Checker
         }
     }
     
-    static final boolean DETAIL_ERROR_MSG = false;
+    private static final boolean DETAIL_ERROR_MSG = false;
+    private static final int     NUMBER_TO_PRINT  = 1;
+    public static final double   FUZZY_THRESHOLD  = 0.3;
     
-    Procedure            program          = null;
-    List<String>         errors           = new ArrayList<>();
+    Procedure                    program          = null;
+    List<String>                 errors           = new ArrayList<>();
     
     
     public void addErrorMessage(Procedure proc, IASTNode node, String msg)
@@ -126,7 +128,7 @@ public class Checker
         if (!isSuccess())
         {
             program = null;
-            printErrorMessage(1);
+            printErrorMessage(NUMBER_TO_PRINT);
         }
         return program;
     }

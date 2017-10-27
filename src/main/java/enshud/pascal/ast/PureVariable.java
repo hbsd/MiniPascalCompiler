@@ -1,5 +1,6 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.pascal.type.ArrayType;
@@ -72,7 +73,26 @@ public class PureVariable implements IVariable, ILiteral
             }
             else
             {
-                checker.addErrorMessage(proc, getName(), "variable '" + nm + "' is not defined.");
+                List<Variable> vs = proc.getVarFuzzy(nm);
+                String n = null;
+                if(!vs.isEmpty())
+                {
+                    n = vs.toString();
+                }
+                else
+                {
+                    List<Param> ps = proc.getParamFuzzy(nm);
+                    if(!ps.isEmpty())
+                    {
+                        n = ps.toString();
+                    }
+                }
+
+                checker.addErrorMessage(
+                    proc, getName(),
+                    "variable '" + nm + "' is not defined."
+                  + ((n == null)? "" : (" you did mean " + n +  "?"))
+                );
             }
         }
         

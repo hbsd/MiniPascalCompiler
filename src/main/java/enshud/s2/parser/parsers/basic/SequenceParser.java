@@ -41,6 +41,7 @@ class SequenceParser implements IParser
         
         for (final IParser parser: parsers)
         {
+            assert parser != null;
             final INode n = parser.parse(input);
             if (n.isSuccess())
             {

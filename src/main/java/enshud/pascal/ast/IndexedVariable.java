@@ -1,5 +1,6 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.pascal.type.ArrayType;
@@ -72,7 +73,12 @@ public class IndexedVariable implements IVariable, ILiteral
         
         if (type == UnknownType.UNKNOWN)
         {
-            checker.addErrorMessage(proc, getName(), "variable '" + nm + "' is not defined.");
+            List<Variable> vs = proc.getVarFuzzy(nm);
+            checker.addErrorMessage(
+                proc, getName(),
+                "variable '" + nm + "' is not defined."
+              + (vs.isEmpty()? "" : (" you did mean " + vs +  "?"))
+            );
         }
         else if (type.isBasicType())
         {

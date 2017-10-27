@@ -3,6 +3,8 @@ package enshud.s3.checker;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
+
 import enshud.pascal.ast.*;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
@@ -73,6 +75,11 @@ public class Procedure
         return param_decls.get(name);
     }
     
+    public List<Param> getParamFuzzy(String name)
+    {
+        return param_decls.getFuzzy(name);
+    }
+    
     public int getParamIndex(String name)
     {
         return param_decls.getIndex(name);
@@ -105,6 +112,16 @@ public class Procedure
         {
             return var;
         }
+    }
+    
+    public List<Variable> getVarFuzzy(String name)
+    {
+        final List<Variable> var = var_decls.getFuzzy(name);
+        if(parent != null)
+        {
+            var.addAll(parent.getVarFuzzy(name));
+        }
+        return var;
     }
     
     public IType getVarType(String name)
@@ -144,6 +161,21 @@ public class Procedure
             }
         }
         return parent == null? null: parent.getSubProc(name);
+    }
+    
+    public List<Procedure> getSubProcFuzzy(String name)
+    {
+        LevenshteinDistance ld = new LevenshteinDistance();
+        List<Procedure> l = new ArrayList<>();
+        for (final Procedure sub: children)
+        {
+            double th = Checker.FUZZY_THRESHOLD * (sub.getName().length() + name.length());
+            if (ld.apply(sub.getName(), name) <= th)
+            {
+                l.add(sub);
+            }
+        }
+        return l;
     }
     
     public int getSubProcIndex(String name)
@@ -259,9 +291,7 @@ public class Procedure
         codebuilder.append("; program's body begins").append(System.lineSeparator());
         body.compile(codebuilder, this, new LabelGenerator());
         
-        codebuilder.append(" LD GR8,GR5; point to return address").append(System.lineSeparator());
-        codebuilder.append(" LD GR5,-1,GR5; restore parent's frame pointer").append(System.lineSeparator());
-        codebuilder.append(" RET").append(System.lineSeparator());
+        compileReturn(codebuilder);
         codebuilder.append("BUF DS 256").append(System.lineSeparator());
         codebuilder.append(" END");
         
@@ -304,10 +334,15 @@ public class Procedure
         codebuilder.append("; procedure's body begins").append(System.lineSeparator());
         body.compile(codebuilder, this, new LabelGenerator());
         
+        compileReturn(codebuilder);
+        codebuilder.append(" END");
+    }
+    
+    public void compileReturn(StringBuilder codebuilder)
+    {
         codebuilder.append(" LD GR8,GR5; point to return address").append(System.lineSeparator());
         codebuilder.append(" LD GR5,-1,GR5; restore parent's frame pointer").append(System.lineSeparator());
         codebuilder.append(" RET").append(System.lineSeparator());
-        codebuilder.append(" END");
     }
 }
 
