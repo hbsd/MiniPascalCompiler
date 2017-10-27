@@ -77,7 +77,7 @@ public class IndexedVariable implements IVariable, ILiteral
             checker.addErrorMessage(
                 proc, getName(),
                 "variable '" + nm + "' is not defined."
-              + (vs.isEmpty()? "" : (" you did mean " + vs +  "?"))
+              + (vs.isEmpty()? "" : (" did you mean variable " + vs +  "?"))
             );
         }
         else if (type.isBasicType())

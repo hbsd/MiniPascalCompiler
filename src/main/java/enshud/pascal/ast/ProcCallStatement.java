@@ -58,7 +58,7 @@ public class ProcCallStatement implements IBasicStatement
             checker.addErrorMessage(
                 proc, getName(),
                 "procedure '" + name + "' is not defined."
-              + (p.isEmpty()? "" : (" you did mean " + p +  "?"))
+              + (p.isEmpty()? "" : (" did you mean procedure " + p +  "?"))
             );
 
             for (final IExpression exp: exps)

@@ -91,7 +91,7 @@ public class PureVariable implements IVariable, ILiteral
                 checker.addErrorMessage(
                     proc, getName(),
                     "variable '" + nm + "' is not defined."
-                  + ((n == null)? "" : (" you did mean " + n +  "?"))
+                  + ((n == null)? "" : (" did you mean variable " + n +  "?"))
                 );
             }
         }

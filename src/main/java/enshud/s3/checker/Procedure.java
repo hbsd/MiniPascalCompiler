@@ -65,6 +65,12 @@ public class Procedure
             precompute();
     }
     
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
+    
     public String getName()
     {
         return name;
