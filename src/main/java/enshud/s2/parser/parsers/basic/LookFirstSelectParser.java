@@ -14,7 +14,7 @@ import enshud.s2.parser.parsers.IParser;
 
 public class LookFirstSelectParser implements IParser
 {
-    final IParser[] parsers;
+    private final IParser[] parsers;
     
     public LookFirstSelectParser(IParser[] parsers)
     {

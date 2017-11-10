@@ -8,7 +8,7 @@ import enshud.s1.lexer.TokenType;
 
 public class TokenNode implements IParserNode
 {
-    final LexedToken token;
+    private final LexedToken token;
     
     public TokenNode(LexedToken token)
     {

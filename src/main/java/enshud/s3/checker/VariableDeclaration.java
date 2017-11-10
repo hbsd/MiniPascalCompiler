@@ -9,13 +9,13 @@ import enshud.pascal.type.IType;
 
 public class VariableDeclaration
 {
-    final List<Variable> vars = new ArrayList<>();
+    private final List<Variable> vars = new ArrayList<>();
     
     public class Variable
     {
-        final String name;
-        final IType  type;
-        final int    alignment;
+        private final String name;
+        private final IType  type;
+        private final int    alignment;
         
         public String getName()
         {

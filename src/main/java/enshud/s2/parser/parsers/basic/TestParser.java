@@ -15,7 +15,7 @@ import enshud.s2.parser.node.INode;
  */
 class TestParser implements IParser
 {
-    final IParser parser;
+    private final IParser parser;
     
     TestParser(IParser parser)
     {

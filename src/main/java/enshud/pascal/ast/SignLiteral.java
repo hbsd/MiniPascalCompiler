@@ -8,8 +8,8 @@ import enshud.s1.lexer.LexedToken;
 public class SignLiteral implements ILiteral
 {
     public static final SignLiteral NONE = new SignLiteral();
-    final Sign                      sign;
-    final LexedToken                sign_token;
+    private final Sign                      sign;
+    private final LexedToken                sign_token;
     
     public SignLiteral(LexedToken sign_token)
     {

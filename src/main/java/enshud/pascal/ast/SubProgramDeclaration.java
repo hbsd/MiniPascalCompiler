@@ -5,10 +5,10 @@ import java.util.Objects;
 
 public class SubProgramDeclaration implements IDeclaration
 {
-    final Identifier              name;
-    final ParameterList           params;
-    final VariableDeclarationList vars;
-    final StatementList           body;
+    private final Identifier              name;
+    private final ParameterList           params;
+    private final VariableDeclarationList vars;
+    private final StatementList           body;
     
     public SubProgramDeclaration(
         Identifier name,

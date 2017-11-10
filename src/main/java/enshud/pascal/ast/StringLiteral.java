@@ -13,8 +13,8 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class StringLiteral implements IConstant
 {
-    final TokenNode str;
-    IType           type;
+    private final TokenNode str;
+    private IType           type;
     
     public StringLiteral(TokenNode str)
     {

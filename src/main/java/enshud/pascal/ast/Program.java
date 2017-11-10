@@ -5,11 +5,11 @@ import java.util.Objects;
 
 public class Program implements IASTNode
 {
-    final Identifier                name;
-    final NameList                  file_names;
-    final VariableDeclarationList   vars;
-    final SubProgramDeclarationList subprograms;
-    final StatementList             body;
+    private final Identifier                name;
+    private final NameList                  file_names;
+    private final VariableDeclarationList   vars;
+    private final SubProgramDeclarationList subprograms;
+    private final StatementList             body;
     
     public Program(
         Identifier name,

@@ -8,8 +8,8 @@ import enshud.pascal.type.IType;
 
 public class VariableDeclaration implements IDeclaration
 {
-    final NameList    names;
-    final TypeLiteral type;
+    private final NameList    names;
+    private final TypeLiteral type;
     
     public VariableDeclaration(NameList names, TypeLiteral type)
     {

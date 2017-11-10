@@ -4,7 +4,6 @@ import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
@@ -72,9 +71,9 @@ public class PrefixOperation implements ITyped
     }
     
     @Override
-    public IConstant preeval(Procedure proc, Context context)
+    public IConstant preeval(Procedure proc)
     {
-        IConstant res = getOperand().preeval(proc, context);
+        IConstant res = getOperand().preeval(proc);
         if (res == null)
         {
             return null;

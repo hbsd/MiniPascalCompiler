@@ -13,7 +13,7 @@ import enshud.s2.parser.node.basic.FailureNode;
 
 class EndParser implements IParser
 {
-    final IParser parser;
+    private final IParser parser;
     
     EndParser(IParser parser)
     {

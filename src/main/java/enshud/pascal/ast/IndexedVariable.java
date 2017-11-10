@@ -8,7 +8,6 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.VariableDeclaration.Variable;
 import enshud.s4.compiler.LabelGenerator;
@@ -16,9 +15,9 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class IndexedVariable implements IVariable, ILiteral
 {
-    final Identifier name;
-    final ITyped     index;
-    IType            type;
+    private final Identifier name;
+    private final ITyped     index;
+    private IType            type;
     
     public IndexedVariable(Identifier name, ITyped index)
     {
@@ -105,7 +104,7 @@ public class IndexedVariable implements IVariable, ILiteral
     }
     
     @Override
-    public IConstant preeval(Procedure proc, Context context)
+    public IConstant preeval(Procedure proc)
     {
         return null;
     }

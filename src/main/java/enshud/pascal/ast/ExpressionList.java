@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class ExpressionList implements IList<ITyped>
 {
-    final List<ITyped> list;
+    private final List<ITyped> list;
     
     public ExpressionList()
     {

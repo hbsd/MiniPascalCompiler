@@ -53,8 +53,8 @@ public class Parser
         }
     }
     
-    INode   root;
-    IParser parser;
+    private INode   root;
+    private IParser parser;
     
     public Parser(IParser parser)
     {

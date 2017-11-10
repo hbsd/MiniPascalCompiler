@@ -4,7 +4,7 @@ public class StringType implements IType
 {
     public static final StringType CHAR = new StringType(1);
     
-    final int                      size;
+    private final int              size;
     
     public StringType(int size)
     {

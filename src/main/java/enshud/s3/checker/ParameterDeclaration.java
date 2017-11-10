@@ -9,13 +9,13 @@ import enshud.pascal.type.BasicType;
 
 public class ParameterDeclaration
 {
-    final List<Param> params = new ArrayList<>();
+    private final List<Param> params = new ArrayList<>();
     
     public class Param
     {
-        final String    name;
-        final BasicType type;
-        final int       alignment;
+        private final String    name;
+        private final BasicType type;
+        private final int       alignment;
         
         Param(String name, BasicType type, int alignment)
         {

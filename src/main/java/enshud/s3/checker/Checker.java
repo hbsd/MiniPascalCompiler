@@ -79,8 +79,8 @@ public class Checker
         return threshold * (s1.length() + s2.length()) > DISTANCE.apply(s1, s2);
     }
     
-    Procedure    program = null;
-    List<String> errors  = new ArrayList<>();
+    private Procedure    program = null;
+    private List<String> errors  = new ArrayList<>();
     
     public void addErrorMessage(String proc_name, int line, int column, String msg)
     {

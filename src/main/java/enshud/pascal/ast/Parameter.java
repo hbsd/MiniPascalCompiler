@@ -8,8 +8,8 @@ import enshud.pascal.type.BasicType;
 
 public class Parameter implements IASTNode
 {
-    final NameList    names;
-    final TypeLiteral type;
+    private final NameList    names;
+    private final TypeLiteral type;
     
     public Parameter(NameList names, TypeLiteral type)
     {

@@ -19,14 +19,14 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class Procedure
 {
-    final Procedure              parent;
-    final String                 name;
-    final List<Procedure>        children    = new ArrayList<>();
+    private final Procedure              parent;
+    private final String                 name;
+    private final List<Procedure>        children    = new ArrayList<>();
     
-    final ParameterDeclaration   param_decls = new ParameterDeclaration();
-    final VariableDeclaration    var_decls   = new VariableDeclaration();
+    private final ParameterDeclaration   param_decls = new ParameterDeclaration();
+    private final VariableDeclaration    var_decls   = new VariableDeclaration();
     
-    final StatementList          body;
+    private final StatementList          body;
     
     private static final boolean OPTIMIZE    = true;
     
@@ -100,7 +100,7 @@ public class Procedure
     
     public BasicType getParamType(int index)
     {
-        return param_decls.get(index).type;
+        return param_decls.get(index).getType();
     }
     
     public int getParamLength()
@@ -140,7 +140,7 @@ public class Procedure
     public IType getVarType(String name)
     {
         final Variable v = getVar(name);
-        return v != null? v.type: UnknownType.UNKNOWN;
+        return v != null? v.getType(): UnknownType.UNKNOWN;
     }
     
     public Variable getLocalVar(String name)
@@ -278,7 +278,7 @@ public class Procedure
     
     public void precompute()
     {
-        body.precompute(this, null);
+        body.precompute(this);
         for (Procedure sub: children)
         {
             sub.precompute();

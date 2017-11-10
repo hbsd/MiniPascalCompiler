@@ -6,7 +6,6 @@ import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.INode;
 import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
@@ -128,15 +127,15 @@ public class InfixOperation implements ITyped
     }
     
     @Override
-    public IConstant preeval(Procedure proc, Context context)
+    public IConstant preeval(Procedure proc)
     {
-        IConstant l = left.preeval(proc, context);
+        IConstant l = left.preeval(proc);
         if (l != null)
         {
             left = l;
         }
         
-        IConstant r = right.preeval(proc, context);
+        IConstant r = right.preeval(proc);
         if (r != null)
         {
             right = r;

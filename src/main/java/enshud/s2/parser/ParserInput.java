@@ -9,8 +9,8 @@ import enshud.s1.lexer.LexedToken;
 
 public class ParserInput
 {
-    List<LexedToken> list;
-    int              index;
+    private List<LexedToken> list;
+    private int              index;
     
     public ParserInput(List<LexedToken> list)
     {

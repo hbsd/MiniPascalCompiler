@@ -13,7 +13,7 @@ import enshud.s2.parser.node.INode;
 
 class SelectParser implements IParser
 {
-    final IParser[] parsers;
+    private final IParser[] parsers;
     
     SelectParser(IParser[] parsers)
     {

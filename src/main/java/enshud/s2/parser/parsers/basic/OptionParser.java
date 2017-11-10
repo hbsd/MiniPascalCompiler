@@ -13,7 +13,7 @@ import enshud.s2.parser.node.basic.EmptyNode;
 
 class OptionParser implements IParser
 {
-    final IParser parser;
+    private final IParser parser;
     
     OptionParser(IParser parser)
     {

@@ -6,14 +6,13 @@ import java.util.Objects;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class ReadStatement implements IStatement
 {
-    final VariableList vars;
+    private final VariableList vars;
     
     public ReadStatement(VariableList vars)
     {
@@ -64,11 +63,11 @@ public class ReadStatement implements IStatement
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
         for (IVariable v: vars.getList())
         {
-            v.preeval(proc, context);
+            v.preeval(proc);
         }
         return this;
     }

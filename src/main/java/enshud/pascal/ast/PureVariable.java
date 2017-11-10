@@ -7,7 +7,6 @@ import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s3.checker.ParameterDeclaration.Param;
 import enshud.s3.checker.VariableDeclaration.Variable;
@@ -16,8 +15,8 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class PureVariable implements IVariable, ILiteral
 {
-    final Identifier name;
-    IType            type;
+    private final Identifier name;
+    private IType            type;
     
     public PureVariable(Identifier name)
     {
@@ -100,7 +99,7 @@ public class PureVariable implements IVariable, ILiteral
     }
     
     @Override
-    public IConstant preeval(Procedure proc, Context context)
+    public IConstant preeval(Procedure proc)
     {
         return null;
     }

@@ -4,14 +4,13 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class IfElseStatement extends IfStatement
 {
-    StatementList else_statements;
+    private StatementList else_statements;
     
     public IfElseStatement(ITyped cond, StatementList then_statements, StatementList else_statements)
     {
@@ -33,10 +32,10 @@ public class IfElseStatement extends IfStatement
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
-        IStatement sup = super.precompute(proc, context);
-        return (sup != null)? sup: else_statements;
+        IStatement sup = super.precompute(proc);
+        return (sup != null)? sup: getElse();
     }
     
     @Override
@@ -45,16 +44,16 @@ public class IfElseStatement extends IfStatement
         final String label = l_gen.toString();
         l_gen.next();
         
-        cond.compile(codebuilder, proc, l_gen);
+        getCond().compile(codebuilder, proc, l_gen);
         
         codebuilder.append(" LD GR2,GR2").append(System.lineSeparator());
         codebuilder.append(" JZE E").append(label).append("; branch of IF").append(System.lineSeparator());
         
-        then_statements.compile(codebuilder, proc, l_gen);
+        getThen().compile(codebuilder, proc, l_gen);
         codebuilder.append(" JUMP F").append(label).append(System.lineSeparator());
         
         codebuilder.append("E").append(label).append(" NOP; else of IF").append(System.lineSeparator());
-        else_statements.compile(codebuilder, proc, l_gen);
+        getElse().compile(codebuilder, proc, l_gen);
         
         codebuilder.append("F").append(label).append(" NOP; end of IF").append(System.lineSeparator());
     }

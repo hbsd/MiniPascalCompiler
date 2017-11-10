@@ -7,15 +7,14 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class ProcCallStatement implements IStatement
 {
-    final Identifier     name;
-    final ExpressionList args;
+    private final Identifier     name;
+    private final ExpressionList args;
     
     public ProcCallStatement(Identifier name, ExpressionList args)
     {
@@ -121,11 +120,11 @@ public class ProcCallStatement implements IStatement
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
         for (ITyped e: getArgs())
         {
-            e.preeval(proc, context);
+            e.preeval(proc);
         }
         return this;
     }

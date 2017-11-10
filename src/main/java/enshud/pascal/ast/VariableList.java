@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class VariableList implements IList<IVariable>
 {
-    final List<IVariable> list;
+    private final List<IVariable> list;
     
     public VariableList()
     {

@@ -8,7 +8,7 @@ import enshud.s2.parser.node.INode;
 
 public class FailureNode extends SingleNode
 {
-    String msg;
+    private String msg;
     
     public FailureNode(INode child, String msg)
     {

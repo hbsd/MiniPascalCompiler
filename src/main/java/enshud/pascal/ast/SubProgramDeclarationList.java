@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class SubProgramDeclarationList implements IList<SubProgramDeclaration>
 {
-    final List<SubProgramDeclaration> decls;
+    private final List<SubProgramDeclaration> decls;
     
     public SubProgramDeclarationList()
     {

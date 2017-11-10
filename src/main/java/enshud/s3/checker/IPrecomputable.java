@@ -5,5 +5,5 @@ import enshud.pascal.ast.IStatement;
 
 public interface IPrecomputable
 {
-    IStatement precompute(Procedure proc, Context context);
+    IStatement precompute(Procedure proc);
 }

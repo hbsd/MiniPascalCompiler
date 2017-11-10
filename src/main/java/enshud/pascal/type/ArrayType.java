@@ -9,9 +9,9 @@ public class ArrayType implements IType
 {
     public static final ArrayType CHAR = new ArrayType(BasicType.CHAR, 0, 0);
     
-    final BasicType               type;
-    final int                     min;
-    final int                     max;
+    private final BasicType       type;
+    private final int             min;
+    private final int             max;
     
     public ArrayType(BasicType type, int min, int max)
     {

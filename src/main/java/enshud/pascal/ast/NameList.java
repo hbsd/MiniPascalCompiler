@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class NameList implements IList<Identifier>
 {
-    final List<Identifier> list;
+    private final List<Identifier> list;
     
     public NameList()
     {

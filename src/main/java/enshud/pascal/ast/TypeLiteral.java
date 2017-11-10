@@ -10,8 +10,8 @@ import enshud.s1.lexer.LexedToken;
 
 public class TypeLiteral implements ILiteral
 {
-    final IType      type;
-    final LexedToken token;
+    private final IType      type;
+    private final LexedToken token;
     
     
     public TypeLiteral(LexedToken token)

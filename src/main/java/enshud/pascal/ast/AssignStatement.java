@@ -6,15 +6,14 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class AssignStatement implements IStatement
 {
-    final IVariable left;
-    ITyped     right;
+    private final IVariable left;
+    private ITyped          right;
     
     public AssignStatement(IVariable left, ITyped right)
     {
@@ -107,9 +106,9 @@ public class AssignStatement implements IStatement
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
-        IConstant res = right.preeval(proc, context);
+        IConstant res = right.preeval(proc);
         if (res != null)
         {
             right = res;

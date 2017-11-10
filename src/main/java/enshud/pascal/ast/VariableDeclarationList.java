@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class VariableDeclarationList implements IList<VariableDeclaration>
 {
-    final List<VariableDeclaration> list;
+    private final List<VariableDeclaration> list;
     
     public VariableDeclarationList()
     {

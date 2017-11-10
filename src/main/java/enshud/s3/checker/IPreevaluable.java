@@ -5,5 +5,5 @@ import enshud.pascal.ast.IConstant;
 
 public interface IPreevaluable
 {
-    IConstant preeval(Procedure proc, Context context);
+    IConstant preeval(Procedure proc);
 }

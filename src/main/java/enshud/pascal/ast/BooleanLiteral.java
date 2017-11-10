@@ -12,8 +12,8 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class BooleanLiteral implements IConstant
 {
-    boolean          val;
-    final LexedToken token;
+    private boolean          val;
+    private final LexedToken token;
     
     BooleanLiteral(boolean val)
     {

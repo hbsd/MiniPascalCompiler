@@ -5,15 +5,14 @@ import java.util.Objects;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class IfStatement implements IStatement
 {
-    final ITyped    cond;
-    final StatementList then_statements;
+    private final ITyped    cond;
+    private final StatementList then_statements;
     
     public IfStatement(ITyped cond, StatementList then_statements)
     {
@@ -64,9 +63,9 @@ public class IfStatement implements IStatement
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
-        IConstant res = cond.preeval(proc, context);
+        IConstant res = cond.preeval(proc);
         
         if (res == null)
         {

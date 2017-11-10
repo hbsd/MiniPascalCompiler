@@ -7,7 +7,7 @@ import enshud.s2.parser.node.basic.TokenNode;
 
 public class Identifier implements ILiteral
 {
-    final TokenNode id;
+    private final TokenNode id;
     
     public Identifier(TokenNode id)
     {

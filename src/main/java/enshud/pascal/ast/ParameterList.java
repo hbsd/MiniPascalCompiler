@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class ParameterList implements IList<Parameter>
 {
-    final List<Parameter> list;
+    private final List<Parameter> list;
     
     public ParameterList()
     {

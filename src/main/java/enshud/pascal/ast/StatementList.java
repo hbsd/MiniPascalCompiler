@@ -7,14 +7,13 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class StatementList implements IStatement, IList<IStatement>
 {
-    final List<IStatement> list;
+    private final List<IStatement> list;
     
     public StatementList()
     {
@@ -49,12 +48,12 @@ public class StatementList implements IStatement, IList<IStatement>
     }
     
     @Override
-    public IStatement precompute(Procedure proc, Context context)
+    public IStatement precompute(Procedure proc)
     {
         ListIterator<IStatement> it = list.listIterator();
         while (it.hasNext())
         {
-            IStatement res = it.next().precompute(proc, context);
+            IStatement res = it.next().precompute(proc);
             if (res == null)
             {
                 it.remove();

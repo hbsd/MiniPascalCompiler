@@ -1,13 +1,12 @@
 package enshud.pascal.ast;
 
-import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 
 
 public interface IConstant extends ITyped, ILiteral
 {
     @Override
-    default IConstant preeval(Procedure proc, Context context)
+    default IConstant preeval(Procedure proc)
     {
         return this;
     }
