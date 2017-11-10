@@ -23,12 +23,12 @@ public class Compiler
     public static void main(final String[] args)
     {
         // Compilerを実行してcasを生成する
-        new Lexer().run("test.pas", "tmp/out.ts");
+        new Lexer().run("data/pas/test.pas", "tmp/out.ts");
         new Compiler().run("tmp/out.ts", "tmp/out.cas");
-        // new Compiler().run("data/ts/normal01.ts", "tmp/out.cas");
+        //new Compiler().run("data/ts/normal03.ts", "tmp/out.cas");
         
         // CaslSimulatorクラスを使ってコンパイルしたcasを，CASLアセンブラ & COMETシミュレータで実行する
-        // CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
+        CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
     }
     
     /**
@@ -60,6 +60,7 @@ public class Compiler
         {
             return;
         }
+        root.println();
         
         final Procedure proc = new Checker().check(root);
         if (proc == null)

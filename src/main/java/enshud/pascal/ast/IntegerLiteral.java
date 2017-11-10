@@ -27,6 +27,7 @@ public class IntegerLiteral implements IConstant
         this.token = LexedToken.DUMMY;
     }
     
+    @Override
     public int getInt()
     {
         return num;

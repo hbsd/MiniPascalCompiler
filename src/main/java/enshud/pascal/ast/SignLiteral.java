@@ -39,6 +39,11 @@ public class SignLiteral implements ILiteral
         return sign;
     }
     
+    public LexedToken getToken()
+    {
+        return sign_token;
+    }
+    
     @Override
     public int getLine()
     {

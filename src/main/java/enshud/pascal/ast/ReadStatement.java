@@ -11,7 +11,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class ReadStatement implements IReadWriteStatement
+public class ReadStatement implements IStatement
 {
     final VariableList vars;
     

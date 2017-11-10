@@ -12,17 +12,17 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class WhileStatement implements IStatement
 {
-    final Expression cond;
+    final ITyped cond;
     final IStatement statement;
     private boolean  infinite_loop = false;
     
-    public WhileStatement(Expression cond, IStatement statement)
+    public WhileStatement(ITyped cond, IStatement statement)
     {
         this.cond = Objects.requireNonNull(cond);
         this.statement = Objects.requireNonNull(statement);
     }
     
-    public Expression getCond()
+    public ITyped getCond()
     {
         return cond;
     }

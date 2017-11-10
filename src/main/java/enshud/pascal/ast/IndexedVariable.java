@@ -17,10 +17,10 @@ import enshud.s4.compiler.LabelGenerator;
 public class IndexedVariable implements IVariable, ILiteral
 {
     final Identifier name;
-    final Expression index;
+    final ITyped     index;
     IType            type;
     
-    public IndexedVariable(Identifier name, Expression index)
+    public IndexedVariable(Identifier name, ITyped index)
     {
         this.name = Objects.requireNonNull(name);
         this.index = Objects.requireNonNull(index);
@@ -33,7 +33,7 @@ public class IndexedVariable implements IVariable, ILiteral
         return name;
     }
     
-    public Expression getIndex()
+    public ITyped getIndex()
     {
         return index;
     }
@@ -41,7 +41,7 @@ public class IndexedVariable implements IVariable, ILiteral
     @Override
     public IType getType()
     {
-        return type;
+        return type.getBasicType();
     }
     
     @Override
@@ -116,7 +116,7 @@ public class IndexedVariable implements IVariable, ILiteral
         compileForData(codebuilder, proc, l_gen);
     }
     
-    private void _compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    private void compileImpl(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         codebuilder.append(";idx v").append(System.lineSeparator());
         getIndex().compile(codebuilder, proc, l_gen);
@@ -125,16 +125,16 @@ public class IndexedVariable implements IVariable, ILiteral
         final Variable var = proc.getLocalVar(nm);
         if (var != null)
         {
-            __compile(codebuilder, var, "GR5");
+            compileImpl2(codebuilder, var, "GR5");
         }
         else
         {
-            __compile(codebuilder, proc.getGlobalVar(nm), "GR4");
+            compileImpl2(codebuilder, proc.getGlobalVar(nm), "GR4");
         }
         codebuilder.append(" ADDL GR1,GR2; add index").append(System.lineSeparator());
     }
     
-    private void __compile(StringBuilder codebuilder, Variable var, String gr)
+    private void compileImpl2(StringBuilder codebuilder, Variable var, String gr)
     {
         final int align = var.getAlignment();
         
@@ -145,7 +145,7 @@ public class IndexedVariable implements IVariable, ILiteral
     @Override
     public void compileForData(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        _compile(codebuilder, proc, l_gen);
+        compileImpl(codebuilder, proc, l_gen);
         codebuilder.append(" LD GR2,0,GR1").append(System.lineSeparator());
         codebuilder.append(";idx ^").append(System.lineSeparator());
     }
@@ -153,7 +153,7 @@ public class IndexedVariable implements IVariable, ILiteral
     @Override
     public void compileForAddr(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        _compile(codebuilder, proc, l_gen);
+        compileImpl(codebuilder, proc, l_gen);
         codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
         codebuilder.append(";idx ^").append(System.lineSeparator());
     }

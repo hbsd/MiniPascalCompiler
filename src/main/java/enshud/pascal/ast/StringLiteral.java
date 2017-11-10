@@ -23,6 +23,19 @@ public class StringLiteral implements IConstant
     }
     
     @Override
+    public int getInt()
+    {
+        if(getType() == BasicType.CHAR)
+        {
+            return (int)toString().charAt(1);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("not CHAR type");
+        }
+    }
+    
+    @Override
     public String toString()
     {
         return str.getString();

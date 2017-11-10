@@ -332,12 +332,12 @@ public enum PascalParser implements IParser
             final SequenceNode n = (SequenceNode)node;
             if (n.get(4) instanceof EmptyNode)
             {
-                return new IfStatement((Expression)n.get(1), (StatementList)n.get(3));
+                return new IfStatement((ITyped)n.get(1), (StatementList)n.get(3));
             }
             else
             {
                 return new IfElseStatement(
-                    (Expression)n.get(1), (StatementList)n.get(3), (StatementList)n.getAsSeq(4).get(1)
+                    (ITyped)n.get(1), (StatementList)n.get(3), (StatementList)n.getAsSeq(4).get(1)
                 );
             }
         }
@@ -353,7 +353,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new WhileStatement((Expression)n.get(1), (IStatement)n.get(3));
+            return new WhileStatement((ITyped)n.get(1), (IStatement)n.get(3));
         }
     },
     ASSIGN_STATEMENT(19) {
@@ -367,7 +367,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new AssignStatement((IVariable)n.get(0), (IExpression)n.get(2));
+            return new AssignStatement((IVariable)n.get(0), (ITyped)n.get(2));
         }
     },
     VARIABLE(20) {
@@ -404,7 +404,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new IndexedVariable((Identifier)n.get(0), (Expression)n.get(2));
+            return new IndexedVariable((Identifier)n.get(0), (ITyped)n.get(2));
         }
     },
     PROCCALL_STATEMENT(23) {
@@ -436,11 +436,11 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final ExpressionList list = new ExpressionList((Expression)n.get(0));
+            final ExpressionList list = new ExpressionList((ITyped)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
-                list.add((Expression)((SequenceNode)c).get(1));
+                list.add((ITyped)((SequenceNode)c).get(1));
             }
             return list;
         }
@@ -455,7 +455,7 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            final SequenceNode n = (SequenceNode)node;
+            /*final SequenceNode n = (SequenceNode)node;
             
             if (n.get(1) instanceof EmptyNode)
             {
@@ -469,6 +469,19 @@ public enum PascalParser implements IParser
                     (CompareOperator)right.get(0),
                     (SimpleExpression)right.get(1)
                 );
+            }*/
+            
+            ITyped left = (ITyped)((SequenceNode)node).get(0);
+            final INode right = ((SequenceNode)node).get(1);
+            
+            if(right instanceof EmptyNode)
+            {
+                return left;
+            }
+            else
+            {
+                final SequenceNode sn = (SequenceNode)right;
+                return new InfixOperation(left, (ITyped)sn.get(1), (TokenNode)sn.get(0));
             }
         }
     },
@@ -482,18 +495,28 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            final SequenceNode n = (SequenceNode)node;
-            final Term head = (Term)n.get(1);
-            final SequenceNode tail = n.getAsSeq(2);
-            final SignLiteral sign_lit = n.get(0) instanceof EmptyNode? SignLiteral.NONE: (SignLiteral)n.get(0);
             
-            SimpleExpression exp = new SimpleExpression(sign_lit, head);
+            final SequenceNode n = (SequenceNode)node;
+            ITyped head = (ITyped)n.get(1);
+            final SequenceNode tail = n.getAsSeq(2);
+            
+            if(!(n.get(0) instanceof EmptyNode))
+            {
+                head = new PrefixOperation(head, ((SignLiteral)n.get(0)).getToken());
+            }
+            
+            if(tail.isEmpty())
+            {
+                return head;
+            }
+
             for (final INode c: tail.getChildren())
             {
                 final SequenceNode sn = (SequenceNode)c;
-                exp = new TailedSimpleExpression((Term)sn.get(1), (AddOperator)sn.get(0), exp);
+                head = new InfixOperation(head, (ITyped)sn.get(1), (TokenNode)sn.get(0));
             }
-            return exp;
+
+            return head;
         }
     },
     TERM(27) {
@@ -506,16 +529,21 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            final IFactor head = (IFactor)((SequenceNode)node).get(0);
+            ITyped head = (ITyped)((SequenceNode)node).get(0);
             final SequenceNode tail = ((SequenceNode)node).getAsSeq(1);
             
-            Term term = new Term(head);
+            if(tail.isEmpty())
+            {
+                return head;
+            }
+
             for (final INode c: tail.getChildren())
             {
                 final SequenceNode sn = (SequenceNode)c;
-                term = new TailedTerm((IFactor)sn.get(1), (MultiplyOperator)sn.get(0), term);
+                head = new InfixOperation(head, (ITyped)sn.get(1), (TokenNode)sn.get(0));
             }
-            return term;
+
+            return head;
         }
     },
     FACTOR(28) {
@@ -555,7 +583,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new Not((IFactor)n.get(1), ((TokenNode)n.get(0)).getToken());
+            return new PrefixOperation((ITyped)n.get(1), (TokenNode)n.get(0));
         }
     },
     COMP_OP(30) {
@@ -567,29 +595,6 @@ public enum PascalParser implements IParser
                 tok(SLESS), tok(SLESSEQUAL),
                 tok(SGREAT), tok(SGREATEQUAL)
             );
-        }
-        
-        @Override
-        protected INode success(INode node)
-        {
-            switch (((TokenNode)node).getType())
-            {
-            case SEQUAL:
-                return CompareOperator.EQUAL;
-            case SNOTEQUAL:
-                return CompareOperator.NOTEQUAL;
-            case SLESS:
-                return CompareOperator.LESS;
-            case SLESSEQUAL:
-                return CompareOperator.LESSEQUAL;
-            case SGREAT:
-                return CompareOperator.GREAT;
-            case SGREATEQUAL:
-                return CompareOperator.GREATEQUAL;
-            default:
-                assert false;
-                return null;
-            }
         }
         
         @Override
@@ -607,23 +612,6 @@ public enum PascalParser implements IParser
         }
         
         @Override
-        protected INode success(INode node)
-        {
-            switch (((TokenNode)node).getType())
-            {
-            case SPLUS:
-                return AddOperator.ADD;
-            case SMINUS:
-                return AddOperator.SUB;
-            case SOR:
-                return AddOperator.OR;
-            default:
-                assert false;
-                return null;
-            }
-        }
-        
-        @Override
         protected INode failure(INode node)
         {
             return new FailureNode(((FailureNode)node).getChild(), "AddOperator expected.");
@@ -637,31 +625,11 @@ public enum PascalParser implements IParser
         }
         
         @Override
-        protected INode success(INode node)
-        {
-            switch (((TokenNode)node).getType())
-            {
-            case SSTAR:
-                return MultiplyOperator.MUL;
-            case SDIVD:
-                return MultiplyOperator.DIV;
-            case SMOD:
-                return MultiplyOperator.MOD;
-            case SAND:
-                return MultiplyOperator.AND;
-            default:
-                assert false;
-                return null;
-            }
-        }
-        
-        @Override
         protected INode failure(INode node)
         {
             return new FailureNode(((FailureNode)node).getChild(), "MultiplyOperator expected.");
         }
     },
-    
     RW_STATEMENT(33) {
         
         @Override
@@ -670,7 +638,6 @@ public enum PascalParser implements IParser
             return firstsel(READ_STATEMENT, WRITE_STATEMENT);
         }
     },
-    
     READ_STATEMENT(34) {
         @Override
         protected IParser rule()

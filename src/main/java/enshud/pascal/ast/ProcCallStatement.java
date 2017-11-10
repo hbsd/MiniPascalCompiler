@@ -12,7 +12,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class ProcCallStatement implements IBasicStatement
+public class ProcCallStatement implements IStatement
 {
     final Identifier     name;
     final ExpressionList args;
@@ -28,7 +28,7 @@ public class ProcCallStatement implements IBasicStatement
         return name;
     }
     
-    public List<IExpression> getArgs()
+    public List<ITyped> getArgs()
     {
         return args.getList();
     }
@@ -68,7 +68,7 @@ public class ProcCallStatement implements IBasicStatement
     private void checkArgumentTypes(Procedure proc, Checker checker)
     {
         int i = 0;
-        for (final IExpression exp: getArgs())
+        for (final ITyped exp: getArgs())
         {
             final BasicType ptype = proc.getSubProc(getName().toString()).getParamType(i);
             final IType atype = exp.check(proc, checker);
@@ -136,7 +136,7 @@ public class ProcCallStatement implements IBasicStatement
         
         for (int i = getArgs().size() - 1; i >= 0; --i)
         {
-            final IExpression e = getArgs().get(i);
+            final ITyped e = getArgs().get(i);
             e.compile(codebuilder, proc, l_gen);
             codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
         }

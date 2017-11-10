@@ -11,12 +11,12 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class AssignStatement implements IBasicStatement
+public class AssignStatement implements IStatement
 {
     final IVariable left;
-    IExpression     right;
+    ITyped     right;
     
-    public AssignStatement(IVariable left, IExpression right)
+    public AssignStatement(IVariable left, ITyped right)
     {
         this.left = Objects.requireNonNull(left);
         this.right = Objects.requireNonNull(right);
@@ -27,7 +27,7 @@ public class AssignStatement implements IBasicStatement
         return left;
     }
     
-    public IExpression getRight()
+    public ITyped getRight()
     {
         return right;
     }
@@ -112,7 +112,7 @@ public class AssignStatement implements IBasicStatement
         IConstant res = right.preeval(proc, context);
         if (res != null)
         {
-            right = new Expression(new SimpleExpression(new Term(res)));
+            right = res;
         }
         return this;
     }

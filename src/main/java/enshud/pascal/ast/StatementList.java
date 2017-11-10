@@ -12,7 +12,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class StatementList implements IBasicStatement, IList<IStatement>
+public class StatementList implements IStatement, IList<IStatement>
 {
     final List<IStatement> list;
     

@@ -12,7 +12,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public class WriteStatement implements IReadWriteStatement
+public class WriteStatement implements IStatement
 {
     final ExpressionList exps;
     
@@ -21,7 +21,7 @@ public class WriteStatement implements IReadWriteStatement
         this.exps = Objects.requireNonNull(exps);
     }
     
-    public List<IExpression> getExpressions()
+    public List<ITyped> getExpressions()
     {
         return exps.getList();
     }
@@ -30,7 +30,7 @@ public class WriteStatement implements IReadWriteStatement
     public IType check(Procedure proc, Checker checker)
     {
         int i = 1;
-        for (final IExpression exp: getExpressions())
+        for (final ITyped exp: getExpressions())
         {
             IType type = exp.check(proc, checker);
             
@@ -63,7 +63,7 @@ public class WriteStatement implements IReadWriteStatement
     @Override
     public IStatement precompute(Procedure proc, Context context)
     {
-        for (IExpression e: exps.getList())
+        for (ITyped e: exps.getList())
         {
             e.preeval(proc, context);
         }
@@ -73,7 +73,7 @@ public class WriteStatement implements IReadWriteStatement
     @Override
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        for (final IExpression e: getExpressions())
+        for (final ITyped e: getExpressions())
         {
             e.compile(codebuilder, proc, l_gen);
             
@@ -91,7 +91,7 @@ public class WriteStatement implements IReadWriteStatement
             }
             else
             {
-                assert false: "type error";
+                assert false: "type error: (" + e.getLine() + "," + e.getColumn() + ")" + e.getType();
             }
         }
         codebuilder.append(" CALL WRTLN").append(System.lineSeparator());

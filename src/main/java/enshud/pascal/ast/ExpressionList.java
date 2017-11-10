@@ -5,28 +5,28 @@ import java.util.Objects;
 import java.util.ArrayList;
 
 
-public class ExpressionList implements IList<IExpression>
+public class ExpressionList implements IList<ITyped>
 {
-    final List<IExpression> list;
+    final List<ITyped> list;
     
     public ExpressionList()
     {
         list = new ArrayList<>();
     }
     
-    public ExpressionList(IExpression exp)
+    public ExpressionList(ITyped exp)
     {
         this();
         add(Objects.requireNonNull(exp));
     }
     
     @Override
-    public List<IExpression> getList()
+    public List<ITyped> getList()
     {
         return list;
     }
     
-    public void add(IExpression exp)
+    public void add(ITyped exp)
     {
         list.add(exp);
     }

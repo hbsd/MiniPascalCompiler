@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
-import enshud.pascal.ast.IASTNode;
 import enshud.pascal.ast.Program;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
+import enshud.s2.parser.node.INode;
 
 
 public class Checker
@@ -82,21 +82,30 @@ public class Checker
     Procedure    program = null;
     List<String> errors  = new ArrayList<>();
     
-    
-    public void addErrorMessage(Procedure proc, IASTNode node, String msg)
+    public void addErrorMessage(String proc_name, int line, int column, String msg)
     {
         if (DETAIL_ERROR_MSG)
         {
             errors.add(
                 String.format(
-                    "(near line %4d, col %4d in %8s): %s", node.getLine(), node.getColumn(), proc.getName(), msg
+                    "(near line %4d, col %4d in %8s): %s", line, column, proc_name, msg
                 )
             );
         }
         else
         {
-            errors.add("Semantic error: line " + node.getLine());
+            errors.add("Semantic error: line " + line);
         }
+    }
+    
+    public void addErrorMessage(Procedure proc, INode node, String msg)
+    {
+        addErrorMessage(proc.getName(), node.getLine(), node.getColumn(), msg);
+    }
+    
+    public void addErrorMessage(Procedure proc, LexedToken token, String msg)
+    {
+        addErrorMessage(proc.getName(), token.getLine(), token.getColumn(), msg);
     }
     
     public void printErrorMessage()
@@ -134,7 +143,7 @@ public class Checker
     
     public Procedure check(Program prg)
     {
-        program = new Procedure(this, prg);
+        program = Procedure.create(this, prg);
         if (!isSuccess())
         {
             program = null;

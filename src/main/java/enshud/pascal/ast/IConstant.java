@@ -4,7 +4,7 @@ import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 
 
-public interface IConstant extends IFactor, ILiteral
+public interface IConstant extends ITyped, ILiteral
 {
     @Override
     default IConstant preeval(Procedure proc, Context context)
@@ -17,5 +17,7 @@ public interface IConstant extends IFactor, ILiteral
     {
         ILiteral.super.printHead(indent, msg);
     }
+
+    int getInt();
 }
 

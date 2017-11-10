@@ -30,7 +30,7 @@ public class Procedure
     
     private static final boolean OPTIMIZE    = true;
     
-    public Procedure(Checker checker, Program prg)
+    private Procedure(Checker checker, Program prg)
     {
         parent = null;
         name = prg.getName().toString();
@@ -40,6 +40,10 @@ public class Procedure
         
         for (final SubProgramDeclaration sub_decl: prg.getSubProcs().getList())
         {
+            if(var_decls.exists(sub_decl.toString()))
+            {
+                checker.addErrorMessage(this, sub_decl, "'" + sub_decl.toString() + "' is already defined.");
+            }
             new Procedure(checker, sub_decl, this);
         }
         body = prg.getBody();
@@ -61,6 +65,11 @@ public class Procedure
         body.check(this, checker);
         if (OPTIMIZE)
             precompute();
+    }
+    
+    public static Procedure create(Checker checker, Program prg)
+    {
+        return new Procedure(checker, prg);
     }
     
     @Override
@@ -222,29 +231,7 @@ public class Procedure
         {
             if (decl.getType() instanceof ArrayType)
             {
-                final ArrayType type = (ArrayType)decl.getType();
-                
-                if (type.getMin() < -32768 || type.getMin() > 32767)
-                {
-                    checker.addErrorMessage(
-                        this, decl, "min index is out of bounds. " + "min(" + type.getMin() + ")."
-                    );
-                }
-                
-                if (type.getMax() < -32768 || type.getMax() > 32767)
-                {
-                    checker.addErrorMessage(
-                        this, decl, "max index is out of bounds. " + "max(" + type.getMax() + ")."
-                    );
-                }
-                
-                if (type.getMin() > type.getMax())
-                {
-                    checker.addErrorMessage(
-                        this, decl, "min index is larger than max index in array declaration. " + "min(" + type.getMin()
-                                + ") > max(" + type.getMax() + ")."
-                    );
-                }
+                checkArrayType(checker, decl);
             }
             
             for (final Identifier id: decl.getNames())
@@ -259,6 +246,33 @@ public class Procedure
                     var_decls.add(n, decl.getType());
                 }
             }
+        }
+    }
+    
+    private void checkArrayType(Checker checker, enshud.pascal.ast.VariableDeclaration decl)
+    {
+        final ArrayType type = (ArrayType)decl.getType();
+        
+        if (type.getMin() < -32768 || type.getMin() > 32767)
+        {
+            checker.addErrorMessage(
+                this, decl, "min index is out of bounds. " + "min(" + type.getMin() + ")."
+            );
+        }
+        
+        if (type.getMax() < -32768 || type.getMax() > 32767)
+        {
+            checker.addErrorMessage(
+                this, decl, "max index is out of bounds. " + "max(" + type.getMax() + ")."
+            );
+        }
+        
+        if (type.getMin() > type.getMax())
+        {
+            checker.addErrorMessage(
+                this, decl, "min index is larger than max index in array declaration. " + "min(" + type.getMin()
+                        + ") > max(" + type.getMax() + ")."
+            );
         }
     }
     

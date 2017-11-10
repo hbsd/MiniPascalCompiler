@@ -4,7 +4,7 @@ import enshud.s3.checker.Procedure;
 import enshud.s4.compiler.LabelGenerator;
 
 
-public interface IVariable extends IFactor
+public interface IVariable extends ITyped
 {
     Identifier getName();
     

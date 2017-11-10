@@ -12,12 +12,12 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class BooleanLiteral implements IConstant
 {
-    BooleanValue     val;
+    boolean          val;
     final LexedToken token;
     
     BooleanLiteral(boolean val)
     {
-        this.val = val? BooleanValue.TRUE: BooleanValue.FALSE;
+        this.val = val;
         this.token = LexedToken.DUMMY;
     }
     
@@ -27,25 +27,25 @@ public class BooleanLiteral implements IConstant
         switch (token.getType())
         {
         case SFALSE:
-            val = BooleanValue.FALSE;
+            val = false;
             break;
         case STRUE:
-            val = BooleanValue.TRUE;
+            val = true;
             break;
         default:
-            val = null;
             assert false;
         }
     }
     
-    public BooleanValue getValue()
+    @Override
+    public int getInt()
     {
-        return val;
+        return getBool()? 1: 0;
     }
     
     public boolean getBool()
     {
-        return val.getBool();
+        return val;
     }
     
     @Override
@@ -80,6 +80,12 @@ public class BooleanLiteral implements IConstant
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         codebuilder.append(" LAD GR2,").append(getBool()? "1": "0").append(System.lineSeparator());
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "" + getBool();
     }
 }
 

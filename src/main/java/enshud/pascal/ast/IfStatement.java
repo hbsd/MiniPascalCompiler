@@ -12,16 +12,16 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class IfStatement implements IStatement
 {
-    final Expression    cond;
+    final ITyped    cond;
     final StatementList then_statements;
     
-    public IfStatement(Expression cond, StatementList then_statements)
+    public IfStatement(ITyped cond, StatementList then_statements)
     {
         this.cond = Objects.requireNonNull(cond);
         this.then_statements = Objects.requireNonNull(then_statements);
     }
     
-    public Expression getCond()
+    public ITyped getCond()
     {
         return cond;
     }

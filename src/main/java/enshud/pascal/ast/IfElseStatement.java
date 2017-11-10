@@ -13,7 +13,7 @@ public class IfElseStatement extends IfStatement
 {
     StatementList else_statements;
     
-    public IfElseStatement(Expression cond, StatementList then_statements, StatementList else_statements)
+    public IfElseStatement(ITyped cond, StatementList then_statements, StatementList else_statements)
     {
         super(cond, then_statements);
         this.else_statements = Objects.requireNonNull(else_statements);

@@ -58,7 +58,7 @@ public class SubProgramDeclaration implements IDeclaration
     @Override
     public String toString()
     {
-        return "" + name;
+        return name.toString();
     }
     
     @Override
