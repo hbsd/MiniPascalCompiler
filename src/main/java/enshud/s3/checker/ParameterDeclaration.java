@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.text.similarity.LevenshteinDistance;
-
 import enshud.pascal.type.BasicType;
 
 
@@ -72,12 +70,10 @@ public class ParameterDeclaration
     
     List<Param> getFuzzy(String name)
     {
-        LevenshteinDistance ld = new LevenshteinDistance();
         List<Param> l = new ArrayList<>();
         for (final Param p: params)
         {
-            double th = Checker.FUZZY_THRESHOLD * (p.name.length() + name.length());
-            if (ld.apply(p.name, name) <= th)
+            if (Checker.isSimilar(p.name, name))
             {
                 l.add(p);
             }

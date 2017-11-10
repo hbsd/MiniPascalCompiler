@@ -19,4 +19,3 @@ public enum AddOperator implements ILiteral
         throw new UnsupportedOperationException();
     }
 }
-

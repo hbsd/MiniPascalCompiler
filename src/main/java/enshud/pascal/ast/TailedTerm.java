@@ -13,7 +13,7 @@ import enshud.s4.compiler.LabelGenerator;
 public class TailedTerm extends Term
 {
     final MultiplyOperator op;
-    ITerm            tail;
+    ITerm                  tail;
     
     public TailedTerm(IFactor factor, MultiplyOperator op, ITerm tail)
     {
@@ -76,20 +76,20 @@ public class TailedTerm extends Term
         
         if (head_type.isUnknown() && !tail_type.isUnknown())
         {
-            getHead().retype(tail_type);
             head_type = tail_type;
+            getHead().retype(tail_type);
         }
         else if (!head_type.isUnknown() && tail_type.isUnknown())
         {
-            getTail().retype(head_type);
             tail_type = head_type;
+            getTail().retype(head_type);
         }
         else if (head_type.isUnknown() && tail_type.isUnknown())
         {
             return type;
         }
         
-        if (type != head_type)
+        if (!type.equals(head_type))
         {
             checker.addErrorMessage(
                 proc, getHead(),
@@ -97,6 +97,7 @@ public class TailedTerm extends Term
                         + " operator. must be " + type
             );
         }
+        
         if (!type.equals(tail_type))
         {
             checker.addErrorMessage(

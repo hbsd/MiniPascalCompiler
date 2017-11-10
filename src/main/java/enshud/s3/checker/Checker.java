@@ -3,6 +3,8 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
+
 import enshud.pascal.ast.IASTNode;
 import enshud.pascal.ast.Program;
 import enshud.s1.lexer.LexedToken;
@@ -67,10 +69,18 @@ public class Checker
     
     private static final boolean DETAIL_ERROR_MSG = false;
     private static final int     NUMBER_TO_PRINT  = 1;
-    public static final double   FUZZY_THRESHOLD  = 0.3;
     
-    Procedure                    program          = null;
-    List<String>                 errors           = new ArrayList<>();
+    
+    private static final LevenshteinDistance DISTANCE = new LevenshteinDistance();
+    
+    public static final boolean isSimilar(CharSequence s1, CharSequence s2)
+    {
+        final double threshold = 0.3;
+        return threshold * (s1.length() + s2.length()) > DISTANCE.apply(s1, s2);
+    }
+    
+    Procedure    program = null;
+    List<String> errors  = new ArrayList<>();
     
     
     public void addErrorMessage(Procedure proc, IASTNode node, String msg)

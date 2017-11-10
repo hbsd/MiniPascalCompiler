@@ -11,26 +11,30 @@ public class ParserInput
 {
     List<LexedToken> list;
     int              index;
-
+    
     public ParserInput(List<LexedToken> list)
     {
         this.list = Objects.requireNonNull(list);
         this.index = 0;
     }
-
-    public List<LexedToken> getList() {
+    
+    public List<LexedToken> getList()
+    {
         return list;
     }
-
-    public int size() {
+    
+    public int size()
+    {
         return list.size();
     }
-
-    public boolean isEmpty() {
+    
+    public boolean isEmpty()
+    {
         return index >= list.size();
     }
-
-    public LexedToken getFront() {
+    
+    public LexedToken getFront()
+    {
         if (!isEmpty())
         {
             return list.get(index);
@@ -40,16 +44,19 @@ public class ParserInput
             throw new NoSuchElementException();
         }
     }
-
-    public void popFront() {
+    
+    public void popFront()
+    {
         ++index;
     }
-
-    public int getIndex() {
+    
+    public int getIndex()
+    {
         return index;
     }
-
-    public void setIndex(int index) {
+    
+    public void setIndex(int index)
+    {
         this.index = index;
     }
 }

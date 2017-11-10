@@ -15,11 +15,13 @@ public enum BooleanValue implements IConstant
         {
             return false;
         }
+        
         @Override
         public BooleanValue not()
         {
             return TRUE;
         }
+        
         @Override
         public int getInt()
         {
@@ -32,11 +34,13 @@ public enum BooleanValue implements IConstant
         {
             return true;
         }
+        
         @Override
         public BooleanValue not()
         {
             return FALSE;
         }
+        
         @Override
         public int getInt()
         {
@@ -51,7 +55,9 @@ public enum BooleanValue implements IConstant
     }
     
     public abstract boolean getBool();
+    
     public abstract int getInt();
+    
     public abstract BooleanValue not();
     
     @Override

@@ -30,7 +30,7 @@ public interface INode
     {
         printIndent(
             indent.length() > 0? indent.substring(0, indent.length() - 2) + " |"
-                               : ""
+                    : ""
         );
         printHead(indent, msg);
         printBodyln(indent);

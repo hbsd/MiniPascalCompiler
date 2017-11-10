@@ -66,7 +66,7 @@ public class ReadStatement implements IReadWriteStatement
     @Override
     public IStatement precompute(Procedure proc, Context context)
     {
-        for(IVariable v: vars.getList())
+        for (IVariable v: vars.getList())
         {
             v.preeval(proc, context);
         }

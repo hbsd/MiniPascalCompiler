@@ -3,8 +3,6 @@ package enshud.s3.checker;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.text.similarity.LevenshteinDistance;
-
 import enshud.pascal.ast.*;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
@@ -21,16 +19,16 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class Procedure
 {
-    final Procedure            parent;
-    final String               name;
-    final List<Procedure>      children    = new ArrayList<>();
+    final Procedure              parent;
+    final String                 name;
+    final List<Procedure>        children    = new ArrayList<>();
     
-    final ParameterDeclaration param_decls = new ParameterDeclaration();
-    final VariableDeclaration  var_decls   = new VariableDeclaration();
+    final ParameterDeclaration   param_decls = new ParameterDeclaration();
+    final VariableDeclaration    var_decls   = new VariableDeclaration();
     
-    final StatementList        body;
+    final StatementList          body;
     
-    private static final boolean OPTIMIZE = true;
+    private static final boolean OPTIMIZE    = true;
     
     public Procedure(Checker checker, Program prg)
     {
@@ -46,7 +44,7 @@ public class Procedure
         }
         body = prg.getBody();
         body.check(this, checker);
-        if(OPTIMIZE)
+        if (OPTIMIZE)
             precompute();
     }
     
@@ -61,7 +59,7 @@ public class Procedure
         checkVarDecls(sub.getVars().getList(), checker);
         body = sub.getBody();
         body.check(this, checker);
-        if(OPTIMIZE)
+        if (OPTIMIZE)
             precompute();
     }
     
@@ -123,7 +121,7 @@ public class Procedure
     public List<Variable> getVarFuzzy(String name)
     {
         final List<Variable> var = var_decls.getFuzzy(name);
-        if(parent != null)
+        if (parent != null)
         {
             var.addAll(parent.getVarFuzzy(name));
         }
@@ -171,12 +169,10 @@ public class Procedure
     
     public List<Procedure> getSubProcFuzzy(String name)
     {
-        LevenshteinDistance ld = new LevenshteinDistance();
         List<Procedure> l = new ArrayList<>();
         for (final Procedure sub: children)
         {
-            double th = Checker.FUZZY_THRESHOLD * (sub.getName().length() + name.length());
-            if (ld.apply(sub.getName(), name) <= th)
+            if (Checker.isSimilar(sub.getName(), name))
             {
                 l.add(sub);
             }
@@ -269,7 +265,7 @@ public class Procedure
     public void precompute()
     {
         body.precompute(this, null);
-        for(Procedure sub: children)
+        for (Procedure sub: children)
         {
             sub.precompute();
         }

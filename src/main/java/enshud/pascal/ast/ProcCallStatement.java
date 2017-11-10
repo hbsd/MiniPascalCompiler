@@ -28,7 +28,7 @@ public class ProcCallStatement implements IBasicStatement
         return name;
     }
     
-    public List<IExpression> getExpressions()
+    public List<IExpression> getArgs()
     {
         return args.getList();
     }
@@ -48,67 +48,82 @@ public class ProcCallStatement implements IBasicStatement
     @Override
     public IType check(Procedure proc, Checker checker)
     {
-        final String name = getName().toString();
-        final Procedure sub = proc.getSubProc(name);
-        final List<IExpression> exps = getExpressions();
+        final Procedure sub = proc.getSubProc(getName().toString());
         
         if (sub == null)
         {
-            List<Procedure> p = proc.getSubProcFuzzy(name);
-            checker.addErrorMessage(
-                proc, getName(),
-                "procedure '" + name + "' is not defined."
-              + (p.isEmpty()? "" : (" did you mean procedure " + p +  "?"))
-            );
-
-            for (final IExpression exp: exps)
-            {
-                exp.check(proc, checker);
-            }
+            checkWhenNotFound(proc, checker);
         }
-        else if (exps.size() != sub.getParamLength())
+        else if (getArgs().size() != sub.getParamLength())
         {
-            final String msg1 = exps.size() == 0? "no": "" + exps.size();
-            final String msg2 = sub.getParamLength() == 0? "no": "" + sub.getParamLength();
-            
-            checker.addErrorMessage(
-                proc, this, "cannot call procedure '" + name + "' by " + msg1 + " arguments. must be " + msg2 + " args."
-            );
-            for (final IExpression exp: exps)
-            {
-                exp.check(proc, checker);
-            }
+            checkWhenInvalidLength(proc, checker);
         }
         else
         {
-            int i = 0;
-            for (final IExpression exp: exps)
-            {
-                final BasicType ptype = sub.getParamType(i);
-                final IType atype = exp.check(proc, checker);
-                
-                if (atype instanceof StringType)
-                {
-                    exp.retype(ptype);
-                }
-                else if (!ptype.equals(atype))
-                {
-                    checker.addErrorMessage(
-                        proc, this,
-                        "incompatible type: cannot pass " + atype + " type to " + Checker.getOrderString(i + 1)
-                                + " argument of procedure '" + name + "'. must be " + ptype + "."
-                    );
-                }
-                ++i;
-            }
+            checkArgumentTypes(proc, checker);
         }
         return null;
+    }
+    
+    private void checkArgumentTypes(Procedure proc, Checker checker)
+    {
+        int i = 0;
+        for (final IExpression exp: getArgs())
+        {
+            final BasicType ptype = proc.getSubProc(getName().toString()).getParamType(i);
+            final IType atype = exp.check(proc, checker);
+            
+            if (atype instanceof StringType)
+            {
+                exp.retype(ptype);
+            }
+            else if (!ptype.equals(atype))
+            {
+                checker.addErrorMessage(
+                    proc, this,
+                    "incompatible type: cannot pass " + atype + " type to " + Checker.getOrderString(i + 1)
+                            + " argument of procedure '" + name + "'. must be " + ptype + "."
+                );
+            }
+            ++i;
+        }
+    }
+    
+    private void checkWhenNotFound(Procedure proc, Checker checker)
+    {
+        List<Procedure> p = proc.getSubProcFuzzy(getName().toString());
+        checker.addErrorMessage(
+            proc, getName(),
+            "procedure '" + name + "' is not defined."
+                    + (p.isEmpty()? "": (" did you mean procedure " + p + "?"))
+        );
+        
+        for (final ITyped exp: getArgs())
+        {
+            exp.check(proc, checker);
+        }
+    }
+    
+    private void checkWhenInvalidLength(Procedure proc, Checker checker)
+    {
+        final String msg1 = getArgs().size() == 0? "no": "" + getArgs().size();
+        
+        Procedure sub = proc.getSubProc(getName().toString());
+        final String msg2 = sub.getParamLength() == 0? "no": "" + sub.getParamLength();
+        
+        checker.addErrorMessage(
+            proc, this, "cannot call procedure '" + name + "' by " + msg1 + " arguments. must be " + msg2 + " args."
+        );
+        for (final ITyped exp: getArgs())
+        {
+            exp.check(proc, checker);
+        }
     }
     
     @Override
     public IStatement precompute(Procedure proc, Context context)
     {
-        for(IExpression e: getExpressions())
+        for (ITyped e: getArgs())
         {
             e.preeval(proc, context);
         }
@@ -119,9 +134,9 @@ public class ProcCallStatement implements IBasicStatement
     public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         
-        for (int i = getExpressions().size() - 1; i >= 0; --i)
+        for (int i = getArgs().size() - 1; i >= 0; --i)
         {
-            final IExpression e = getExpressions().get(i);
+            final IExpression e = getArgs().get(i);
             e.compile(codebuilder, proc, l_gen);
             codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
         }

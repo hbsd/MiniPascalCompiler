@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
-import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
@@ -55,23 +54,18 @@ public class TailedSimpleExpression extends SimpleExpression
     @Override
     public IType check(Procedure proc, Checker checker)
     {
-        if (type == UnknownType.UNKNOWN)
-        {
-            throw new Error("aaa");
-        }
-        
         IType head_type = getHead().check(proc, checker);
         IType tail_type = getTail().check(proc, checker);
         
         if (head_type.isUnknown() && !tail_type.isUnknown())
         {
-            getHead().retype(tail_type);
             head_type = tail_type;
+            getHead().retype(tail_type);
         }
         else if (!head_type.isUnknown() && tail_type.isUnknown())
         {
-            getTail().retype(head_type);
             tail_type = head_type;
+            getTail().retype(head_type);
         }
         else if (head_type.isUnknown() && tail_type.isUnknown())
         {

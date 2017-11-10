@@ -49,11 +49,11 @@ class RepeatParser implements IParser
     @Override
     public INode parse(ParserInput input)
     {
-        if(input.isEmpty() && beg == 0)
+        if (input.isEmpty() && beg == 0)
         {
             return new SequenceNode();
         }
-
+        
         IParser.verbose("{");
         int count = 0;
         final int save = input.getIndex();

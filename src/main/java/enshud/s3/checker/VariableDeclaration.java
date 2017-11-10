@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.text.similarity.LevenshteinDistance;
-
 import enshud.pascal.type.IType;
 
 
@@ -72,12 +70,10 @@ public class VariableDeclaration
     
     List<Variable> getFuzzy(String name)
     {
-        LevenshteinDistance ld = new LevenshteinDistance();
         List<Variable> l = new ArrayList<>();
         for (final Variable v: vars)
         {
-            double th = Checker.FUZZY_THRESHOLD * (name.length() + v.name.length());
-            if (ld.apply(v.name, name) <= th)
+            if (Checker.isSimilar(v.name, name))
             {
                 l.add(v);
             }

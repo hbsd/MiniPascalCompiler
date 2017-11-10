@@ -30,7 +30,7 @@ public class Context
     void set(String name, int index, IConstant val)
     {
         Map<Integer, IConstant> a = arrs.get(name);
-        if(a == null)
+        if (a == null)
         {
             a = new HashMap<>();
             arrs.put(name, a);

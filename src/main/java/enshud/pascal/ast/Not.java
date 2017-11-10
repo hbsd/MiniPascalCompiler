@@ -13,7 +13,7 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class Not implements IFactor
 {
-    IFactor    factor;
+    IFactor          factor;
     final LexedToken not_token;
     
     public Not(IFactor factor, LexedToken not_token)
@@ -78,7 +78,7 @@ public class Not implements IFactor
     public IConstant preeval(Procedure proc, Context context)
     {
         IConstant res = factor.preeval(proc, context);
-        if(res == null)
+        if (res == null)
         {
             return null;
         }

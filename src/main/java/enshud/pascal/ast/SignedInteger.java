@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class SignedInteger implements ILiteral
 {
-    final SignLiteral     sign_lit;
+    final SignLiteral    sign_lit;
     final IntegerLiteral uinteger;
     
     public SignedInteger(SignLiteral sign_lit, IntegerLiteral uinteger)

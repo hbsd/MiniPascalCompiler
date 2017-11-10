@@ -14,7 +14,7 @@ public class WhileStatement implements IStatement
 {
     final Expression cond;
     final IStatement statement;
-    private boolean infinite_loop = false;
+    private boolean  infinite_loop = false;
     
     public WhileStatement(Expression cond, IStatement statement)
     {
@@ -67,11 +67,11 @@ public class WhileStatement implements IStatement
     public IStatement precompute(Procedure proc, Context context)
     {
         IConstant res = cond.preeval(proc, context);
-        if(res == null)
+        if (res == null)
         {
             return this;
         }
-        else if(((BooleanLiteral)res).getBool())
+        else if (((BooleanLiteral)res).getBool())
         {
             infinite_loop = true;
             return this;
@@ -90,8 +90,8 @@ public class WhileStatement implements IStatement
         l_gen.next();
         
         codebuilder.append("C").append(label).append(" NOP; start of WHILE").append(System.lineSeparator());
-
-        if(!infinite_loop)
+        
+        if (!infinite_loop)
         {
             cond.compile(codebuilder, proc, l_gen);
             
@@ -101,8 +101,8 @@ public class WhileStatement implements IStatement
         
         statement.compile(codebuilder, proc, l_gen);
         codebuilder.append(" JUMP C").append(label).append(System.lineSeparator());
-
-        if(!infinite_loop)
+        
+        if (!infinite_loop)
         {
             codebuilder.append("F").append(label).append(" NOP; end of WHILE").append(System.lineSeparator());
         }

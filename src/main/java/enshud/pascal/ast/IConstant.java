@@ -3,6 +3,7 @@ package enshud.pascal.ast;
 import enshud.s3.checker.Context;
 import enshud.s3.checker.Procedure;
 
+
 public interface IConstant extends IFactor, ILiteral
 {
     @Override
@@ -10,7 +11,7 @@ public interface IConstant extends IFactor, ILiteral
     {
         return this;
     }
-
+    
     @Override
     default void printHead(String indent, String msg)
     {

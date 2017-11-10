@@ -12,7 +12,7 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class IntegerLiteral implements IConstant
 {
-    int             num;
+    int              num;
     final LexedToken token;
     
     public IntegerLiteral(LexedToken token)

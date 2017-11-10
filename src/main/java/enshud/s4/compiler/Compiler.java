@@ -25,10 +25,10 @@ public class Compiler
         // Compilerを実行してcasを生成する
         new Lexer().run("test.pas", "tmp/out.ts");
         new Compiler().run("tmp/out.ts", "tmp/out.cas");
-        //new Compiler().run("data/ts/normal01.ts", "tmp/out.cas");
+        // new Compiler().run("data/ts/normal01.ts", "tmp/out.cas");
         
         // CaslSimulatorクラスを使ってコンパイルしたcasを，CASLアセンブラ & COMETシミュレータで実行する
-        CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
+        // CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
     }
     
     /**

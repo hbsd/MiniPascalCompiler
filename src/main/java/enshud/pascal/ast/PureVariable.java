@@ -75,23 +75,23 @@ public class PureVariable implements IVariable, ILiteral
             {
                 List<Variable> vs = proc.getVarFuzzy(nm);
                 String n = null;
-                if(!vs.isEmpty())
+                if (!vs.isEmpty())
                 {
                     n = vs.toString();
                 }
                 else
                 {
                     List<Param> ps = proc.getParamFuzzy(nm);
-                    if(!ps.isEmpty())
+                    if (!ps.isEmpty())
                     {
                         n = ps.toString();
                     }
                 }
-
+                
                 checker.addErrorMessage(
                     proc, getName(),
                     "variable '" + nm + "' is not defined."
-                  + ((n == null)? "" : (" did you mean variable " + n +  "?"))
+                            + ((n == null)? "": (" did you mean variable " + n + "?"))
                 );
             }
         }
@@ -121,38 +121,21 @@ public class PureVariable implements IVariable, ILiteral
     @Override
     public void compileForData(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        _compile("LD", codebuilder, proc, l_gen);
+        compileImpl("LD", codebuilder, proc, l_gen);
     }
     
     @Override
     public void compileForAddr(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
-        _compile("LAD", codebuilder, proc, l_gen);
+        compileImpl("LAD", codebuilder, proc, l_gen);
     }
     
-    private void _compile(String inst, StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    private void compileImpl(String inst, StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
     {
         Variable var = proc.getLocalVar(getName().toString());
         if (var != null)
         {
-            final int align = var.getAlignment();
-            
-            if (var.getType().isArrayType())
-            {
-                final int len = ((ArrayType)var.getType()).getSize();
-                codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 1 - len).append(",GR5")
-                    .append(System.lineSeparator());
-                // array length
-                if (inst.equals("LAD"))
-                {
-                    codebuilder.append(" LAD GR1,").append(var.getType().getSize()).append(System.lineSeparator());
-                }
-            }
-            else
-            {
-                codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 2).append(",GR5")
-                    .append(System.lineSeparator());
-            }
+            compileForVariable(codebuilder, var, inst, "GR5");
         }
         else
         {
@@ -166,25 +149,30 @@ public class PureVariable implements IVariable, ILiteral
             else
             {
                 var = proc.getGlobalVar(getName().toString());
-                final int align = var.getAlignment();
-                
-                if (var.getType().isArrayType())
-                {
-                    final int len = ((ArrayType)var.getType()).getSize();
-                    codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 1 - len).append(",GR4")
-                        .append(System.lineSeparator());
-                    // array length
-                    if (inst.equals("LAD"))
-                    {
-                        codebuilder.append(" LAD GR1,").append(var.getType().getSize()).append(System.lineSeparator());
-                    }
-                }
-                else
-                {
-                    codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 2).append(",GR4")
-                        .append(System.lineSeparator());
-                }
+                compileForVariable(codebuilder, var, inst, "GR4");
             }
+        }
+    }
+    
+    private void compileForVariable(StringBuilder codebuilder, Variable var, String inst, String gr)
+    {
+        final int align = var.getAlignment();
+        
+        if (var.getType().isArrayType())
+        {
+            final int len = ((ArrayType)var.getType()).getSize();
+            codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 1 - len).append(',').append(gr)
+                .append(System.lineSeparator());
+            // array length
+            if (inst.equals("LAD"))
+            {
+                codebuilder.append(" LAD GR1,").append(var.getType().getSize()).append(System.lineSeparator());
+            }
+        }
+        else
+        {
+            codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 2).append(',').append(gr)
+                .append(System.lineSeparator());
         }
     }
     

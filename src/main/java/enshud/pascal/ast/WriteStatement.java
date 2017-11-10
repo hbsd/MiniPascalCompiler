@@ -63,7 +63,7 @@ public class WriteStatement implements IReadWriteStatement
     @Override
     public IStatement precompute(Procedure proc, Context context)
     {
-        for(IExpression e: exps.getList())
+        for (IExpression e: exps.getList())
         {
             e.preeval(proc, context);
         }

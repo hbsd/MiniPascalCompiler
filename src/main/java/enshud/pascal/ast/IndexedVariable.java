@@ -77,7 +77,7 @@ public class IndexedVariable implements IVariable, ILiteral
             checker.addErrorMessage(
                 proc, getName(),
                 "variable '" + nm + "' is not defined."
-              + (vs.isEmpty()? "" : (" did you mean variable " + vs +  "?"))
+                        + (vs.isEmpty()? "": (" did you mean variable " + vs + "?"))
             );
         }
         else if (type.isBasicType())
@@ -125,20 +125,21 @@ public class IndexedVariable implements IVariable, ILiteral
         final Variable var = proc.getLocalVar(nm);
         if (var != null)
         {
-            final int align = var.getAlignment();
-            
-            final int max = ((ArrayType)var.getType()).getMax();
-            codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(",GR5").append(System.lineSeparator());
+            __compile(codebuilder, var, "GR5");
         }
         else
         {
-            final Variable var_g = proc.getGlobalVar(nm);
-            final int align = var_g.getAlignment();
-            
-            final int max = ((ArrayType)var_g.getType()).getMax();
-            codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(",GR4").append(System.lineSeparator());
+            __compile(codebuilder, proc.getGlobalVar(nm), "GR4");
         }
         codebuilder.append(" ADDL GR1,GR2; add index").append(System.lineSeparator());
+    }
+    
+    private void __compile(StringBuilder codebuilder, Variable var, String gr)
+    {
+        final int align = var.getAlignment();
+        
+        final int max = ((ArrayType)var.getType()).getMax();
+        codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(',').append(gr).append(System.lineSeparator());
     }
     
     @Override
