@@ -1,7 +1,8 @@
 package enshud.s3.checker;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Optional;
 
 import enshud.pascal.ast.*;
 import enshud.pascal.type.ArrayType;
@@ -9,67 +10,60 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.ParameterDeclaration.Param;
-
-import java.util.ArrayList;
-
-import enshud.s3.checker.VariableDeclaration.Variable;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class Procedure
 {
-    private final Procedure              parent;
-    private final String                 name;
-    private final List<Procedure>        children    = new ArrayList<>();
+    private Procedure                  parent;
+    private final String               name;
+    private final String               proc_id;                                 // for
+                                                                                // label
+    private final List<Procedure>      children    = new ArrayList<>();
     
-    private final ParameterDeclaration   param_decls = new ParameterDeclaration();
-    private final VariableDeclaration    var_decls   = new VariableDeclaration();
+    private final VariableDeclarations param_decls = new VariableDeclarations();
+    private final VariableDeclarations var_decls   = new VariableDeclarations();
     
-    private final StatementList          body;
+    private final CompoundStatement    body;
     
-    private static final boolean OPTIMIZE    = true;
+    private static final boolean       OPTIMIZE    = true;
     
-    private Procedure(Checker checker, Program prg)
+    private Procedure(Checker checker, ProcedureDeclaration prg, Procedure parent, String proc_id)
     {
-        parent = null;
+        this.parent = parent;
         name = prg.getName().toString();
+        this.proc_id = proc_id;
         
-        Objects.requireNonNull(checker);
-        checkVarDecls(prg.getVars().getList(), checker);
+        checkParams(prg.getParams(), checker);
+        checkVarDecls(prg.getVars(), checker);
         
-        for (final SubProgramDeclaration sub_decl: prg.getSubProcs().getList())
-        {
-            if(var_decls.exists(sub_decl.toString()))
-            {
-                checker.addErrorMessage(this, sub_decl, "'" + sub_decl.toString() + "' is already defined.");
-            }
-            new Procedure(checker, sub_decl, this);
-        }
+        createSubProc(checker, prg, proc_id);
+        
         body = prg.getBody();
         body.check(this, checker);
-        if (OPTIMIZE)
-            precompute();
     }
     
-    private Procedure(Checker checker, SubProgramDeclaration sub, Procedure parent)
+    private void createSubProc(Checker checker, ProcedureDeclaration prg, String proc_id)
     {
-        this.parent = Objects.requireNonNull(parent);
-        parent.children.add(this);
-        name = sub.getName().toString();
-        
-        Objects.requireNonNull(checker);
-        checkParams(sub.getParams().getList(), checker);
-        checkVarDecls(sub.getVars().getList(), checker);
-        body = sub.getBody();
-        body.check(this, checker);
-        if (OPTIMIZE)
-            precompute();
+        int i = 0;
+        for (final ProcedureDeclaration sub_decl: prg.getSubProcs())
+        {
+            checkIfSubProcAlreadyDefined(checker, sub_decl);
+            final Procedure sub = new Procedure(checker, sub_decl, this, proc_id + i);
+            children.add(sub);
+            ++i;
+        }
     }
     
-    public static Procedure create(Checker checker, Program prg)
+    public static Procedure create(Checker checker, ProcedureDeclaration prg)
     {
-        return new Procedure(checker, prg);
+        final Procedure p = new Procedure(checker, prg, null, "P0");
+        if (OPTIMIZE)
+        {
+            p.precompute();
+        }
+        return p;
     }
     
     @Override
@@ -83,22 +77,40 @@ public class Procedure
         return name;
     }
     
-    public Param getParam(String name)
+    public String getId()
+    {
+        return proc_id;
+    }
+    
+    public String getQualifiedName()
+    {
+        return isRoot()
+                ? getName()
+                : parent.getQualifiedName() + "." + getName();
+    }
+    
+    private Procedure getRoot()
+    {
+        return isRoot()? this: parent.getRoot();
+    }
+    
+    private boolean isRoot()
+    {
+        return parent == null;
+    }
+    
+    
+    public Optional<Variable> getParam(String name)
     {
         return param_decls.get(name);
     }
     
-    public List<Param> getParamFuzzy(String name)
+    public List<Variable> searchForParamFuzzy(String name)
     {
-        return param_decls.getFuzzy(name);
+        return param_decls.searchForFuzzy(name);
     }
     
-    public int getParamIndex(String name)
-    {
-        return param_decls.getIndex(name);
-    }
-    
-    public BasicType getParamType(int index)
+    public IType getParamType(int index)
     {
         return param_decls.get(index).getType();
     }
@@ -109,144 +121,130 @@ public class Procedure
     }
     
     
-    public boolean existsVar(String name)
-    {
-        return getVar(name) != null;
-    }
-    
-    public Variable getVar(String name)
-    {
-        final Variable var = var_decls.get(name);
-        if (var == null && parent != null)
-        {
-            return parent.getVar(name);
-        }
-        else
-        {
-            return var;
-        }
-    }
-    
-    public List<Variable> getVarFuzzy(String name)
-    {
-        final List<Variable> var = var_decls.getFuzzy(name);
-        if (parent != null)
-        {
-            var.addAll(parent.getVarFuzzy(name));
-        }
-        return var;
-    }
-    
-    public IType getVarType(String name)
-    {
-        final Variable v = getVar(name);
-        return v != null? v.getType(): UnknownType.UNKNOWN;
-    }
-    
-    public Variable getLocalVar(String name)
+    public Optional<Variable> getLocalVar(String name)
     {
         return var_decls.get(name);
     }
     
-    public Variable getGlobalVar(String name)
+    public Optional<Variable> getGlobalVar(String name)
     {
-        Procedure p = this;
-        while (p.parent != null)
+        return getRoot().getLocalVar(name);
+    }
+    
+    public Optional<Variable> getVar(String name)
+    {
+        final Optional<Variable> var = getLocalVar(name);
+        return (var.isPresent() || isRoot())
+                ? var
+                : getGlobalVar(name);
+    }
+    
+    public IType getVarType(String name)
+    {
+        return getVar(name)
+            .map(v -> v.getType())
+            .orElse(UnknownType.UNKNOWN);
+    }
+    
+    public List<Variable> searchForVarFuzzy(String name)
+    {
+        final List<Variable> var = var_decls.searchForFuzzy(name);
+        if (!isRoot())
         {
-            p = p.parent;
+            var.addAll(getRoot().searchForVarFuzzy(name));
         }
-        return p.getLocalVar(name);
+        return var;
     }
     
     
-    public boolean existsSubProc(String name)
+    public Optional<Procedure> getSubProc(String name)
     {
-        return getSubProc(name) != null;
-    }
-    
-    public Procedure getSubProc(String name)
-    {
-        for (final Procedure sub: children)
+        if (getName().equals(name))
         {
-            if (sub.getName().equals(name))
-            {
-                return sub;
-            }
+            return Optional.of(this);
         }
-        return parent == null? null: parent.getSubProc(name);
+        
+        final Optional<Procedure> p = children
+            .stream()
+            .filter(sub -> sub.getName().equals(name))
+            .findFirst();
+        
+        return (p.isPresent() || isRoot())
+                ? p
+                : getRoot().getSubProc(name);
     }
     
     public List<Procedure> getSubProcFuzzy(String name)
     {
         List<Procedure> l = new ArrayList<>();
-        for (final Procedure sub: children)
+        if (Checker.isSimilar(getName(), name))
         {
-            if (Checker.isSimilar(sub.getName(), name))
-            {
-                l.add(sub);
-            }
+            l.add(this);
         }
+        
+        children
+            .stream()
+            .filter(sub -> Checker.isSimilar(sub.getName(), name))
+            .forEach(l::add);
+        
+        if (!isRoot())
+        {
+            l.addAll(getRoot().getSubProcFuzzy(name));
+        }
+        
         return l;
-    }
-    
-    public int getSubProcIndex(String name)
-    {
-        int i = 1;
-        for (final Procedure sub: children)
-        {
-            if (sub.getName().equals(name))
-            {
-                return i;
-            }
-            ++i;
-        }
-        return parent == null? -1: parent.getSubProcIndex(name);
     }
     
     private void checkParams(List<Parameter> params, Checker checker)
     {
-        // subprocs.add(scope);
-        for (final Parameter p: params)
-        {
-            for (final Identifier id: p.getNames())
-            {
-                final String n = id.toString();
-                final BasicType t = p.getType();
-                if (var_decls.exists(n))
-                {
-                    checker.addErrorMessage(this, id, "'" + n + "' is already defined.");
-                }
-                else
-                {
-                    param_decls.add(n, t);
-                    // subprocs.add(scope, name, pascal.type);
-                }
+        params.forEach(
+            p -> {
+                p.getNames().forEach(
+                    id -> {
+                        final String n = id.toString();
+                        final BasicType t = p.getType();
+                        if (getName().equals(n))
+                        {
+                            checker.addErrorMessage(this, id, "'" + n + "' is already defined as proc.");
+                        }
+                        else
+                        {
+                            param_decls.add(n, t);
+                        }
+                    }
+                );
             }
-        }
+        );
     }
     
     private void checkVarDecls(List<enshud.pascal.ast.VariableDeclaration> vars, Checker checker)
     {
-        for (final enshud.pascal.ast.VariableDeclaration decl: vars)
-        {
-            if (decl.getType() instanceof ArrayType)
-            {
-                checkArrayType(checker, decl);
-            }
-            
-            for (final Identifier id: decl.getNames())
-            {
-                final String n = id.toString();
-                if (var_decls.exists(n) || param_decls.exists(n))
+        vars.forEach(
+            decl -> {
+                if (decl.getType() instanceof ArrayType)
                 {
-                    checker.addErrorMessage(this, id, "'" + n + "' is already defined.");
+                    checkArrayType(checker, decl);
                 }
-                else
-                {
-                    var_decls.add(n, decl.getType());
-                }
+                
+                decl.getNames().forEach(
+                    id -> {
+                        final String n = id.toString();
+                        if (param_decls.exists(n))
+                        {
+                            checker.addErrorMessage(this, id, "'" + n + "' is already defined as parameter.");
+                        }
+                        else if (var_decls.exists(n))
+                        {
+                            checker.addErrorMessage(this, id, "'" + n + "' is already defined as local variable.");
+                        }
+                        else
+                        {
+                            var_decls.add(n, decl.getType());
+                        }
+                    }
+                );
             }
-        }
+        );
     }
     
     private void checkArrayType(Checker checker, enshud.pascal.ast.VariableDeclaration decl)
@@ -276,89 +274,84 @@ public class Procedure
         }
     }
     
+    private void checkIfSubProcAlreadyDefined(Checker checker, ProcedureDeclaration sub_decl)
+    {
+        final String sub_n = sub_decl.toString();
+        final String err = getName().equals(sub_decl)
+                ? "parent proc"
+                : param_decls.exists(sub_n)
+                        ? "parameter"
+                        : var_decls.exists(sub_n)
+                                ? "local variable"
+                                : (children.stream().map(c -> c.getName()).anyMatch(sub_n::equals))
+                                        ? "sibling proc"
+                                        : null;
+        if (err != null)
+        {
+            checker.addErrorMessage(
+                this, sub_decl, "proc '" + sub_decl.toString() + "' is already defined as " + err + "."
+            );
+        }
+    }
+    
+    
     public void precompute()
     {
         body.precompute(this);
-        for (Procedure sub: children)
-        {
-            sub.precompute();
-        }
+        children.forEach(sub -> sub.precompute());
     }
     
-    public void compile(StringBuilder codebuilder)
+    
+    public List<Casl2Instruction> compile(List<Casl2Instruction> code)
     {
-        codebuilder.append("PMAIN").append(" START").append(System.lineSeparator());
-        codebuilder.append(" XOR GR6,GR6").append(System.lineSeparator());
-        codebuilder.append(" LAD GR7,BUF").append(System.lineSeparator());
-        
-        // save parent frame
-        codebuilder.append(" PUSH 0,GR5; save parent's frame pointer").append(System.lineSeparator());
-        codebuilder.append(" LAD GR4,1,GR8; set program frame pointer").append(System.lineSeparator());
-        codebuilder.append(" LD GR5,GR4; set my frame pointer").append(System.lineSeparator());
-        
-        final int locals = var_decls.getAllSize() - param_decls.length();
-        if (locals > 0)
+        compile_(code);
+        return code;
+    }
+    
+    private void compile_(List<Casl2Instruction> code)
+    {
+        if (isRoot())
         {
-            codebuilder.append(" LAD GR8,").append(-locals).append(",GR8; reserve local variables").append(
-                System.lineSeparator()
+            code.add(new Casl2Instruction("START", "PROGRAM", "; proc " + getQualifiedName()));
+            code.add(new Casl2Instruction("XOR", "", "; buffer length", "GR6", "GR6"));
+            code.add(new Casl2Instruction("LAD", "", "; buffer address", "GR7", "BUF"));
+            code.add(new Casl2Instruction("LD", "", "; set global frame pointer", "GR4", "GR8"));
+            code.add(new Casl2Instruction("PUSH", proc_id, "; save parent's frame pointer", "0", "GR5"));
+        }
+        else
+        {
+            code.add(new Casl2Instruction("START", proc_id, "; proc " + getQualifiedName()));
+            code.add(new Casl2Instruction("PUSH", "", "; save parent's frame pointer", "0", "GR5"));
+        }
+        
+        code.add(new Casl2Instruction("LAD", "", "; set my frame pointer", "GR5", "1", "GR8"));
+        
+        if (var_decls.getAllSize() > 0)
+        {
+            code.add(
+                new Casl2Instruction(
+                    "LAD", "", "; reserve local variables", "GR8", "" + (-var_decls.getAllSize()), "GR8"
+                )
             );
         }
         
-        codebuilder.append("; program's body begins").append(System.lineSeparator());
-        body.compile(codebuilder, this, new LabelGenerator());
+        body.compile(code, this, new LabelGenerator());
         
-        compileReturn(codebuilder);
-        codebuilder.append("BUF DS 256").append(System.lineSeparator());
-        codebuilder.append(" END");
-        
-        int i = 1;
-        for (final Procedure c: children)
+        compileReturn(code);
+        if (isRoot())
         {
-            codebuilder.append(System.lineSeparator());
-            c.compileSubProgram(codebuilder, i);
-            ++i;
+            code.add(new Casl2Instruction("DS", "BUF", "; buffer for write", "256"));
         }
+        
+        code.add(new Casl2Instruction("END", "", ""));
+        children.forEach(sub -> sub.compile_(code));
     }
     
-    private void compileSubProgram(StringBuilder codebuilder, int proc_idx)
+    public void compileReturn(List<Casl2Instruction> code)
     {
-        codebuilder.append("PSUB").append(proc_idx).append(" START").append(System.lineSeparator());
-        
-        // save parent frame
-        codebuilder.append(" PUSH 0,GR5; save parent's frame pointer").append(System.lineSeparator());
-        codebuilder.append(" LAD GR5,1,GR8; set my frame pointer").append(System.lineSeparator());
-        
-        // copy arguments
-        if (param_decls.length() > 0)
-        {
-            codebuilder.append("; copy arguments").append(System.lineSeparator());
-            for (int i = param_decls.length(); i >= 0; --i)
-            {
-                codebuilder.append(" LD GR3,").append(i).append(",GR7").append(System.lineSeparator());
-                codebuilder.append(" PUSH 0,GR3").append(System.lineSeparator());
-            }
-        }
-        
-        final int locals = var_decls.getAllSize() - param_decls.length();
-        if (locals > 0)
-        {
-            codebuilder.append(" LAD GR8,").append(-locals).append(",GR8; reserve local variables").append(
-                System.lineSeparator()
-            );
-        }
-        
-        codebuilder.append("; procedure's body begins").append(System.lineSeparator());
-        body.compile(codebuilder, this, new LabelGenerator());
-        
-        compileReturn(codebuilder);
-        codebuilder.append(" END");
-    }
-    
-    public void compileReturn(StringBuilder codebuilder)
-    {
-        codebuilder.append(" LD GR8,GR5; point to return address").append(System.lineSeparator());
-        codebuilder.append(" LD GR5,-1,GR5; restore parent's frame pointer").append(System.lineSeparator());
-        codebuilder.append(" RET").append(System.lineSeparator());
+        code.add(new Casl2Instruction("LD", "", "; point to return address", "GR8", "GR5"));
+        code.add(new Casl2Instruction("LD", "", "; restore parent's frame pointer", "GR5", "-1", "GR5"));
+        code.add(new Casl2Instruction("RET", "", ""));
     }
 }
 

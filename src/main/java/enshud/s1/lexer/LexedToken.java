@@ -49,10 +49,9 @@ public class LexedToken
     public static LexedToken fromString(String str)
     {
         final String[] ss = str.split("\\t");
-        return new LexedToken(
-            ss[0], TokenType.getById(Integer.parseInt(ss[2])),
-            Integer.parseInt(ss[3]), -1
-        );
+        TokenType ttype = TokenType.getById(Integer.parseInt(ss[2])).get();
+        
+        return new LexedToken(ss[0], ttype, Integer.parseInt(ss[3]), -1);
     }
     
     @Override

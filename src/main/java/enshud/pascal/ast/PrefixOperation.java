@@ -1,10 +1,13 @@
 package enshud.pascal.ast;
 
+import java.util.List;
+
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -53,10 +56,10 @@ public class PrefixOperation implements ITyped
     {
         IType t = getOperand().check(proc, checker);
         
-        if (t.isUnknown())
+        /*if (t.isUnknown())
         {
             getOperand().retype(getOp().getOperandType());
-        }
+        }*/
         
         if (!t.equals(getOp().getOperandType()))
         {
@@ -85,10 +88,10 @@ public class PrefixOperation implements ITyped
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        getOperand().compile(codebuilder, proc, l_gen);
-        getOp().compile(codebuilder, l_gen);
+        getOperand().compile(code, proc, l_gen);
+        getOp().compile(code, l_gen);
     }
     
     @Override

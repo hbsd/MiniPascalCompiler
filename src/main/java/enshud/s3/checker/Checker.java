@@ -2,12 +2,12 @@ package enshud.s3.checker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
-import enshud.pascal.ast.Program;
+import enshud.pascal.ast.ProcedureDeclaration;
 import enshud.s1.lexer.LexedToken;
-import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
 import enshud.s2.parser.node.INode;
 
@@ -20,8 +20,8 @@ public class Checker
     public static void main(final String[] args)
     {
         // normalの確認
-        // new Checker().run("data/ts/normal01.ts");
-        // new Checker().run("data/ts/normal02.ts");
+        new Checker().run("data/ts/normal04.ts");
+        new Checker().run("data/ts/normal05.ts");
         
         // synerrの確認
         // new Checker().run("data/ts/synerr01.ts");
@@ -29,7 +29,7 @@ public class Checker
         
         // semerrの確認
         // new Checker().run("data/ts/semerr01.ts");
-        new Checker().run("data/ts/semerr08.ts");
+        //new Checker().run("data/ts/semerr04.ts");
     }
     
     /**
@@ -48,23 +48,23 @@ public class Checker
      */
     public void run(final String inputFileName)
     {
-        final List<LexedToken> tokens = Lexer.importLexedFile(inputFileName);
-        if (tokens == null)
-        {
-            return;
-        }
-        
-        final Program root = new Parser().parse(tokens);
-        if (root == null)
-        {
-            return;
-        }
-        
-        check(root);
-        if (isSuccess())
-        {
-            System.out.println("OK");
-        }
+        fromLexedFile(inputFileName)
+            .filter(checker -> checker.isSuccess())
+            .ifPresent(a -> System.out.println("OK"));
+    }
+    
+    public static Optional<Checker> fromLexedFile(String input_file)
+    {
+        return Parser.fromLexedFile(input_file)
+            .flatMap(parser -> parser.getProgram())
+            .map(Checker::check);
+    }
+    
+    public static Checker check(ProcedureDeclaration prg)
+    {
+        Checker c = new Checker();
+        c.check_(prg);
+        return c;
     }
     
     private static final boolean DETAIL_ERROR_MSG = false;
@@ -79,8 +79,8 @@ public class Checker
         return threshold * (s1.length() + s2.length()) > DISTANCE.apply(s1, s2);
     }
     
-    private Procedure    program = null;
-    private List<String> errors  = new ArrayList<>();
+    private Procedure          program = null;
+    private final List<String> errors  = new ArrayList<>();
     
     public void addErrorMessage(String proc_name, int line, int column, String msg)
     {
@@ -110,24 +110,14 @@ public class Checker
     
     public void printErrorMessage()
     {
-        for (final String msg: errors)
-        {
-            System.err.println(msg);
-        }
+        printErrorMessage(1);
     }
     
     public void printErrorMessage(int num)
     {
-        int i = 0;
-        for (final String msg: errors)
-        {
-            System.err.println(msg);
-            ++i;
-            if (i >= num)
-            {
-                break;
-            }
-        }
+        errors.stream()
+            .limit(num)
+            .forEach(System.err::println);
     }
     
     public boolean isSuccess()
@@ -135,13 +125,13 @@ public class Checker
         return errors.isEmpty();
     }
     
-    public Procedure getProgram()
+    public Optional<Procedure> getProgram()
     {
-        return program;
+        return Optional.ofNullable(program);
     }
     
     
-    public Procedure check(Program prg)
+    private void check_(ProcedureDeclaration prg)
     {
         program = Procedure.create(this, prg);
         if (!isSuccess())
@@ -149,7 +139,6 @@ public class Checker
             program = null;
             printErrorMessage(NUMBER_TO_PRINT);
         }
-        return program;
     }
     
     public static String getOrderString(int num)

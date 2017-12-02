@@ -8,21 +8,22 @@ import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class WriteStatement implements IStatement
 {
-    private final ExpressionList exps;
+    private final NodeList<ITyped> exps;
     
-    public WriteStatement(ExpressionList exps)
+    public WriteStatement(NodeList<ITyped> exps)
     {
         this.exps = Objects.requireNonNull(exps);
     }
     
     public List<ITyped> getExpressions()
     {
-        return exps.getList();
+        return exps;
     }
     
     @Override
@@ -62,38 +63,35 @@ public class WriteStatement implements IStatement
     @Override
     public IStatement precompute(Procedure proc)
     {
-        for (ITyped e: exps.getList())
-        {
-            e.preeval(proc);
-        }
+        exps.forEach(e -> e.preeval(proc));
         return this;
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
         for (final ITyped e: getExpressions())
         {
-            e.compile(codebuilder, proc, l_gen);
+            e.compile(code, proc, l_gen);
             
             if (e.getType() == BasicType.CHAR)
             {
-                codebuilder.append(" CALL WRTCH").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "WRTCH"));
             }
             else if (e.getType() == BasicType.INTEGER)
             {
-                codebuilder.append(" CALL WRTINT").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "WRTINT"));
             }
             else if (e.getType().isArrayOf(BasicType.CHAR))
             {
-                codebuilder.append(" CALL WRTSTR").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "WRTSTR"));
             }
             else
             {
                 assert false: "type error: (" + e.getLine() + "," + e.getColumn() + ")" + e.getType();
             }
         }
-        codebuilder.append(" CALL WRTLN").append(System.lineSeparator());
+        code.add(new Casl2Instruction("CALL", "", "", "WRTLN"));
     }
     
     @Override

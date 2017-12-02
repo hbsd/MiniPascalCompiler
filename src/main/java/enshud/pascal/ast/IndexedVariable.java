@@ -2,6 +2,7 @@ package enshud.pascal.ast;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
@@ -9,7 +10,8 @@ import enshud.pascal.type.BasicType;
 import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
-import enshud.s3.checker.VariableDeclaration.Variable;
+import enshud.s3.checker.Variable;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -72,7 +74,7 @@ public class IndexedVariable implements IVariable, ILiteral
         
         if (type == UnknownType.UNKNOWN)
         {
-            List<Variable> vs = proc.getVarFuzzy(nm);
+            List<Variable> vs = proc.searchForVarFuzzy(nm);
             checker.addErrorMessage(
                 proc, getName(),
                 "variable '" + nm + "' is not defined."
@@ -82,11 +84,16 @@ public class IndexedVariable implements IVariable, ILiteral
         else if (type.isBasicType())
         {
             checker.addErrorMessage(
-                proc, this, "incompatible type: regular type variable '" + nm + "' cannot have index."
+                proc, this, "incompatible type: non-array type variable '" + nm + "' cannot have index."
             );
         }
         
-        // check index
+        checkIndex(proc, checker);
+        return type.getBasicType();
+    }
+    
+    private void checkIndex(Procedure proc, Checker checker)
+    {
         final IType idx_type = getIndex().check(proc, checker);
         if (idx_type.isUnknown())
         {
@@ -97,10 +104,9 @@ public class IndexedVariable implements IVariable, ILiteral
         {
             checker.addErrorMessage(
                 proc, getIndex(),
-                "incompatible type: cannot use " + idx_type + " type as index of '" + nm + "'. must be INTEGER."
+                "incompatible type: cannot use " + idx_type + " type as index of '" + getName() + "'. must be INTEGER."
             );
         }
-        return type.getBasicType();
     }
     
     @Override
@@ -110,51 +116,48 @@ public class IndexedVariable implements IVariable, ILiteral
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        compileForData(codebuilder, proc, l_gen);
+        compileForData(code, proc, l_gen);
     }
     
-    private void compileImpl(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    @Override
+    public void compileForData(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        codebuilder.append(";idx v").append(System.lineSeparator());
-        getIndex().compile(codebuilder, proc, l_gen);
+        compileImpl(code, proc, l_gen);
+        code.add(new Casl2Instruction("LD", "", "", "GR2", "0", "GR1"));
+    }
+    
+    @Override
+    public void compileForAddr(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
+    {
+        compileImpl(code, proc, l_gen);
+        code.add(new Casl2Instruction("LD", "", "", "GR2", "GR1"));
+    }
+    
+    private void compileImpl(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
+    {
+        // code.append("; idx v").append(System.lineSeparator());
+        getIndex().compile(code, proc, l_gen);
         
         final String nm = getName().toString();
-        final Variable var = proc.getLocalVar(nm);
-        if (var != null)
+        final Optional<Variable> var = proc.getLocalVar(nm);
+        if (var.isPresent())
         {
-            compileImpl2(codebuilder, var, "GR5");
+            compileImpl2(code, var.get(), "GR5");
         }
         else
         {
-            compileImpl2(codebuilder, proc.getGlobalVar(nm), "GR4");
+            compileImpl2(code, proc.getGlobalVar(nm).get(), "GR4");
         }
-        codebuilder.append(" ADDL GR1,GR2; add index").append(System.lineSeparator());
+        code.add(new Casl2Instruction("ADDL", "", "; add index", "GR1", "GR2"));
     }
     
-    private void compileImpl2(StringBuilder codebuilder, Variable var, String gr)
+    private void compileImpl2(List<Casl2Instruction> code, Variable var, String gr)
     {
         final int align = var.getAlignment();
-        
         final int max = ((ArrayType)var.getType()).getMax();
-        codebuilder.append(" LAD GR1,").append(-align - 2 - max).append(',').append(gr).append(System.lineSeparator());
-    }
-    
-    @Override
-    public void compileForData(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
-    {
-        compileImpl(codebuilder, proc, l_gen);
-        codebuilder.append(" LD GR2,0,GR1").append(System.lineSeparator());
-        codebuilder.append(";idx ^").append(System.lineSeparator());
-    }
-    
-    @Override
-    public void compileForAddr(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
-    {
-        compileImpl(codebuilder, proc, l_gen);
-        codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
-        codebuilder.append(";idx ^").append(System.lineSeparator());
+        code.add(new Casl2Instruction("LAD", "",  "", "GR1", "" + (-align - 2 - max), gr));
     }
     
     @Override

@@ -1,10 +1,10 @@
 package enshud.s1.lexer;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 
@@ -18,7 +18,7 @@ public class Lexer
     {
         // normalの確認
         new Lexer().run("data/pas/normal01.pas", "tmp/out1.ts");
-        new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts");
+        //new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts");
     }
     
     /**
@@ -54,27 +54,21 @@ public class Lexer
      */
     public boolean lexFromFile(String input_file)
     {
-        final List<String> lines = importFromFile(input_file);
-        if (lines != null)
-        {
-            return lex(lines);
-        }
-        else
-        {
-            return false;
-        }
+        return importFromFile(input_file)
+                .map(this::lex)
+                .orElse(false);
     }
     
-    private static List<String> importFromFile(String input_file)
+    private static Optional<List<String>> importFromFile(String input_file)
     {
         try
         {
-            return Files.readAllLines(Paths.get(input_file));
+            return Optional.of(Files.readAllLines(Paths.get(input_file)));
         }
         catch (final IOException e)
         {
             System.err.println("File not found");
-            return null;
+            return Optional.empty();
         }
     }
     
@@ -89,6 +83,7 @@ public class Lexer
         {
             for (final String line: lines)
             {
+                //System.out.println(">" + line);
                 is_in_comment = lexLine(line, line_cnt, is_in_comment);
                 ++line_cnt;
             }
@@ -111,12 +106,11 @@ public class Lexer
             // when inside comment
             if (is_in_comment)
             {
-                final Token token = TokenType.SCOMMENTEND.lex(line.substring(col_idx));
-                if (token != null)
+                Optional<Token> t = TokenType.SCOMMENTEND.lex(line.substring(col_idx));
+                if(t.isPresent())
                 {
                     is_in_comment = false; // finish ignoring
                 }
-                
                 // next
                 ++col_idx;
             }
@@ -127,7 +121,7 @@ public class Lexer
                 final Token token = TokenType.lexOneToken(line.substring(col_idx));
                 switch (token.type)
                 {
-                case SSPACE: // simply ignore
+                case SSPACE: // just ignore
                     break;
                 
                 case SCOMMENTBEG: // start ignoring
@@ -159,9 +153,14 @@ public class Lexer
      */
     public void outputToFile(String output_name)
     {
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(Paths.get(output_name))))
+        try
         {
-            tokens.forEach(writer::println);
+            Files.write(
+                Paths.get(output_name),
+                tokens.stream()
+                    .map(t -> t.toString())
+                    .collect(Collectors.toList())
+            );
         }
         catch (final IOException e)
         {
@@ -172,27 +171,19 @@ public class Lexer
     @Override
     public String toString()
     {
-        String str = "";
-        for (final LexedToken t: tokens)
-        {
-            str += t + System.lineSeparator();
-        }
-        return str;
+        StringBuilder sb = new StringBuilder();
+        tokens.forEach(t -> sb.append(t).append(System.lineSeparator()));
+        return sb.toString();
     }
     
-    public static List<LexedToken> importLexedFile(String input_file)
+    public static Optional<List<LexedToken>> importLexedFile(String input_file)
     {
-        final List<String> lines = importFromFile(input_file);
-        if (lines != null)
-        {
-            final List<LexedToken> tokens = new ArrayList<>();
-            for (final String s: lines)
-            {
-                tokens.add(LexedToken.fromString(s));
-            }
-            return tokens;
-        }
-        return null;
+        return importFromFile(input_file)
+                .map(lines ->
+                     lines.stream()
+                          .map(LexedToken::fromString)
+                          .collect(Collectors.toList())
+               );
     }
     
 }

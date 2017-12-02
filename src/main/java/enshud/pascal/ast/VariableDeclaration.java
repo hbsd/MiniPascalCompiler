@@ -8,10 +8,10 @@ import enshud.pascal.type.IType;
 
 public class VariableDeclaration implements IDeclaration
 {
-    private final NameList    names;
-    private final TypeLiteral type;
+    private final NodeList<Identifier> names;
+    private final TypeLiteral          type;
     
-    public VariableDeclaration(NameList names, TypeLiteral type)
+    public VariableDeclaration(NodeList<Identifier> names, TypeLiteral type)
     {
         this.names = Objects.requireNonNull(names);
         this.type = Objects.requireNonNull(type);
@@ -19,7 +19,7 @@ public class VariableDeclaration implements IDeclaration
     
     public List<Identifier> getNames()
     {
-        return names.getList();
+        return names;
     }
     
     public TypeLiteral getTypeLiteral()

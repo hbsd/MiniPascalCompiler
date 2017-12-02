@@ -1,10 +1,10 @@
 package enshud.s2.parser.parsers.basic;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.TokenType;
 import enshud.s2.parser.ParserInput;
 import enshud.s2.parser.node.INode;
@@ -28,35 +28,23 @@ public class LookAheadSelectParser implements IParser
     @Override
     public Set<TokenType> getFirstSet()
     {
-        final Set<TokenType> set = new HashSet<>();
-        for (final ParserPair p: pairs)
-        {
-            set.addAll(p.look.getFirstSet());
-        }
-        return set;
+        return Stream.of(pairs)
+                .flatMap(p -> p.look.getFirstSet().stream()) // merge two Sets
+                .collect(Collectors.toSet());
     }
     
     @Override
     public INode parse(ParserInput input)
     {
-        for (final ParserPair p: pairs)
-        {
-            if (p.look.parse(input).isSuccess())
-            {
-                return p.parser.parse(input);
-            }
-        }
-        
-        if (!input.isEmpty())
-        {
-            final LexedToken tk = input.getFront();
-            return new FailureNode(tk, "Selection Not Found.");
-        }
-        else
-        {
-            return new FailureNode("Selection Not Found.");
-        }
-        
+        return Stream.of(pairs)
+                .filter(p -> p.look.parse(input).isSuccess())
+                .findFirst()
+                .map(p -> p.parser.parse(input))
+                .orElse(
+                    (!input.isEmpty())
+                        ? new FailureNode(input.getFront(), "Selection Not Found.")
+                        : new FailureNode("Selection Not Found.")
+                );
     }
     
 }

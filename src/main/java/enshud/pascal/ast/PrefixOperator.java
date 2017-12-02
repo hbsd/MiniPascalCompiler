@@ -1,8 +1,11 @@
 package enshud.pascal.ast;
 
+import java.util.List;
+
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 public enum PrefixOperator
@@ -15,7 +18,7 @@ public enum PrefixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
             // Empty
         }
@@ -28,11 +31,11 @@ public enum PrefixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" LD GR1,GR2").append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,GR2").append(System.lineSeparator());
-            codebuilder.append(" SUBA GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("LD", "", "", "GR1", "GR2"));
+            code.add(new Casl2Instruction("XOR", "", "", "GR2", "GR2"));
+            code.add(new Casl2Instruction("SUBA", "", "", "GR2", "GR1"));
         }
     },
     NOT(BasicType.BOOLEAN, BasicType.BOOLEAN) {
@@ -43,9 +46,9 @@ public enum PrefixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" XOR GR2,=1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("XOR", "", "", "GR2", "=1"));
         }
     };
     
@@ -83,5 +86,5 @@ public enum PrefixOperator
     
     public abstract IConstant eval(int operand);
     
-    public abstract void compile(StringBuilder codebuilder, LabelGenerator l_gen); // left->GR1,right->GR2
+    public abstract void compile(List<Casl2Instruction> code, LabelGenerator l_gen); // left->GR1,right->GR2
 }

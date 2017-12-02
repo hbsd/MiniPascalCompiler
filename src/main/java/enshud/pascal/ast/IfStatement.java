@@ -1,20 +1,22 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class IfStatement implements IStatement
 {
     private final ITyped    cond;
-    private final StatementList then_statements;
+    private final CompoundStatement then_statements;
     
-    public IfStatement(ITyped cond, StatementList then_statements)
+    public IfStatement(ITyped cond, CompoundStatement then_statements)
     {
         this.cond = Objects.requireNonNull(cond);
         this.then_statements = Objects.requireNonNull(then_statements);
@@ -25,7 +27,7 @@ public class IfStatement implements IStatement
         return cond;
     }
     
-    public StatementList getThen()
+    public CompoundStatement getThen()
     {
         return then_statements;
     }
@@ -82,19 +84,18 @@ public class IfStatement implements IStatement
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        final String label = l_gen.toString();
-        l_gen.next();
+        final int label = l_gen.next();
         
-        cond.compile(codebuilder, proc, l_gen);
+        getCond().compile(code, proc, l_gen);
         
-        codebuilder.append(" LD GR2,GR2").append(System.lineSeparator());
-        codebuilder.append(" JZE F").append(label).append("; branch of IF").append(System.lineSeparator());
+        code.add(new Casl2Instruction("LD", "", "; set ZF", "GR2", "GR2"));
+        code.add(new Casl2Instruction("JZE", "", "; branch of IF", "F" + label));
         
-        then_statements.compile(codebuilder, proc, l_gen);
-        
-        codebuilder.append("F").append(label).append(" NOP; end of IF").append(System.lineSeparator());
+        getThen().compile(code, proc, l_gen);
+
+        code.add(new Casl2Instruction("NOP", "F" + label, "; end of IF"));
     }
     
     @Override

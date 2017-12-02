@@ -1,11 +1,13 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -83,27 +85,26 @@ public class WhileStatement implements IStatement
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        final String label = l_gen.toString();
-        l_gen.next();
+        final int label = l_gen.next();
         
-        codebuilder.append("C").append(label).append(" NOP; start of WHILE").append(System.lineSeparator());
+        code.add(new Casl2Instruction("NOP", "C" + label, "; start of WHILE"));
         
         if (!infinite_loop)
         {
-            cond.compile(codebuilder, proc, l_gen);
-            
-            codebuilder.append(" LD GR2,GR2").append(System.lineSeparator());
-            codebuilder.append(" JZE F").append(label).append("; branch of WHILE").append(System.lineSeparator());
+            cond.compile(code, proc, l_gen);
+
+            code.add(new Casl2Instruction("LD", "",                   "", "GR2", "GR2"));
+            code.add(new Casl2Instruction("JZE", "", "; branch of WHILE", "F" + label));
         }
         
-        statement.compile(codebuilder, proc, l_gen);
-        codebuilder.append(" JUMP C").append(label).append(System.lineSeparator());
+        statement.compile(code, proc, l_gen);
+        code.add(new Casl2Instruction("JUMP", "", "", "C" + label));
         
         if (!infinite_loop)
         {
-            codebuilder.append("F").append(label).append(" NOP; end of WHILE").append(System.lineSeparator());
+            code.add(new Casl2Instruction("NOP", "F" + label, "; end of WHILE"));
         }
     }
     

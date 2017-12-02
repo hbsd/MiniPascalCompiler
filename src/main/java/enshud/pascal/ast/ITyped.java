@@ -1,13 +1,13 @@
 package enshud.pascal.ast;
 
-import enshud.s3.checker.IChecker;
+import enshud.s3.checker.ICheckable;
 import enshud.s3.checker.IPreevaluable;
 import enshud.pascal.type.IType;
 import enshud.s2.parser.node.INode;
-import enshud.s4.compiler.ICompiler;
+import enshud.s4.compiler.ICompilable;
 
 
-public interface ITyped extends IASTNode, IChecker, IPreevaluable, ICompiler
+public interface ITyped extends IASTNode, ICheckable, IPreevaluable, ICompilable
 {
     IType getType();
     

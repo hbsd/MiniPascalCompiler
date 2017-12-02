@@ -1,5 +1,7 @@
 package enshud.pascal.ast;
 
+import java.util.List;
+
 import enshud.pascal.type.IType;
 import enshud.pascal.type.StringType;
 import enshud.s1.lexer.LexedToken;
@@ -7,6 +9,7 @@ import enshud.s2.parser.node.INode;
 import enshud.s2.parser.node.basic.TokenNode;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -152,15 +155,15 @@ public class InfixOperation implements ITyped
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        getLeft().compile(codebuilder, proc, l_gen);
-        codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
-        
-        getRight().compile(codebuilder, proc, l_gen);
-        codebuilder.append(" POP GR1").append(System.lineSeparator());
-        
-        getOp().compile(codebuilder, l_gen);
+        getLeft().compile(code, proc, l_gen);
+        code.add(new Casl2Instruction("PUSH", "", "", "0", "GR2"));
+
+        getRight().compile(code, proc, l_gen);
+        code.add(new Casl2Instruction("POP", "", "", "GR1"));
+
+        getOp().compile(code, l_gen);
     }
     
     @Override

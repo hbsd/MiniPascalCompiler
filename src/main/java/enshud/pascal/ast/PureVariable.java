@@ -2,14 +2,15 @@ package enshud.pascal.ast;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
-import enshud.s3.checker.ParameterDeclaration.Param;
-import enshud.s3.checker.VariableDeclaration.Variable;
+import enshud.s3.checker.Variable;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -65,37 +66,44 @@ public class PureVariable implements IVariable, ILiteral
         type = proc.getVarType(nm);
         if (type == UnknownType.UNKNOWN)
         {
-            final Param param = proc.getParam(nm);
-            if (param != null)
+            final Optional<Variable> param = proc.getParam(nm);
+            if (param.isPresent())
             {
-                type = param.getType();
+                type = param.get().getType();
             }
             else
             {
-                List<Variable> vs = proc.getVarFuzzy(nm);
-                String n = null;
-                if (!vs.isEmpty())
-                {
-                    n = vs.toString();
-                }
-                else
-                {
-                    List<Param> ps = proc.getParamFuzzy(nm);
-                    if (!ps.isEmpty())
-                    {
-                        n = ps.toString();
-                    }
-                }
-                
-                checker.addErrorMessage(
-                    proc, getName(),
-                    "variable '" + nm + "' is not defined."
-                            + ((n == null)? "": (" did you mean variable " + n + "?"))
-                );
+                checkFuzzy(proc, checker);
             }
         }
         
         return type;
+    }
+    
+    private void checkFuzzy(Procedure proc, Checker checker)
+    {
+        final String nm = getName().toString();
+        List<Variable> vs = proc.searchForVarFuzzy(nm);
+        
+        String n = null;
+        if (!vs.isEmpty())
+        {
+            n = vs.toString();
+        }
+        else
+        {
+            List<Variable> ps = proc.searchForParamFuzzy(nm);
+            if (!ps.isEmpty())
+            {
+                n = ps.toString();
+            }
+        }
+        
+        checker.addErrorMessage(
+            proc, getName(),
+            "variable '" + nm + "' is not defined."
+                    + ((n == null)? "": (" did you mean variable " + n + "?"))
+        );
     }
     
     @Override
@@ -105,73 +113,70 @@ public class PureVariable implements IVariable, ILiteral
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
         if (getType().isBasicType())
         {
-            compileForData(codebuilder, proc, l_gen);
+            compileForData(code, proc, l_gen);
         }
         else
         {
-            compileForAddr(codebuilder, proc, l_gen);
+            compileForAddr(code, proc, l_gen);
         }
     }
     
     @Override
-    public void compileForData(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compileForData(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        compileImpl("LD", codebuilder, proc, l_gen);
+        compileImpl("LD", code, proc, l_gen);
     }
     
     @Override
-    public void compileForAddr(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compileForAddr(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        compileImpl("LAD", codebuilder, proc, l_gen);
+        compileImpl("LAD", code, proc, l_gen);
     }
     
-    private void compileImpl(String inst, StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    private void compileImpl(String inst, List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        Variable var = proc.getLocalVar(getName().toString());
-        if (var != null)
+        Optional<Variable> var = proc.getLocalVar(getName().toString());
+        if (var.isPresent())
         {
-            compileForVariable(codebuilder, var, inst, "GR5");
+            compileForVariable(code, var.get(), inst, "GR5");
         }
         else
         {
-            final Param param = proc.getParam(getName().toString());
-            if (param != null)
+            final Optional<Variable> param = proc.getParam(getName().toString());
+            if (param.isPresent())
             {
-                final int align = param.getAlignment();
-                codebuilder.append(" ").append(inst).append(" GR2,").append(align + 1).append(",GR5")
-                    .append(System.lineSeparator());
+                final int align = param.get().getAlignment();
+                code.add(new Casl2Instruction(inst, "", "", "GR2", "" + (align + 1), "GR5"));
             }
             else
             {
                 var = proc.getGlobalVar(getName().toString());
-                compileForVariable(codebuilder, var, inst, "GR4");
+                compileForVariable(code, var.get(), inst, "GR4");
             }
         }
     }
     
-    private void compileForVariable(StringBuilder codebuilder, Variable var, String inst, String gr)
+    private void compileForVariable(List<Casl2Instruction> code, Variable var, String inst, String gr)
     {
         final int align = var.getAlignment();
         
         if (var.getType().isArrayType())
         {
             final int len = ((ArrayType)var.getType()).getSize();
-            codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 1 - len).append(',').append(gr)
-                .append(System.lineSeparator());
+            code.add(new Casl2Instruction(inst, "", "", "GR2", "" + (-align - 1 - len), gr));
             // array length
             if (inst.equals("LAD"))
             {
-                codebuilder.append(" LAD GR1,").append(var.getType().getSize()).append(System.lineSeparator());
+                code.add(new Casl2Instruction("LAD", "", "", "GR1", "" + var.getType().getSize()));
             }
         }
         else
         {
-            codebuilder.append(" ").append(inst).append(" GR2,").append(-align - 2).append(',').append(gr)
-                .append(System.lineSeparator());
+            code.add(new Casl2Instruction(inst, "", "", "GR2", "" + (-align - 2), gr));
         }
     }
     

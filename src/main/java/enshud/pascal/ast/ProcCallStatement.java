@@ -4,19 +4,21 @@ import java.util.List;
 import java.util.Objects;
 
 import enshud.pascal.type.IType;
-import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class ProcCallStatement implements IStatement
 {
     private final Identifier     name;
-    private final ExpressionList args;
-    
-    public ProcCallStatement(Identifier name, ExpressionList args)
+    private final NodeList<ITyped> args;
+
+    private Procedure proc;
+
+    public ProcCallStatement(Identifier name, NodeList<ITyped> args)
     {
         this.name = Objects.requireNonNull(name);
         this.args = Objects.requireNonNull(args);
@@ -29,7 +31,12 @@ public class ProcCallStatement implements IStatement
     
     public List<ITyped> getArgs()
     {
-        return args.getList();
+        return args;
+    }
+    
+    public Procedure getProc()
+    {
+        return proc;
     }
     
     @Override
@@ -47,13 +54,14 @@ public class ProcCallStatement implements IStatement
     @Override
     public IType check(Procedure proc, Checker checker)
     {
-        final Procedure sub = proc.getSubProc(getName().toString());
+        this.proc = proc.getSubProc(getName().toString())
+                .orElse(null);
         
-        if (sub == null)
+        if (getProc() == null)
         {
             checkWhenNotFound(proc, checker);
         }
-        else if (getArgs().size() != sub.getParamLength())
+        else if (getArgs().size() != getProc().getParamLength())
         {
             checkWhenInvalidLength(proc, checker);
         }
@@ -64,12 +72,24 @@ public class ProcCallStatement implements IStatement
         return null;
     }
     
+    private void checkWhenNotFound(Procedure proc, Checker checker)
+    {
+        List<Procedure> p = proc.getSubProcFuzzy(getName().toString());
+        checker.addErrorMessage(
+            proc, getName(),
+            "procedure '" + name + "' is not defined."
+                    + (p.isEmpty()? "": (" did you mean procedure " + p + "?"))
+        );
+        
+        getArgs().forEach(exp -> exp.check(proc, checker));
+    }
+    
     private void checkArgumentTypes(Procedure proc, Checker checker)
     {
         int i = 0;
         for (final ITyped exp: getArgs())
         {
-            final BasicType ptype = proc.getSubProc(getName().toString()).getParamType(i);
+            final IType ptype = getProc().getParamType(i);
             final IType atype = exp.check(proc, checker);
             
             if (atype instanceof StringType)
@@ -88,61 +108,42 @@ public class ProcCallStatement implements IStatement
         }
     }
     
-    private void checkWhenNotFound(Procedure proc, Checker checker)
-    {
-        List<Procedure> p = proc.getSubProcFuzzy(getName().toString());
-        checker.addErrorMessage(
-            proc, getName(),
-            "procedure '" + name + "' is not defined."
-                    + (p.isEmpty()? "": (" did you mean procedure " + p + "?"))
-        );
-        
-        for (final ITyped exp: getArgs())
-        {
-            exp.check(proc, checker);
-        }
-    }
-    
     private void checkWhenInvalidLength(Procedure proc, Checker checker)
     {
         final String msg1 = getArgs().size() == 0? "no": "" + getArgs().size();
-        
-        Procedure sub = proc.getSubProc(getName().toString());
-        final String msg2 = sub.getParamLength() == 0? "no": "" + sub.getParamLength();
+        final String msg2 = getProc().getParamLength() == 0? "no": "" + getProc().getParamLength();
         
         checker.addErrorMessage(
             proc, this, "cannot call procedure '" + name + "' by " + msg1 + " arguments. must be " + msg2 + " args."
         );
-        for (final ITyped exp: getArgs())
-        {
-            exp.check(proc, checker);
-        }
+        
+        getArgs().forEach(exp -> exp.check(proc, checker));
     }
     
     @Override
     public IStatement precompute(Procedure proc)
     {
-        for (ITyped e: getArgs())
-        {
-            e.preeval(proc);
-        }
+        getArgs().forEach(e -> e.preeval(proc));
         return this;
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        
+        // prepare argument
         for (int i = getArgs().size() - 1; i >= 0; --i)
         {
             final ITyped e = getArgs().get(i);
-            e.compile(codebuilder, proc, l_gen);
-            codebuilder.append(" PUSH 0,GR2").append(System.lineSeparator());
+            e.compile(code, proc, l_gen);
+            code.add(new Casl2Instruction("PUSH", "", "", "0", "GR2"));
         }
-        codebuilder.append(" CALL PSUB").append(proc.getSubProcIndex(name.toString())).append(System.lineSeparator());
+        
+        code.add(new Casl2Instruction("CALL", "", "; proc " + getProc().getQualifiedName(), getProc().getId()));
+        
+        // remove arguments
         if (args.size() > 0)
         {
-            codebuilder.append(" LAD GR8,").append(args.size()).append(",GR8").append(System.lineSeparator());
+            code.add(new Casl2Instruction("LAD", "", "", "GR8", "" + args.size(), "GR8"));
         }
     }
     

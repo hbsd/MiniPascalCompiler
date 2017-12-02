@@ -8,10 +8,10 @@ import enshud.pascal.type.BasicType;
 
 public class Parameter implements IASTNode
 {
-    private final NameList    names;
-    private final TypeLiteral type;
+    private final NodeList<Identifier> names;
+    private final TypeLiteral           type;
     
-    public Parameter(NameList names, TypeLiteral type)
+    public Parameter(NodeList<Identifier> names, TypeLiteral type)
     {
         assert type.getType() instanceof BasicType;
         this.names = Objects.requireNonNull(names);
@@ -20,7 +20,7 @@ public class Parameter implements IASTNode
     
     public List<Identifier> getNames()
     {
-        return names.getList();
+        return names;
     }
     
     public TypeLiteral getTypeLiteral()

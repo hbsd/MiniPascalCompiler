@@ -3,15 +3,17 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import enshud.pascal.type.BasicType;
 
 
-public class ParameterDeclaration
+public class ParameterDeclaration 
 {
     private final List<Param> params = new ArrayList<>();
     
-    public class Param
+    public static class Param
     {
         private final String    name;
         private final BasicType type;
@@ -51,34 +53,25 @@ public class ParameterDeclaration
         params.add(new Param(name, type, params.size()));
     }
     
-    Param get(int num)
+    Param get(int index)
     {
-        return params.get(num);
+        return params.get(index);
     }
     
-    Param get(String name)
+    Optional<Param> get(String name)
     {
-        for (final Param p: params)
-        {
-            if (p.name.equals(name))
-            {
-                return p;
-            }
-        }
-        return null;
+        return params
+                .stream()
+                .filter(p -> p.getName().equals(name))
+                .findFirst();
     }
     
-    List<Param> getFuzzy(String name)
+    List<Param> searchForFuzzy(String name)
     {
-        List<Param> l = new ArrayList<>();
-        for (final Param p: params)
-        {
-            if (Checker.isSimilar(p.name, name))
-            {
-                l.add(p);
-            }
-        }
-        return l;
+        return params
+                .stream()
+                .filter(p -> Checker.isSimilar(p.getName(), name))
+                .collect(Collectors.toList());
     }
     
     int getIndex(String name)
@@ -86,7 +79,7 @@ public class ParameterDeclaration
         int i = 0;
         for (final Param p: params)
         {
-            if (p.name.equals(name))
+            if (p.getName().equals(name))
             {
                 return i;
             }
@@ -95,13 +88,30 @@ public class ParameterDeclaration
         return -1;
     }
     
+    int getSize(int index)
+    {
+        return get(index).getType().getSize();
+    }
+    
     int length()
     {
         return params.size();
     }
     
+    int getAllSize()
+    {
+        if (params.isEmpty())
+        {
+            return 0;
+        }
+        else
+        {
+            return params.get(length() - 1).getAlignment() + getSize(length() - 1);
+        }
+    }
+    
     boolean exists(String name)
     {
-        return params.contains(name);
+        return get(name).isPresent();
     }
 }

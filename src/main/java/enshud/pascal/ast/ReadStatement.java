@@ -7,21 +7,22 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.Checker;
 import enshud.s3.checker.Procedure;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public class ReadStatement implements IStatement
 {
-    private final VariableList vars;
+    private final NodeList<IVariable> vars;
     
-    public ReadStatement(VariableList vars)
+    public ReadStatement(NodeList<IVariable> vars)
     {
         this.vars = Objects.requireNonNull(vars);
     }
     
     public List<IVariable> getVariables()
     {
-        return vars.getList();
+        return vars;
     }
     
     @Override
@@ -65,36 +66,33 @@ public class ReadStatement implements IStatement
     @Override
     public IStatement precompute(Procedure proc)
     {
-        for (IVariable v: vars.getList())
-        {
-            v.preeval(proc);
-        }
+        vars.forEach(v -> v.preeval(proc));
         return this;
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
         if (getVariables().isEmpty())
         {
-            codebuilder.append(" CALL RDLN").append(System.lineSeparator());
+            code.add(new Casl2Instruction("CALL", "", "", "RDLN"));
             return;
         }
         
         for (final IVariable v: getVariables())
         {
-            v.compileForAddr(codebuilder, proc, l_gen);
+            v.compileForAddr(code, proc, l_gen);
             if (v.getType() == BasicType.CHAR)
             {
-                codebuilder.append(" CALL RDCH").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "RDCH"));
             }
             else if (v.getType() == BasicType.INTEGER)
             {
-                codebuilder.append(" CALL RDINT").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "RDINT"));
             }
             else if (v.getType().isArrayOf(BasicType.CHAR))
             {
-                codebuilder.append(" CALL RDSTR").append(System.lineSeparator());
+                code.add(new Casl2Instruction("CALL", "", "", "RDSTR"));
             }
             else
             {

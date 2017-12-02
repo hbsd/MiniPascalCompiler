@@ -2,9 +2,10 @@ package enshud.s2.parser.parsers.basic;
 
 import enshud.s2.parser.parsers.IParser;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import enshud.s1.lexer.TokenType;
 import enshud.s2.parser.ParserInput;
@@ -27,12 +28,9 @@ class SelectParser implements IParser
     @Override
     public Set<TokenType> getFirstSet()
     {
-        final Set<TokenType> set = new HashSet<>();
-        for (final IParser p: parsers)
-        {
-            set.addAll(p.getFirstSet());
-        }
-        return set;
+        return Stream.of(parsers)
+                .flatMap(p -> p.getFirstSet().stream()) // merge two Sets
+                .collect(Collectors.toSet());
     }
     
     @Override

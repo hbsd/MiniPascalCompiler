@@ -3,16 +3,14 @@ package enshud.s4.compiler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import enshud.casl.CaslSimulator;
-import enshud.pascal.ast.Program;
-import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
-import enshud.s2.parser.Parser;
 import enshud.s3.checker.Checker;
-import enshud.s3.checker.Procedure;
 
 
 public class Compiler
@@ -25,7 +23,7 @@ public class Compiler
         // Compilerを実行してcasを生成する
         new Lexer().run("data/pas/test.pas", "tmp/out.ts");
         new Compiler().run("tmp/out.ts", "tmp/out.cas");
-        //new Compiler().run("data/ts/normal03.ts", "tmp/out.cas");
+        // new Compiler().run("data/ts/normal02.ts", "tmp/out.cas");
         
         // CaslSimulatorクラスを使ってコンパイルしたcasを，CASLアセンブラ & COMETシミュレータで実行する
         CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
@@ -49,45 +47,36 @@ public class Compiler
      */
     public void run(final String inputFileName, final String outputFileName)
     {
-        final List<LexedToken> tokens = Lexer.importLexedFile(inputFileName);
-        if (tokens == null)
-        {
-            return;
-        }
-        
-        final Program root = new Parser().parse(tokens);
-        if (root == null)
-        {
-            return;
-        }
-        root.println();
-        
-        final Procedure proc = new Checker().check(root);
-        if (proc == null)
-        {
-            return;
-        }
-        
-        final StringBuilder sb = compile(proc);
-        if (outputToFile(outputFileName, sb))
-        {
-            CaslSimulator.appendLibcas(outputFileName);
-            System.out.println("OK");
-        }
+        fromLexedFile(inputFileName)
+            .map(
+                cis -> cis
+                    .stream()
+                    .map(ci -> ci.toString())
+                    .collect(Collectors.toList())
+            )
+            .ifPresent(
+                code -> {
+                    if (outputToFile(outputFileName, code))
+                    {
+                        CaslSimulator.appendLibcas(outputFileName);
+                        System.out.println("OK");
+                    }
+                }
+            );
     }
     
-    public StringBuilder compile(Procedure proc)
+    public static Optional<List<Casl2Instruction>> fromLexedFile(String input_file)
     {
-        final StringBuilder sb = new StringBuilder();
-        proc.compile(sb);
-        return sb;
+        return Checker.fromLexedFile(input_file)
+            .flatMap(checker -> checker.getProgram())
+            .map(proc -> proc.compile(new ArrayList<>()));
     }
     
-    public boolean outputToFile(String output_name, StringBuilder sb)
+    public static boolean outputToFile(String output_name, List<? extends CharSequence> code)
     {
         try
         {
-            Files.write(Paths.get(output_name), Arrays.asList(sb.toString()));
+            Files.write(Paths.get(output_name), code);
             return true;
         }
         catch (final IOException e)

@@ -4,7 +4,7 @@ import enshud.pascal.type.IType;
 import enshud.s3.checker.Procedure;
 
 
-public interface IChecker
+public interface ICheckable
 {
     IType check(Procedure proc, Checker checker);
     

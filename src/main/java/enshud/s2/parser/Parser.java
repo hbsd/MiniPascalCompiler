@@ -1,10 +1,10 @@
 package enshud.s2.parser;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 import enshud.pascal.PascalParser;
-import enshud.pascal.ast.Program;
+import enshud.pascal.ast.ProcedureDeclaration;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.node.INode;
@@ -42,64 +42,57 @@ public class Parser
      */
     public void run(final String inputFileName)
     {
-        final List<LexedToken> tokens = Lexer.importLexedFile(inputFileName);
-        if (tokens != null)
-        {
-            final INode root = parse(tokens);
-            if (root != null)
-            {
-                System.out.println("OK");
-            }
-        }
+        Parser.fromLexedFile(inputFileName)
+            .flatMap(parser -> parser.getProgram())
+            .ifPresent(a -> System.out.println("OK"));
     }
     
-    private INode   root;
-    private IParser parser;
-    
-    public Parser(IParser parser)
+    public static Optional<Parser> fromLexedFile(String input_file)
     {
-        this.parser = Objects.requireNonNull(parser);
+        return Lexer.importLexedFile(input_file)
+                .map(Parser::parse);
     }
     
+    private INode         root;
+    private final IParser parser;
+    
+    public static Parser parse(List<LexedToken> input)
+    {
+        Parser p = new Parser();
+        p.parse_(input);
+        return p;
+    }
+    
+    @Deprecated
     public Parser()
     {
-        this(PascalParser.getFullParser());
+        parser = PascalParser.getFullParser();
     }
     
-    public Program parse(ParserInput input)
+    private void parse_(List<LexedToken> input)
     {
-        final INode root = parser.parse(input);
-        if (root.isSuccess())
-        {
-            return (Program)root;
-        }
-        else
+        root = parser.parse(new ParserInput(input));
+        if (root.isFailure())
         {
             // root.println();
             System.err.println("Syntax error: line " + root.getLine());
-            /*
-             * final LexedToken t = ((IParserNode)root).getToken();
-             * 
-             * // indicate error column // (when include multibyte char, // this
-             * output will be wrong position) if( t.getLine() >= 2 ) {
-             * System.out.println(lines.get(t.getLine() - 2)); }
-             * System.out.println(lines.get(t.getLine() - 1)); for(int i = 1; i
-             * < t.getColumn(); ++i) { System.out.print(" "); }
-             * System.out.println("^");
-             * 
-             * System.out.println("Parser Failure!");
-             */
-            return null;
         }
-    }
-    
-    public Program parse(List<LexedToken> input)
-    {
-        return parse(new ParserInput(input));
     }
     
     public INode getRoot()
     {
         return root;
+    }
+    
+    public Optional<ProcedureDeclaration> getProgram()
+    {
+        if (getRoot().isSuccess())
+        {
+            return Optional.of((ProcedureDeclaration)getRoot());
+        }
+        else
+        {
+            return Optional.empty();
+        }
     }
 }

@@ -1,8 +1,11 @@
 package enshud.pascal.ast;
 
+import java.util.List;
+
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -16,9 +19,9 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" ADDA GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("ADDA", "", "", "GR2", "GR1"));
         }
     },
     SUB(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
@@ -29,10 +32,10 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" SUBA GR1,GR2").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("SUBA", "", "", "GR1", "GR2"));
+            code.add(new Casl2Instruction("LD", "", "", "GR2", "GR1"));
         }
     },
     MUL(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
@@ -43,9 +46,9 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" CALL MULT").append(System.lineSeparator());
+            code.add(new Casl2Instruction("CALL", "", "", "MULT"));
         }
     },
     DIV(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
@@ -56,9 +59,9 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" CALL DIV").append(System.lineSeparator());
+            code.add(new Casl2Instruction("CALL", "", "", "DIV"));
         }
     },
     MOD(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
@@ -69,10 +72,10 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" CALL DIV").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("CALL", "", "", "DIV"));
+            code.add(new Casl2Instruction("LD", "", "", "GR2", "GR1"));
         }
     },
     
@@ -84,9 +87,9 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" OR GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("OR", "", "", "GR2", "GR1"));
         }
     },
     AND(BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN) {
@@ -97,9 +100,9 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" AND GR2,GR1").append(System.lineSeparator());
+            code.add(new Casl2Instruction("AND", "", "", "GR2", "GR1"));
         }
     },
     
@@ -111,15 +114,15 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            final String label = l_gen.next();
-            codebuilder.append(" CPL GR2,GR1   ; v =").append(System.lineSeparator());
-            codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,GR2").append(System.lineSeparator());
-            codebuilder.append(" JUMP Q").append(label).append(System.lineSeparator());
-            codebuilder.append("Z").append(label).append(" LAD GR2,1").append(System.lineSeparator());
-            codebuilder.append("Q").append(label).append(" NOP    ; ^ =").append(System.lineSeparator());
+            final int label = l_gen.next();
+            code.add(new Casl2Instruction("CPL", "", "; v =", "GR2", "GR1"));
+            code.add(new Casl2Instruction("JZE", "",      "", "Z" + label));
+            code.add(new Casl2Instruction("XOR", "",      "", "GR2", "GR2"));
+            code.add(new Casl2Instruction("JUMP", "",      "", "Q" + label));
+            code.add(new Casl2Instruction("LAD", "Z" + label, "", "GR2", "1"));
+            code.add(new Casl2Instruction("NOP", "Q" + label, "; ^ ="));
         }
     },
     NOTEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
@@ -130,15 +133,15 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            final String label = l_gen.next();
-            codebuilder.append(" CPL GR2,GR1   ; v <>").append(System.lineSeparator());
-            codebuilder.append(" JZE ").append("Z").append(label).append(System.lineSeparator());
-            codebuilder.append(" LAD GR2,1").append(System.lineSeparator());
-            codebuilder.append(" JUMP Q").append(label).append(System.lineSeparator());
-            codebuilder.append("Z").append(label).append(" XOR GR2,GR2").append(System.lineSeparator());
-            codebuilder.append("Q").append(label).append(" NOP    ; ^ <>").append(System.lineSeparator());
+            final int label = l_gen.next();
+            code.add(new Casl2Instruction("CPL", "", "; v <>", "GR2", "GR1"));
+            code.add(new Casl2Instruction("JNZ", "",       "", "Z" + label));
+            code.add(new Casl2Instruction("XOR", "",       "", "GR2", "GR2"));
+            code.add(new Casl2Instruction("JUMP", "",       "", "Q" + label));
+            code.add(new Casl2Instruction("LAD", "Z" + label, "", "GR2", "1"));
+            code.add(new Casl2Instruction("NOP", "Q" + label, "; ^ <>"));
         }
     },
     LESS(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
@@ -149,11 +152,11 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" SUBA GR1,GR2; <").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR1  ;").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
+            code.add(new Casl2Instruction("SUBA", "", "; <", "GR1", "GR2"));
+            code.add(new Casl2Instruction("LD", "",      "", "GR2", "GR1"));
+            code.add(new Casl2Instruction("SRL", "",     "", "GR2", "15"));
         }
     },
     LESSEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
@@ -164,11 +167,11 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" SUBA GR2,GR1; <=").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,=1  ;").append(System.lineSeparator());
+            code.add(new Casl2Instruction("SUBA", "", "; <=", "GR2", "GR1"));
+            code.add(new Casl2Instruction("SRL", "",      "", "GR2", "15"));
+            code.add(new Casl2Instruction("XOR", "",      "", "GR2", "=1"));
         }
     },
     GREAT(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
@@ -179,10 +182,10 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" SUBA GR2,GR1; >").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
+            code.add(new Casl2Instruction("SUBA", "", "; >", "GR2", "GR1"));
+            code.add(new Casl2Instruction("SRL", "",     "", "GR2", "15"));
         }
     },
     GREATEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
@@ -193,12 +196,12 @@ public enum InfixOperator
         }
         
         @Override
-        public void compile(StringBuilder codebuilder, LabelGenerator l_gen)
+        public void compile(List<Casl2Instruction> code, LabelGenerator l_gen)
         {
-            codebuilder.append(" SUBA GR1,GR2; >=").append(System.lineSeparator());
-            codebuilder.append(" LD GR2,GR1  ;").append(System.lineSeparator());
-            codebuilder.append(" SRL GR2,15  ;").append(System.lineSeparator());
-            codebuilder.append(" XOR GR2,=1  ;").append(System.lineSeparator());
+            code.add(new Casl2Instruction("SUBA", "", "; >=", "GR1", "GR2"));
+            code.add(new Casl2Instruction("LD", "",       "", "GR2", "GR1"));
+            code.add(new Casl2Instruction("SRL", "",      "", "GR2", "15"));
+            code.add(new Casl2Instruction("XOR", "",      "", "GR2", "=1"));
         }
     };
     
@@ -253,5 +256,5 @@ public enum InfixOperator
     
     public abstract IConstant eval(int left, int right);
     
-    public abstract void compile(StringBuilder codebuilder, LabelGenerator l_gen); // left->GR1,right->GR2
+    public abstract void compile(List<Casl2Instruction> code, LabelGenerator l_gen); // left->GR1,right->GR2
 }

@@ -1,6 +1,9 @@
 package enshud.s1.lexer;
 
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 
@@ -76,43 +79,33 @@ public enum TokenType
         return id;
     }
     
-    Token lex(String input)
+    private Token lex_nullable(String input)
     {
         final Matcher m = pattern.matcher(input);
-        if (m.find())
-        {
-            final String str = m.group();
-            return new Token(str, this);
-        }
-        else
-        {
-            return null;
-        }
+        return m.find()
+                ? new Token(m.group(), this)
+                : null;
+    }
+    
+    Optional<Token> lex(String input)
+    {
+        return Optional.ofNullable(lex_nullable(input));
     }
     
     static Token lexOneToken(String input)
     {
-        for (final TokenType type: TokenType.values())
-        {
-            final Token token = type.lex(input);
-            if (token != null)
-            {
-                return token;
-            }
-        }
-        return new Token(input.substring(0, 1), SUNKNOWN);
+        return Stream.of(TokenType.values())
+                .map(type -> type.lex_nullable(input))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseGet(() -> new Token(input.substring(0, 1), SUNKNOWN));
     }
     
-    static TokenType getById(int id)
+    static Optional<TokenType> getById(int id)
     {
-        for (final TokenType type: values())
-        {
-            if (type.getId() == id)
-            {
-                return type;
-            }
-        }
-        return null;
+        return Stream.of(TokenType.values())
+                .filter(type -> type.getId() == id)
+                .findFirst();
     }
 }
 

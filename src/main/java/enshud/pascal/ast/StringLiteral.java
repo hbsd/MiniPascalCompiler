@@ -1,5 +1,6 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.s3.checker.Checker;
@@ -8,6 +9,7 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s2.parser.node.basic.TokenNode;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -77,22 +79,22 @@ public class StringLiteral implements IConstant
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
         if (type == BasicType.CHAR)
         {
-            codebuilder.append(" LAD GR2,").append((int)toString().charAt(1)).append(System.lineSeparator());
+            code.add(new Casl2Instruction("LAD", "", "", "GR2", "" + (int)toString().charAt(1)));
         }
         else
         {
-            codebuilder.append(" LAD GR2,=").append(toString()).append(System.lineSeparator());
+            code.add(new Casl2Instruction("LAD", "", "", "GR2", "=" + toString()));
             if (length() == 0)
             {
-                codebuilder.append(" XOR GR1,GR1").append(System.lineSeparator());
+                code.add(new Casl2Instruction("XOR", "", "", "GR1", "GR1"));
             }
             else
             {
-                codebuilder.append(" LAD GR1,").append(length()).append(System.lineSeparator());
+                code.add(new Casl2Instruction("LAD", "", "", "GR1", "" + length()));
             }
         }
     }

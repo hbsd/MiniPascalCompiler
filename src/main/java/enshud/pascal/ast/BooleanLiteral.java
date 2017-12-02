@@ -1,5 +1,6 @@
 package enshud.pascal.ast;
 
+import java.util.List;
 import java.util.Objects;
 
 import enshud.s3.checker.Checker;
@@ -7,6 +8,7 @@ import enshud.s3.checker.Procedure;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
 import enshud.s1.lexer.LexedToken;
+import enshud.s4.compiler.Casl2Instruction;
 import enshud.s4.compiler.LabelGenerator;
 
 
@@ -77,9 +79,9 @@ public class BooleanLiteral implements IConstant
     }
     
     @Override
-    public void compile(StringBuilder codebuilder, Procedure proc, LabelGenerator l_gen)
+    public void compile(List<Casl2Instruction> code, Procedure proc, LabelGenerator l_gen)
     {
-        codebuilder.append(" LAD GR2,").append(getBool()? "1": "0").append(System.lineSeparator());
+        code.add(new Casl2Instruction("LAD", "", "", "GR2", getBool()? "1": "0"));
     }
     
     @Override

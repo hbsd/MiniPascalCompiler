@@ -3,23 +3,26 @@ package enshud.pascal.ast;
 import java.util.Objects;
 
 
-public class SubProgramDeclaration implements IDeclaration
+public class ProcedureDeclaration implements IDeclaration
 {
-    private final Identifier              name;
-    private final ParameterList           params;
-    private final VariableDeclarationList vars;
-    private final StatementList           body;
+    private final Identifier                     name;
+    private final NodeList<Parameter>            params;
+    private final NodeList<VariableDeclaration>  vars;
+    private final NodeList<ProcedureDeclaration> subprocs;
+    private final CompoundStatement                  body;
     
-    public SubProgramDeclaration(
+    public ProcedureDeclaration(
         Identifier name,
-        ParameterList params,
-        VariableDeclarationList vars,
-        StatementList body
+        NodeList<Parameter> params,
+        NodeList<VariableDeclaration> vars,
+        NodeList<ProcedureDeclaration> subprocs,
+        CompoundStatement body
     )
     {
         this.name = Objects.requireNonNull(name);
         this.params = Objects.requireNonNull(params);
         this.vars = Objects.requireNonNull(vars);
+        this.subprocs = Objects.requireNonNull(subprocs);
         this.body = Objects.requireNonNull(body);
     }
     
@@ -28,17 +31,22 @@ public class SubProgramDeclaration implements IDeclaration
         return name;
     }
     
-    public ParameterList getParams()
+    public NodeList<Parameter> getParams()
     {
         return params;
     }
     
-    public VariableDeclarationList getVars()
+    public NodeList<VariableDeclaration> getVars()
     {
         return vars;
     }
     
-    public StatementList getBody()
+    public NodeList<ProcedureDeclaration> getSubProcs()
+    {
+        return subprocs;
+    }
+    
+    public CompoundStatement getBody()
     {
         return body;
     }

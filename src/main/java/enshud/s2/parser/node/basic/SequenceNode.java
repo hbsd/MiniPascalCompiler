@@ -55,14 +55,12 @@ public class SequenceNode implements IParserNode
     @Override
     public LexedToken getToken()
     {
-        for (final INode n: children)
-        {
-            if (n instanceof IParserNode)
-            {
-                return ((IParserNode)n).getToken();
-            }
-        }
-        return LexedToken.DUMMY;
+        return children
+                .stream()
+                .filter(n -> n instanceof IParserNode)
+                .findFirst()
+                .map(n -> ((IParserNode)n).getToken())
+                .orElse(LexedToken.DUMMY);
     }
     
     @Override
@@ -83,10 +81,8 @@ public class SequenceNode implements IParserNode
         final List<INode> c = getChildren();
         if (!c.isEmpty())
         {
-            for (final INode n: c.subList(0, c.size() - 1))
-            {
-                n.println(indent + " |");
-            }
+            c.subList(0, c.size() - 1)
+                .forEach(n -> n.println(indent + " |"));
             get(c.size() - 1).println(indent + "  ");
         }
     }

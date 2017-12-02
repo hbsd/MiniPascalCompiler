@@ -38,7 +38,7 @@ class SequenceParser implements IParser
         final List<INode> childs = new ArrayList<>();
         
         IParser.verbose("(&");
-        
+                
         for (final IParser parser: parsers)
         {
             assert parser != null;
@@ -53,7 +53,6 @@ class SequenceParser implements IParser
                 input.setIndex(save);
                 return n;
             }
-            
         }
         IParser.verboseln(")");
         

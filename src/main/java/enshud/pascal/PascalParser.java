@@ -16,7 +16,7 @@ import enshud.s2.parser.parsers.IParser;
 
 import static enshud.s2.parser.parsers.basic.Parsers.*;
 
-
+@SuppressWarnings("unchecked")
 public enum PascalParser implements IParser
 {
     // to avoid circle reference, override the method
@@ -40,13 +40,13 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            return new Program(
+            return new ProcedureDeclaration(
                 (Identifier)n.get(1),
-                (NameList)n.get(3),
-                n.get(6) instanceof EmptyNode? new VariableDeclarationList()
-                        : (VariableDeclarationList)n.getAsSeq(6).get(1),
-                (SubProgramDeclarationList)n.get(7),
-                (StatementList)n.get(8)
+                new NodeList<>(),
+                n.get(6) instanceof EmptyNode? new NodeList<>()
+                        : (NodeList<VariableDeclaration>)n.getAsSeq(6).get(1),
+                (NodeList<ProcedureDeclaration>)n.get(7),
+                (CompoundStatement)n.get(8)
             );
         }
     },
@@ -62,7 +62,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final NameList list = new NameList((Identifier)n.get(0));
+            final NodeList<Identifier> list = new NodeList<>((Identifier)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
@@ -82,7 +82,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            final VariableDeclarationList list = new VariableDeclarationList();
+            final NodeList<VariableDeclaration> list = new NodeList<>();
             
             for (final INode c: n.getChildren())
             {
@@ -102,7 +102,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new VariableDeclaration((NameList)n.get(0), (TypeLiteral)n.get(2));
+            return new VariableDeclaration((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
         }
     },
     TYPE(5) {
@@ -199,11 +199,11 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            final SubProgramDeclarationList list = new SubProgramDeclarationList();
+            final NodeList<ProcedureDeclaration> list = new NodeList<>();
             
             for (final INode c: ((SequenceNode)node).getChildren())
             {
-                list.add((SubProgramDeclaration)c);
+                list.add((ProcedureDeclaration)c);
             }
             return list;
         }
@@ -225,12 +225,13 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new SubProgramDeclaration(
+            return new ProcedureDeclaration(
                 (Identifier)n.get(1),
-                n.get(2) instanceof EmptyNode? new ParameterList(): (ParameterList)n.getAsSeq(2).get(1),
-                n.get(4) instanceof EmptyNode? new VariableDeclarationList()
-                        : (VariableDeclarationList)n.getAsSeq(4).get(1),
-                (StatementList)n.get(5)
+                n.get(2) instanceof EmptyNode? new NodeList<>(): (NodeList<Parameter>)n.getAsSeq(2).get(1),
+                n.get(4) instanceof EmptyNode? new NodeList<>()
+                        : (NodeList<VariableDeclaration>)n.getAsSeq(4).get(1),
+                new NodeList<>(), // TODO
+                (CompoundStatement)n.get(5)
             );
         }
     },
@@ -246,7 +247,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final ParameterList list = new ParameterList((Parameter)n.get(0));
+            final NodeList<Parameter> list = new NodeList<>((Parameter)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
@@ -266,7 +267,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new Parameter((NameList)n.get(0), (TypeLiteral)n.get(2));
+            return new Parameter((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
         }
     },
     COMPOUND_STATEMENT(14) {
@@ -294,7 +295,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final StatementList list = new StatementList((IStatement)n.get(0));
+            final CompoundStatement list = new CompoundStatement((IStatement)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
@@ -332,12 +333,12 @@ public enum PascalParser implements IParser
             final SequenceNode n = (SequenceNode)node;
             if (n.get(4) instanceof EmptyNode)
             {
-                return new IfStatement((ITyped)n.get(1), (StatementList)n.get(3));
+                return new IfStatement((ITyped)n.get(1), (CompoundStatement)n.get(3));
             }
             else
             {
                 return new IfElseStatement(
-                    (ITyped)n.get(1), (StatementList)n.get(3), (StatementList)n.getAsSeq(4).get(1)
+                    (ITyped)n.get(1), (CompoundStatement)n.get(3), (CompoundStatement)n.getAsSeq(4).get(1)
                 );
             }
         }
@@ -420,7 +421,7 @@ public enum PascalParser implements IParser
             final SequenceNode n = (SequenceNode)node;
             return new ProcCallStatement(
                 (Identifier)n.get(0),
-                n.get(1) instanceof EmptyNode? new ExpressionList(): (ExpressionList)n.getAsSeq(1).get(1)
+                n.get(1) instanceof EmptyNode? new NodeList<>(): (NodeList<ITyped>)n.getAsSeq(1).get(1)
             );
         }
     },
@@ -436,7 +437,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final ExpressionList list = new ExpressionList((ITyped)n.get(0));
+            final NodeList<ITyped> list = new NodeList<>((ITyped)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
@@ -650,7 +651,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             return new ReadStatement(
-                n.get(1) instanceof EmptyNode? new VariableList(): (VariableList)n.getAsSeq(1).get(1)
+                n.get(1) instanceof EmptyNode? new NodeList<>(): (NodeList<IVariable>)n.getAsSeq(1).get(1)
             );
         }
     },
@@ -666,7 +667,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             return new WriteStatement(
-                n.get(1) instanceof EmptyNode? new ExpressionList(): (ExpressionList)n.getAsSeq(1).get(1)
+                n.get(1) instanceof EmptyNode? new NodeList<>(): (NodeList<ITyped>)n.getAsSeq(1).get(1)
             );
         }
     },
@@ -682,7 +683,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final VariableList list = new VariableList((IVariable)n.get(0));
+            final NodeList<IVariable> list = new NodeList<>((IVariable)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
