@@ -1,7 +1,7 @@
 package enshud.s3.checker;
 
+import enshud.pascal.Procedure;
 import enshud.pascal.type.IType;
-import enshud.s3.checker.Procedure;
 
 
 public interface ICheckable

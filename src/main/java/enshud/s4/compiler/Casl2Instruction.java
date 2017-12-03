@@ -16,10 +16,17 @@ public class Casl2Instruction
         this.comment = comment;
     }
     
+    
     @Override
     public String toString()
     {
-        return String.format("%-8s %-5s%s%s", label, mnem, " " + String.join(",", operands), " " + comment);
-        // label + " " + mnem + " " + String.join(",", operands) + comment;
+        if(mnem.equals(""))
+        {
+            return comment;
+        }
+        else
+        {
+            return String.format("%-8s %-5s%s%s", label, mnem, " " + String.join(",", operands), " " + comment);
+        }
     }
 }

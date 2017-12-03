@@ -1,6 +1,7 @@
 package enshud.s3.checker;
 
-import enshud.pascal.ast.IConstant;
+import enshud.pascal.Procedure;
+import enshud.pascal.ast.expression.IConstant;
 
 
 public interface IPreevaluable

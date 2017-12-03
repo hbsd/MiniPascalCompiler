@@ -34,7 +34,6 @@ public interface INode
         );
         printHead(indent, msg);
         printBodyln(indent);
-        // printIndentln(indent);
     }
     
     default void printHead(String indent, String msg)
@@ -53,9 +52,6 @@ public interface INode
     static void printIndent(String indent)
     {
         System.out.print(indent);
-        /*
-         * for(int i = 0; i < indent; ++i) { System.out.print(" |"); }
-         */
     }
     
     static void printIndentln(String indent)

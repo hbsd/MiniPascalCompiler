@@ -6,7 +6,8 @@ import java.util.Optional;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
-import enshud.pascal.ast.ProcedureDeclaration;
+import enshud.pascal.Procedure;
+import enshud.pascal.ast.declaration.ProcedureDeclaration;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.Parser;
 import enshud.s2.parser.node.INode;

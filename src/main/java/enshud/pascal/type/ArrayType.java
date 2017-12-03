@@ -2,7 +2,7 @@ package enshud.pascal.type;
 
 import java.util.Objects;
 
-import enshud.pascal.ast.SignedInteger;
+import enshud.pascal.ast.expression.IntegerLiteral;
 
 
 public class ArrayType implements IType
@@ -21,7 +21,7 @@ public class ArrayType implements IType
         this.max = Objects.requireNonNull(max);
     }
     
-    public ArrayType(BasicType type, SignedInteger min, SignedInteger max)
+    public ArrayType(BasicType type, IntegerLiteral min, IntegerLiteral max)
     {
         this(type, min.getInt(), max.getInt());
     }

@@ -3,7 +3,6 @@ package enshud.s4.compiler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,11 +64,11 @@ public class Compiler
             );
     }
     
-    public static Optional<List<Casl2Instruction>> fromLexedFile(String input_file)
+    public static Optional<Casl2Code> fromLexedFile(String input_file)
     {
         return Checker.fromLexedFile(input_file)
             .flatMap(checker -> checker.getProgram())
-            .map(proc -> proc.compile(new ArrayList<>()));
+            .map(proc -> proc.compile(new Casl2Code()));
     }
     
     public static boolean outputToFile(String output_name, List<? extends CharSequence> code)

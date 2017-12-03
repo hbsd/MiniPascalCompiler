@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import enshud.pascal.PascalParser;
-import enshud.pascal.ast.ProcedureDeclaration;
+import enshud.pascal.ast.declaration.ProcedureDeclaration;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.node.INode;
