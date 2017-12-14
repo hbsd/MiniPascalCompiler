@@ -4,29 +4,10 @@ import java.util.List;
 import java.util.Set;
 
 import enshud.pascal.ast.*;
-import enshud.pascal.ast.declaration.Parameter;
-import enshud.pascal.ast.declaration.ProcedureDeclaration;
-import enshud.pascal.ast.declaration.TypeLiteral;
-import enshud.pascal.ast.declaration.VariableDeclaration;
-import enshud.pascal.ast.expression.BooleanLiteral;
-import enshud.pascal.ast.expression.IExpression;
-import enshud.pascal.ast.expression.IVariable;
-import enshud.pascal.ast.expression.Identifier;
-import enshud.pascal.ast.expression.IndexedVariable;
-import enshud.pascal.ast.expression.InfixOperation;
-import enshud.pascal.ast.expression.IntegerLiteral;
-import enshud.pascal.ast.expression.PrefixOperation;
-import enshud.pascal.ast.expression.PureVariable;
-import enshud.pascal.ast.expression.StringLiteral;
-import enshud.pascal.ast.statement.AssignStatement;
-import enshud.pascal.ast.statement.CompoundStatement;
-import enshud.pascal.ast.statement.IStatement;
-import enshud.pascal.ast.statement.IfElseStatement;
-import enshud.pascal.ast.statement.IfStatement;
-import enshud.pascal.ast.statement.ProcCallStatement;
-import enshud.pascal.ast.statement.ReadStatement;
-import enshud.pascal.ast.statement.WhileStatement;
-import enshud.pascal.ast.statement.WriteStatement;
+import enshud.pascal.ast.declaration.*;
+import enshud.pascal.ast.expression.*;
+import enshud.pascal.ast.statement.*;
+import enshud.pascal.type.BasicType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.TokenType;
 
@@ -67,7 +48,7 @@ public enum PascalParser implements IParser
                 (Identifier)n.get(1),
                 new NodeList<>(),
                 n.get(6) instanceof EmptyNode? new NodeList<>()
-                        : (NodeList<VariableDeclaration>)n.getAsSeq(6).get(1),
+                        : (NodeList<LocalDeclaration>)n.getAsSeq(6).get(1),
                 (NodeList<ProcedureDeclaration>)n.get(7),
                 (CompoundStatement)n.get(8)
             );
@@ -105,11 +86,11 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            final NodeList<VariableDeclaration> list = new NodeList<>();
+            final NodeList<LocalDeclaration> list = new NodeList<>();
             
             for (final INode c: n.getChildren())
             {
-                list.add((VariableDeclaration)c);
+                list.add((LocalDeclaration)c);
             }
             return list;
         }
@@ -125,7 +106,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new VariableDeclaration((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
+            return new LocalDeclaration((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
         }
     },
     TYPE(5) {
@@ -169,7 +150,7 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             return new TypeLiteral(
-                ((TypeLiteral)n.get(7)).getRegularType(),
+                (BasicType)((TypeLiteral)n.get(7)).getType(),
                 (IntegerLiteral)n.get(2),
                 (IntegerLiteral)n.get(4),
                 ((TokenNode)n.get(0)).getToken()
@@ -273,9 +254,9 @@ public enum PascalParser implements IParser
             final SequenceNode n = (SequenceNode)node;
             return new ProcedureDeclaration(
                 (Identifier)n.get(1),
-                n.get(2) instanceof EmptyNode? new NodeList<>(): (NodeList<Parameter>)n.getAsSeq(2).get(1),
+                n.get(2) instanceof EmptyNode? new NodeList<>(): (NodeList<ParameterDeclaration>)n.getAsSeq(2).get(1),
                 n.get(4) instanceof EmptyNode? new NodeList<>()
-                        : (NodeList<VariableDeclaration>)n.getAsSeq(4).get(1),
+                        : (NodeList<LocalDeclaration>)n.getAsSeq(4).get(1),
                 (NodeList<ProcedureDeclaration>)n.get(5), // TODO: let procedure have child procedures
                 (CompoundStatement)n.get(6)
             );
@@ -293,11 +274,11 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            final NodeList<Parameter> list = new NodeList<>((Parameter)n.get(0));
+            final NodeList<ParameterDeclaration> list = new NodeList<>((ParameterDeclaration)n.get(0));
             
             for (final INode c: n.getAsSeq(1).getChildren())
             {
-                list.add((Parameter)((SequenceNode)c).get(1));
+                list.add((ParameterDeclaration)((SequenceNode)c).get(1));
             }
             return list;
         }
@@ -313,7 +294,7 @@ public enum PascalParser implements IParser
         protected INode success(INode node)
         {
             final SequenceNode n = (SequenceNode)node;
-            return new Parameter((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
+            return new ParameterDeclaration((NodeList<Identifier>)n.get(0), (TypeLiteral)n.get(2));
         }
     },
     COMPOUND_STATEMENT(14) {

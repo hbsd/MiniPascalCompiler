@@ -1,5 +1,6 @@
 package enshud.pascal.ast.expression;
 
+import enshud.pascal.PrefixOperator;
 import enshud.pascal.Procedure;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
@@ -11,15 +12,17 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class PrefixOperation implements IExpression
 {
-    private IExpression    operand;
-    private PrefixOperator op;
-    private LexedToken     op_token;
+    private IExpression          operand;
+    private final PrefixOperator op;
+    private final LexedToken     op_token;
+    private IType                type;
     
     public PrefixOperation(IExpression operand, LexedToken op_token)
     {
         this.operand = operand;
         this.op_token = op_token;
         this.op = PrefixOperator.getFromToken(op_token);
+        this.type = null;
     }
     
     public PrefixOperation(IExpression operand, TokenNode op_token)
@@ -52,22 +55,9 @@ public class PrefixOperation implements IExpression
     @Override
     public IType check(Procedure proc, Checker checker)
     {
-        IType t = getOperand().check(proc, checker);
-        
-        /*
-         * if (t.isUnknown()) { getOperand().retype(getOp().getOperandType()); }
-         */
-        
-        if (!t.equals(getOp().getOperandType()))
-        {
-            checker.addErrorMessage(
-                proc, this,
-                "incompatible type: cannot use " + t + " type as operand of " + getOp() + " operator. must be "
-                        + getOp().getOperandType() + "."
-            );
-        }
-        
-        return getType();
+        final IType t = getOperand().check(proc, checker);
+        type = getOp().checkType(proc, checker, op_token, t);
+        return type;
     }
     
     @Override
@@ -94,13 +84,7 @@ public class PrefixOperation implements IExpression
     @Override
     public IType getType()
     {
-        return getOp().getReturnType();
-    }
-    
-    @Override
-    public void retype(IType new_type)
-    {
-        getOperand().retype(new_type);
+        return type;
     }
     
     @Override

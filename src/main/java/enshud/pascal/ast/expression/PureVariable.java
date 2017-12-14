@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import enshud.pascal.Procedure;
-import enshud.pascal.Variable;
+import enshud.pascal.QualifiedVariable;
 import enshud.pascal.ast.ILiteral;
 import enshud.pascal.ast.statement.ProcCallStatement;
 import enshud.pascal.type.ArrayType;
@@ -20,13 +20,13 @@ public class PureVariable implements IVariable, ILiteral
 {
     private final Identifier name;
     private IType            type;
-    private Variable         var_referenced;
+    private QualifiedVariable         var_referenced;
     private boolean          is_param;
     
     public PureVariable(Identifier name)
     {
         this.name = Objects.requireNonNull(name);
-        type = UnknownType.UNKNOWN;
+        type = null;
     }
     
     @Override
@@ -54,20 +54,11 @@ public class PureVariable implements IVariable, ILiteral
     }
     
     @Override
-    public void retype(IType new_type)
-    {
-        if (getType().isUnknown())
-        {
-            type = new_type;
-        }
-    }
-    
-    @Override
     public IType check(Procedure proc, Checker checker)
     {
         final String nm = getName().toString();
         
-        final Optional<Variable> param = proc.getParam(nm);
+        final Optional<QualifiedVariable> param = proc.getParam(nm);
         
         if (param.isPresent())
         {
@@ -77,7 +68,7 @@ public class PureVariable implements IVariable, ILiteral
         }
         else
         {
-            final Optional<Variable> var = proc.getVar(nm);
+            final Optional<QualifiedVariable> var = proc.getVar(nm);
             type = var.map(v -> v.getType())
                 .orElse(UnknownType.UNKNOWN);
             if (var.isPresent())
@@ -99,7 +90,7 @@ public class PureVariable implements IVariable, ILiteral
     private void checkFuzzy(Procedure proc, Checker checker)
     {
         final String nm = getName().toString();
-        final List<Variable> vs = proc.searchForParamFuzzy(nm);
+        final List<QualifiedVariable> vs = proc.searchForParamFuzzy(nm);
         vs.addAll(proc.searchForVarFuzzy(nm));
         
         checker.addErrorMessage(

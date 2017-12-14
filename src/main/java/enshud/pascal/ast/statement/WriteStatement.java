@@ -8,7 +8,6 @@ import enshud.pascal.Procedure;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.type.BasicType;
-import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
@@ -36,27 +35,19 @@ public class WriteStatement implements IStatement
         {
             IType type = exp.check(proc, checker);
             
-            if (type instanceof StringType)
-            {
-                if (((StringType)type).getSize() == 1)
-                {
-                    type = BasicType.CHAR;
-                }
-                exp.retype(type);
-            }
-            else if (type != BasicType.INTEGER && type != BasicType.CHAR && !type.isArrayOf(BasicType.CHAR))
+            if (!type.equals(BasicType.INTEGER) && !type.equals(BasicType.CHAR) && !type.isArrayOf(BasicType.CHAR))
             {
                 checker.addErrorMessage(
                     proc, exp, "incompatible type: " + Checker.getOrderString(i)
                             + " argument of writeln must be INTEGER, CHAR, or array of CHAR, but is " + type + "."
                 );
             }
-            else if (type.isUnknown())
+            /*else if (type.isUnknown())
             {
                 checker.addErrorMessage(
                     proc, exp, "cannot identify the type of " + Checker.getOrderString(i) + " argument of writeln."
                 );
-            }
+            }*/
             ++i;
         }
         return null;

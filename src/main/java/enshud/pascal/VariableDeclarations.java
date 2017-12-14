@@ -11,19 +11,19 @@ import enshud.s3.checker.Checker;
 
 class VariableDeclarations
 {
-    private final List<Variable> list = new ArrayList<>();
+    private final List<QualifiedVariable> list = new ArrayList<>();
     
     void add(String name, IType type, Procedure proc)
     {
-        list.add(new Variable(name, type, getAllSize(), proc));
+        list.add(new QualifiedVariable(name, type, getAllSize(), proc));
     }
     
-    Variable get(int index)
+    QualifiedVariable get(int index)
     {
         return list.get(index);
     }
     
-    Optional<Variable> get(String name)
+    Optional<QualifiedVariable> get(String name)
     {
         return list
                 .stream()
@@ -31,7 +31,7 @@ class VariableDeclarations
                 .findFirst();
     }
     
-    List<Variable> searchForFuzzy(String name)
+    List<QualifiedVariable> searchForFuzzy(String name)
     {
         return list
                 .stream()
@@ -42,7 +42,7 @@ class VariableDeclarations
     int getIndex(String name)
     {
         int i = 0;
-        for (final Variable v: list)
+        for (final QualifiedVariable v: list)
         {
             if (v.getName().equals(name))
             {

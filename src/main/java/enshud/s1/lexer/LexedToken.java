@@ -8,11 +8,13 @@ import java.util.Objects;
  */
 public class LexedToken
 {
-    public static final LexedToken DUMMY = new LexedToken("", TokenType.SUNKNOWN, -1, -1);
+    public static final LexedToken DUMMY          = new LexedToken("", TokenType.SUNKNOWN, -1, -1);
     
     private final Token            token;
     private final int              line;
     private final int              column;
+    
+    static final boolean           INCLUDE_COLUMN = false;
     
     public String getString()
     {
@@ -51,13 +53,18 @@ public class LexedToken
         final String[] ss = str.split("\\t");
         TokenType ttype = TokenType.getById(Integer.parseInt(ss[2])).get();
         
-        return new LexedToken(ss[0], ttype, Integer.parseInt(ss[3]), -1);
+        return new LexedToken(
+            ss[0], ttype,
+            Integer.parseInt(ss[3]),
+            INCLUDE_COLUMN? Integer.parseInt(ss[4]): -1
+        );
     }
     
     @Override
     public String toString()
     {
+        final String col = INCLUDE_COLUMN? "\t" + column: "";
         return getString() + "\t" + getType() + "\t" + getType().getId() + "\t"
-                + line/* + "\t" + column */;
+                + line + col;
     }
 }

@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import enshud.pascal.ast.declaration.Parameter;
+import enshud.pascal.ast.declaration.LocalDeclaration;
+import enshud.pascal.ast.declaration.ParameterDeclaration;
 import enshud.pascal.ast.declaration.ProcedureDeclaration;
 import enshud.pascal.ast.statement.CompoundStatement;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
-import enshud.pascal.type.UnknownType;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
@@ -20,8 +20,7 @@ public class Procedure
 {
     private Procedure                  parent;
     private final String               name;
-    private final String               proc_id;                                 // for
-                                                                                // label
+    private final String               proc_id;                                 // label
     private final List<Procedure>      children    = new ArrayList<>();
     
     private final VariableDeclarations param_decls = new VariableDeclarations();
@@ -107,15 +106,15 @@ public class Procedure
     }
     
     
-    public Optional<Variable> getParam(String name)
+    public Optional<QualifiedVariable> getParam(String name)
     {
-        final Optional<Variable> param = param_decls.get(name);
+        final Optional<QualifiedVariable> param = param_decls.get(name);
         return (param.isPresent() || isRoot())
                 ? param
                 : getParent().getParam(name);
     }
     
-    public List<Variable> searchForParamFuzzy(String name)
+    public List<QualifiedVariable> searchForParamFuzzy(String name)
     {
         return param_decls.searchForFuzzy(name);
     }
@@ -131,41 +130,34 @@ public class Procedure
     }
     
     
-    public Optional<Variable> getLocalVar(String name)
+    public Optional<QualifiedVariable> getLocalVar(String name)
     {
         return var_decls.get(name);
     }
     
-    public Optional<Variable> getOuterVar(String name)
+    public Optional<QualifiedVariable> getOuterVar(String name)
     {
         if(isRoot())
         {
             return Optional.empty();
         }
-        Optional<Variable> v = getParent().getLocalVar(name);
+        Optional<QualifiedVariable> v = getParent().getLocalVar(name);
         return v.isPresent()
                 ? v
                 : getParent().getOuterVar(name);
     }
     
-    public Optional<Variable> getVar(String name)
+    public Optional<QualifiedVariable> getVar(String name)
     {
-        final Optional<Variable> var = getLocalVar(name);
+        final Optional<QualifiedVariable> var = getLocalVar(name);
         return (var.isPresent() || isRoot())
                 ? var
                 : getOuterVar(name);
     }
     
-    public IType getVarType(String name)
+    public List<QualifiedVariable> searchForVarFuzzy(String name)
     {
-        return getVar(name)
-            .map(v -> v.getType())
-            .orElse(UnknownType.UNKNOWN);
-    }
-    
-    public List<Variable> searchForVarFuzzy(String name)
-    {
-        final List<Variable> var = var_decls.searchForFuzzy(name);
+        final List<QualifiedVariable> var = var_decls.searchForFuzzy(name);
         if (!isRoot())
         {
             var.addAll(getParent().searchForVarFuzzy(name));
@@ -176,7 +168,7 @@ public class Procedure
     
     public Optional<Procedure> getSubProc(String name)
     {
-        if (getName().equals(name))
+        if (!isRoot() && getName().equals(name))
         {
             return Optional.of(this);
         }
@@ -194,7 +186,7 @@ public class Procedure
     public List<Procedure> getSubProcFuzzy(String name)
     {
         List<Procedure> l = new ArrayList<>();
-        if (Checker.isSimilar(getName(), name))
+        if (!isRoot() && Checker.isSimilar(getName(), name))
         {
             l.add(this);
         }
@@ -212,7 +204,7 @@ public class Procedure
         return l;
     }
     
-    private void checkParams(List<Parameter> params, Checker checker)
+    private void checkParams(List<ParameterDeclaration> params, Checker checker)
     {
         params.forEach(
             p -> {
@@ -234,7 +226,7 @@ public class Procedure
         );
     }
     
-    private void checkVarDecls(List<enshud.pascal.ast.declaration.VariableDeclaration> vars, Checker checker)
+    private void checkVarDecls(List<LocalDeclaration> vars, Checker checker)
     {
         vars.forEach(
             decl -> {
@@ -264,7 +256,7 @@ public class Procedure
         );
     }
     
-    private void checkArrayType(Checker checker, enshud.pascal.ast.declaration.VariableDeclaration decl)
+    private void checkArrayType(Checker checker, LocalDeclaration decl)
     {
         final ArrayType type = (ArrayType)decl.getType();
         

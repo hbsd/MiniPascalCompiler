@@ -8,12 +8,12 @@ import enshud.pascal.ast.expression.Identifier;
 import enshud.pascal.type.IType;
 
 
-public class VariableDeclaration implements IDeclaration
+public class LocalDeclaration implements IDeclaration
 {
     private final NodeList<Identifier> names;
     private final TypeLiteral          type;
     
-    public VariableDeclaration(NodeList<Identifier> names, TypeLiteral type)
+    public LocalDeclaration(NodeList<Identifier> names, TypeLiteral type)
     {
         this.names = Objects.requireNonNull(names);
         this.type = Objects.requireNonNull(type);

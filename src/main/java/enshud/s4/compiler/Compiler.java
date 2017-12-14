@@ -20,7 +20,7 @@ public class Compiler
     public static void main(final String[] args)
     {
         // Compilerを実行してcasを生成する
-        new Lexer().run("data/pas/test.pas", "tmp/out.ts");
+        new Lexer().run("data/pas/normal03.pas", "tmp/out.ts");
         new Compiler().run("tmp/out.ts", "tmp/out.cas");
         // new Compiler().run("data/ts/normal02.ts", "tmp/out.cas");
         

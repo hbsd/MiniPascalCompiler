@@ -3,12 +3,14 @@ package enshud.s3.checker;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import enshud.pascal.Procedure;
 import enshud.pascal.ast.declaration.ProcedureDeclaration;
 import enshud.s1.lexer.LexedToken;
+import enshud.s1.lexer.Lexer;
 import enshud.s2.parser.Parser;
 import enshud.s2.parser.node.INode;
 
@@ -21,8 +23,8 @@ public class Checker
     public static void main(final String[] args)
     {
         // normalの確認
-        new Checker().run("data/ts/normal04.ts");
-        new Checker().run("data/ts/normal05.ts");
+        // new Checker().run("data/ts/normal03.ts");
+        // new Checker().run("data/ts/normal05.ts");
         
         // synerrの確認
         // new Checker().run("data/ts/synerr01.ts");
@@ -30,7 +32,14 @@ public class Checker
         
         // semerrの確認
         // new Checker().run("data/ts/semerr01.ts");
-        //new Checker().run("data/ts/semerr04.ts");
+        // new Checker().run("data/ts/semerr04.ts");
+        IntStream.rangeClosed(1, 8).forEach(
+            i -> {
+                System.err.println("semerr" + i);
+                new Lexer().run("data/pas/semerr0" + i + ".pas", "tmp/out.ts");
+                new Checker().run("tmp/out.ts");
+            }
+        );
     }
     
     /**
@@ -69,7 +78,7 @@ public class Checker
     }
     
     private static final boolean DETAIL_ERROR_MSG = false;
-    private static final int     NUMBER_TO_PRINT  = 1;
+    private static final int     NUMBER_TO_PRINT  = 1;  // < 0 : print all
     
     
     private static final LevenshteinDistance DISTANCE = new LevenshteinDistance();
@@ -77,7 +86,7 @@ public class Checker
     public static final boolean isSimilar(CharSequence s1, CharSequence s2)
     {
         final double threshold = 0.3;
-        return threshold * (s1.length() + s2.length()) > DISTANCE.apply(s1, s2);
+        return DISTANCE.apply(s1, s2) < threshold * (s1.length() + s2.length());
     }
     
     private Procedure          program = null;
@@ -101,24 +110,27 @@ public class Checker
     
     public void addErrorMessage(Procedure proc, INode node, String msg)
     {
-        addErrorMessage(proc.getName(), node.getLine(), node.getColumn(), msg);
+        addErrorMessage(proc.getQualifiedName(), node.getLine(), node.getColumn(), msg);
     }
     
     public void addErrorMessage(Procedure proc, LexedToken token, String msg)
     {
-        addErrorMessage(proc.getName(), token.getLine(), token.getColumn(), msg);
-    }
-    
-    public void printErrorMessage()
-    {
-        printErrorMessage(1);
+        addErrorMessage(proc.getQualifiedName(), token.getLine(), token.getColumn(), msg);
     }
     
     public void printErrorMessage(int num)
     {
-        errors.stream()
-            .limit(num)
-            .forEach(System.err::println);
+        if (num < 0)
+        {
+            errors.stream()
+                .forEach(System.err::println);
+        }
+        else
+        {
+            errors.stream()
+                .limit(num)
+                .forEach(System.err::println);
+        }
     }
     
     public boolean isSuccess()

@@ -10,7 +10,6 @@ import enshud.pascal.ast.expression.IConstant;
 import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.ast.expression.Identifier;
 import enshud.pascal.type.IType;
-import enshud.pascal.type.StringType;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
@@ -97,11 +96,7 @@ public class ProcCallStatement implements IStatement
             final IType ptype = getCalledProc().getParamType(i);
             final IType atype = exp.check(proc, checker);
             
-            if (atype instanceof StringType)
-            {
-                exp.retype(ptype);
-            }
-            else if (!ptype.equals(atype))
+            if (!ptype.equals(atype))
             {
                 checker.addErrorMessage(
                     proc, this,
@@ -130,30 +125,6 @@ public class ProcCallStatement implements IStatement
     {
         getArgs().forEach(e -> e.preeval(proc));
         return this;
-    }
-    
-    private void f(Casl2Code code, char s, char c)
-    {
-        code.add("LAD", "", "", "GR2", "='" + s + c + "'");
-        code.add("LAD", "", "", "GR1", "2");
-        code.add("CALL", "", "", "WRTSTR");
-
-        code.add("LD", "", "", "GR2", "GR5");
-        code.add("CALL", "", "", "WRTINT");
-        
-        code.add("LAD", "", "", "GR2", "" + (int)',');
-        code.add("CALL", "", "", "WRTCH");
-        
-        code.add("LD", "", "", "GR2", "-1", "GR5");
-        code.add("CALL", "", "", "WRTINT");
-        
-        code.add("LAD", "", "", "GR2", "" + (int)',');
-        code.add("CALL", "", "", "WRTCH");
-        
-        code.add("LD", "", "", "GR2", "1", "GR5");
-        code.add("CALL", "", "", "WRTINT");
-        
-        code.add("CALL", "", "", "WRTLN");
     }
     
     @Override

@@ -14,12 +14,6 @@ public class UnknownType implements IType
     }
     
     @Override
-    public BasicType getBasicType()
-    {
-        return BasicType.UNKNOWN;
-    }
-    
-    @Override
     public boolean equals(IType rval)
     {
         return false;

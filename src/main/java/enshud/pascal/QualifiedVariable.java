@@ -5,14 +5,14 @@ import java.util.Objects;
 import enshud.pascal.type.IType;
 
 
-public class Variable
+public class QualifiedVariable
 {
     private final String    name;
     private final IType     type;
     private final int       alignment;
     private final Procedure proc;
     
-    public Variable(String name, IType type, int alignment, Procedure proc)
+    public QualifiedVariable(String name, IType type, int alignment, Procedure proc)
     {
         this.name = Objects.requireNonNull(name);
         this.type = Objects.requireNonNull(type);

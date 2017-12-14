@@ -7,15 +7,12 @@ import enshud.pascal.ast.expression.IntegerLiteral;
 
 public class ArrayType implements IType
 {
-    public static final ArrayType CHAR = new ArrayType(BasicType.CHAR, 0, 0);
-    
     private final BasicType       type;
     private final int             min;
     private final int             max;
     
     public ArrayType(BasicType type, int min, int max)
     {
-        assert type != BasicType.UNKNOWN: "no Unknown";
         this.type = Objects.requireNonNull(type);
         this.min = Objects.requireNonNull(min);
         this.max = Objects.requireNonNull(max);
@@ -24,12 +21,6 @@ public class ArrayType implements IType
     public ArrayType(BasicType type, IntegerLiteral min, IntegerLiteral max)
     {
         this(type, min.getInt(), max.getInt());
-    }
-    
-    @Override
-    public BasicType getBasicType()
-    {
-        return type;
     }
     
     public int getMin()
@@ -46,6 +37,11 @@ public class ArrayType implements IType
     public int getSize()
     {
         return max - min + 1;
+    }
+    
+    public BasicType getBasicType()
+    {
+        return type;
     }
     
     @Override

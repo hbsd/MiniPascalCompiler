@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import enshud.pascal.Procedure;
-import enshud.pascal.Variable;
+import enshud.pascal.QualifiedVariable;
 import enshud.pascal.ast.ILiteral;
 import enshud.pascal.ast.statement.ProcCallStatement;
 import enshud.pascal.type.ArrayType;
@@ -22,13 +22,13 @@ public class IndexedVariable implements IVariable, ILiteral
     private final Identifier  name;
     private final IExpression index;
     private IType             type;
-    private Variable          var_referenced;
+    private QualifiedVariable var_referenced;
     
     public IndexedVariable(Identifier name, IExpression index)
     {
         this.name = Objects.requireNonNull(name);
         this.index = Objects.requireNonNull(index);
-        type = UnknownType.UNKNOWN;
+        type = null;
     }
     
     @Override
@@ -45,7 +45,7 @@ public class IndexedVariable implements IVariable, ILiteral
     @Override
     public IType getType()
     {
-        return type.getBasicType();
+        return ((ArrayType)type).getBasicType();
     }
     
     @Override
@@ -61,25 +61,16 @@ public class IndexedVariable implements IVariable, ILiteral
     }
     
     @Override
-    public void retype(IType new_type)
-    {
-        if (getType().isUnknown())
-        {
-            type = new_type;
-        }
-    }
-    
-    @Override
     public IType check(Procedure proc, Checker checker)
     {
         final String nm = getName().toString();
-        final Optional<Variable> var = proc.getVar(nm);
+        final Optional<QualifiedVariable> var = proc.getVar(nm);
         type = var.map(v -> v.getType())
             .orElse(UnknownType.UNKNOWN);
         
         if (!var.isPresent())
         {
-            List<Variable> vs = proc.searchForVarFuzzy(nm);
+            List<QualifiedVariable> vs = proc.searchForVarFuzzy(nm);
             checker.addErrorMessage(
                 proc, getName(),
                 "variable '" + nm + "' is not defined."
@@ -98,18 +89,13 @@ public class IndexedVariable implements IVariable, ILiteral
         }
         
         checkIndex(proc, checker);
-        return type.getBasicType();
+        return getType();
     }
     
     private void checkIndex(Procedure proc, Checker checker)
     {
         final IType idx_type = getIndex().check(proc, checker);
-        if (idx_type.isUnknown())
-        {
-            getIndex().retype(BasicType.INTEGER);
-        }
-        
-        if (!idx_type.equals(BasicType.INTEGER))
+        if (!idx_type.isUnknown() && !idx_type.equals(BasicType.INTEGER))
         {
             checker.addErrorMessage(
                 proc, getIndex(),

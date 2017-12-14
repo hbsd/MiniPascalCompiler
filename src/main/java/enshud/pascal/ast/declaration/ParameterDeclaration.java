@@ -3,18 +3,17 @@ package enshud.pascal.ast.declaration;
 import java.util.List;
 import java.util.Objects;
 
-import enshud.pascal.ast.IASTNode;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.ast.expression.Identifier;
 import enshud.pascal.type.BasicType;
 
 
-public class Parameter implements IASTNode
+public class ParameterDeclaration implements IDeclaration
 {
     private final NodeList<Identifier> names;
     private final TypeLiteral           type;
     
-    public Parameter(NodeList<Identifier> names, TypeLiteral type)
+    public ParameterDeclaration(NodeList<Identifier> names, TypeLiteral type)
     {
         assert type.getType() instanceof BasicType;
         this.names = Objects.requireNonNull(names);
@@ -53,9 +52,9 @@ public class Parameter implements IASTNode
     {
         return "";
     }
-    
+
     @Override
-    public void println(String indent)
+    public void printBodyln(String indent)
     {
         type.println(indent + " |");
         names.println(indent + "  ");

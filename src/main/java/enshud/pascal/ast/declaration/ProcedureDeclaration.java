@@ -10,15 +10,15 @@ import enshud.pascal.ast.statement.CompoundStatement;
 public class ProcedureDeclaration implements IDeclaration
 {
     private final Identifier                     name;
-    private final NodeList<Parameter>            params;
-    private final NodeList<VariableDeclaration>  vars;
+    private final NodeList<ParameterDeclaration>            params;
+    private final NodeList<LocalDeclaration>  vars;
     private final NodeList<ProcedureDeclaration> subprocs;
     private final CompoundStatement                  body;
     
     public ProcedureDeclaration(
         Identifier name,
-        NodeList<Parameter> params,
-        NodeList<VariableDeclaration> vars,
+        NodeList<ParameterDeclaration> params,
+        NodeList<LocalDeclaration> vars,
         NodeList<ProcedureDeclaration> subprocs,
         CompoundStatement body
     )
@@ -35,12 +35,12 @@ public class ProcedureDeclaration implements IDeclaration
         return name;
     }
     
-    public NodeList<Parameter> getParams()
+    public NodeList<ParameterDeclaration> getParams()
     {
         return params;
     }
     
-    public NodeList<VariableDeclaration> getVars()
+    public NodeList<LocalDeclaration> getVars()
     {
         return vars;
     }

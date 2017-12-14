@@ -1,15 +1,27 @@
-package enshud.pascal.ast.expression;
+package enshud.pascal;
 
+import enshud.pascal.ast.expression.BooleanLiteral;
+import enshud.pascal.ast.expression.IConstant;
+import enshud.pascal.ast.expression.IntegerLiteral;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
+import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public enum InfixOperator
 {
-    ADD(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
+    ADD {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -22,7 +34,15 @@ public enum InfixOperator
             code.add("ADDA", "", "", "GR2", "GR1");
         }
     },
-    SUB(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
+    SUB {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -36,7 +56,15 @@ public enum InfixOperator
             code.add("LD", "", "", "GR2", "GR1");
         }
     },
-    MUL(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
+    MUL {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -49,7 +77,15 @@ public enum InfixOperator
             code.add("CALL", "", "", "MULT");
         }
     },
-    DIV(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
+    DIV {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -62,7 +98,15 @@ public enum InfixOperator
             code.add("CALL", "", "", "DIV");
         }
     },
-    MOD(BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER) {
+    MOD {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -77,7 +121,15 @@ public enum InfixOperator
         }
     },
     
-    OR(BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN) {
+    OR {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -90,7 +142,15 @@ public enum InfixOperator
             code.add("OR", "", "", "GR2", "GR1");
         }
     },
-    AND(BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN) {
+    AND {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN
+            );
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -104,7 +164,13 @@ public enum InfixOperator
         }
     },
     
-    EQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    EQUAL {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -123,7 +189,13 @@ public enum InfixOperator
             code.add("NOP", "Q" + label, "; ^ =");
         }
     },
-    NOTEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    NOTEQUAL {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -142,7 +214,13 @@ public enum InfixOperator
             code.add("NOP", "Q" + label, "; ^ <>");
         }
     },
-    LESS(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    LESS {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -157,7 +235,13 @@ public enum InfixOperator
             code.add("SRL", "", "", "GR2", "15");
         }
     },
-    LESSEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    LESSEQUAL {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -172,7 +256,13 @@ public enum InfixOperator
             code.add("XOR", "", "", "GR2", "=1");
         }
     },
-    GREAT(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    GREAT {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -186,7 +276,13 @@ public enum InfixOperator
             code.add("SRL", "", "", "GR2", "15");
         }
     },
-    GREATEQUAL(BasicType.UNKNOWN, BasicType.UNKNOWN, BasicType.BOOLEAN) {
+    GREATEQUAL {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return checkCompareOp(proc, checker, op_tok, givenl, givenr);
+        }
+        
         @Override
         public IConstant eval(int left, int right)
         {
@@ -203,16 +299,6 @@ public enum InfixOperator
         }
     };
     
-    private final IType left_type;
-    private final IType right_type;
-    private final IType ret_type;
-    
-    private InfixOperator(IType left_type, IType right_type, IType ret_type)
-    {
-        this.left_type = left_type;
-        this.right_type = right_type;
-        this.ret_type = ret_type;
-    }
     
     public static InfixOperator getFromToken(LexedToken token)
     {
@@ -250,22 +336,68 @@ public enum InfixOperator
         }
     }
     
-    public IType getLeftType()
+    public abstract IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr);
+    
+    protected IType check_(
+        Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr, IType expectedl,
+        IType expectedr, IType result
+    )
     {
-        return left_type;
+        givenl = checkTypeMatch(proc, checker, op_tok, givenl, expectedl);
+        givenr = checkTypeMatch(proc, checker, op_tok, givenr, expectedr);
+        checkTypeMatch2(proc, checker, op_tok, givenl, givenr, expectedl, expectedr);
+        return result;
     }
     
-    public IType getRightType()
+    protected IType checkCompareOp(
+        Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr
+    )
     {
-        return right_type;
+        if (givenl == BasicType.INTEGER || givenr == BasicType.INTEGER)
+        {
+            check_(proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.BOOLEAN);
+        }
+        else if (givenl == BasicType.BOOLEAN || givenr == BasicType.BOOLEAN)
+        {
+            check_(proc, checker, op_tok, givenl, givenr, BasicType.BOOLEAN, BasicType.BOOLEAN, BasicType.BOOLEAN);
+        }
+        else if (givenl == BasicType.CHAR || givenr == BasicType.CHAR)
+        {
+            check_(proc, checker, op_tok, givenl, givenr, BasicType.CHAR, BasicType.CHAR, BasicType.BOOLEAN);
+        }
+        return BasicType.BOOLEAN;
     }
     
-    public IType getReturnType()
+    private IType checkTypeMatch(Procedure proc, Checker checker, LexedToken op_tok, IType given, IType expected)
     {
-        return ret_type;
+        if (given.isUnknown())
+        {
+            return expected;
+        }
+        else if (!given.equals(expected))
+        {
+            checker.addErrorMessage(
+                proc, op_tok,
+                "incompatible type: cannot use " + given + " type as operand of " + this + " operator. must be "
+                        + expected + "."
+            );
+        }
+        return given;
+    }
+    
+    private void checkTypeMatch2(
+        Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr, IType expectedl, IType expectedr
+    )
+    {
+        if (!givenl.isUnknown() && !givenr.isUnknown() && !givenl.equals(givenr))
+        {
+            checker.addErrorMessage(
+                proc, op_tok,
+                "incompatible type: left type " + givenl + " differs from right type " + givenr + " of " + this + " operator."
+            );
+        }
     }
     
     public abstract IConstant eval(int left, int right);
-    
     public abstract void compile(Casl2Code code, LabelGenerator l_gen); // left->GR1,right->GR2
 }

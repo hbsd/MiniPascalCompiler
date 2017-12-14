@@ -4,8 +4,6 @@ public interface IType
 {
     int getSize();
     
-    BasicType getBasicType();
-    
     default boolean equals(IType rval)
     {
         return this == rval;
@@ -15,8 +13,8 @@ public interface IType
     
     boolean isArrayType();
     
-    boolean isBasicType();
-    
     boolean isUnknown();
+
+    boolean isBasicType();
 }
 

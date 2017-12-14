@@ -56,24 +56,20 @@ public class AssignStatement implements IStatement
         if (left_type.isUnknown() && !right_type.isUnknown())
         {
             left_type = right_type;
-            getLeft().retype(right_type);
         }
         else if (!left_type.isUnknown() && right_type.isUnknown())
         {
             right_type = left_type;
-            getRight().retype(left_type);
         }
         else
         {
-            if (left_type instanceof StringType && right_type == BasicType.CHAR)
+            if (left_type == StringType.CHAR && right_type == BasicType.CHAR)
             {
                 left_type = right_type;
-                getLeft().retype(right_type);
             }
-            if (right_type instanceof StringType && left_type == BasicType.CHAR)
+            if (right_type == StringType.CHAR && left_type == BasicType.CHAR)
             {
                 right_type = left_type;
-                getRight().retype(left_type);
             }
         }
         

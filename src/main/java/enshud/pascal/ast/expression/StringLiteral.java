@@ -20,13 +20,13 @@ public class StringLiteral implements IConstant
     public StringLiteral(TokenNode str)
     {
         this.str = Objects.requireNonNull(str);
-        type = new StringType(length());
+        type = StringType.create(length());
     }
     
     @Override
     public int getInt()
     {
-        if(getType() == BasicType.CHAR)
+        if(getType() == StringType.CHAR)
         {
             return (int)toString().charAt(1);
         }
@@ -63,12 +63,6 @@ public class StringLiteral implements IConstant
     public int getColumn()
     {
         return str.getColumn();
-    }
-    
-    @Override
-    public void retype(IType new_type)
-    {
-        type = new_type;
     }
     
     @Override

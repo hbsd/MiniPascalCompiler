@@ -52,11 +52,6 @@ public class TypeLiteral implements ILiteral
         return type;
     }
     
-    public BasicType getRegularType()
-    {
-        return type.getBasicType();
-    }
-    
     @Override
     public int getLine()
     {
@@ -67,11 +62,6 @@ public class TypeLiteral implements ILiteral
     public int getColumn()
     {
         return token.getColumn();
-    }
-    
-    public boolean isArrayOf(BasicType rtype)
-    {
-        return type.isArrayOf(rtype);
     }
     
     @Override

@@ -1,16 +1,26 @@
-package enshud.pascal.ast.expression;
+package enshud.pascal;
 
 
+import enshud.pascal.ast.expression.BooleanLiteral;
+import enshud.pascal.ast.expression.IConstant;
+import enshud.pascal.ast.expression.IntegerLiteral;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
+import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
 
 
 public enum PrefixOperator
 {
-    PLUS(BasicType.INTEGER, BasicType.INTEGER) {
+    PLUS {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType given)
+        {
+            return check_(proc, checker, op_tok, given, BasicType.INTEGER, BasicType.INTEGER);
+        }
+        
         @Override
         public IConstant eval(int operand)
         {
@@ -23,7 +33,13 @@ public enum PrefixOperator
             // Empty
         }
     },
-    MINUS(BasicType.INTEGER, BasicType.INTEGER) {
+    MINUS {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType given)
+        {
+            return check_(proc, checker, op_tok, given, BasicType.INTEGER, BasicType.INTEGER);
+        }
+        
         @Override
         public IConstant eval(int operand)
         {
@@ -38,7 +54,13 @@ public enum PrefixOperator
             code.add("SUBA", "", "", "GR2", "GR1");
         }
     },
-    NOT(BasicType.BOOLEAN, BasicType.BOOLEAN) {
+    NOT {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType given)
+        {
+            return check_(proc, checker, op_tok, given, BasicType.BOOLEAN, BasicType.BOOLEAN);
+        }
+        
         @Override
         public IConstant eval(int operand)
         {
@@ -51,15 +73,6 @@ public enum PrefixOperator
             code.add("XOR", "", "", "GR2", "=1");
         }
     };
-    
-    private final IType operand_type;
-    private final IType ret_type;
-    
-    private PrefixOperator(IType operand_type, IType ret_type)
-    {
-        this.operand_type = operand_type;
-        this.ret_type = ret_type;
-    }
     
     public static PrefixOperator getFromToken(LexedToken token)
     {
@@ -77,14 +90,21 @@ public enum PrefixOperator
         }
     }
     
-    public IType getOperandType()
-    {
-        return operand_type;
-    }
+    public abstract IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType given);
     
-    public IType getReturnType()
+    protected IType check_(
+        Procedure proc, Checker checker, LexedToken op_tok, IType given, IType expected, IType result
+    )
     {
-        return ret_type;
+        if (!given.equals(expected))
+        {
+            checker.addErrorMessage(
+                proc, op_tok,
+                "incompatible type: cannot use " + given + " type as operand of " + this + " operator. must be "
+                        + expected + "."
+            );
+        }
+        return result;
     }
     
     public abstract IConstant eval(int operand);

@@ -51,10 +51,6 @@ public class WhileStatement implements IStatement
     public IType check(Procedure proc, Checker checker)
     {
         final IType type = getCond().check(proc, checker);
-        if (type.isUnknown())
-        {
-            getCond().retype(BasicType.BOOLEAN);
-        }
         if (!type.equals(BasicType.BOOLEAN) && !type.isUnknown())
         {
             checker.addErrorMessage(

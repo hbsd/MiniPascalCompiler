@@ -4,27 +4,19 @@ package enshud.pascal.type;
 public enum BasicType implements IType
 {
     INTEGER,
-    CHAR,
-    BOOLEAN,
-    
-    UNKNOWN {
+    CHAR {
         @Override
-        public boolean isUnknown()
+        public boolean equals(IType rval)
         {
-            return true;
+            return super.equals(rval) || rval.isArrayOf(BasicType.CHAR);
         }
-    };
+    },
+    BOOLEAN;
     
     @Override
     public int getSize()
     {
         return 1;
-    }
-    
-    @Override
-    public final BasicType getBasicType()
-    {
-        return this;
     }
     
     @Override
@@ -42,7 +34,7 @@ public enum BasicType implements IType
     @Override
     public boolean equals(IType rval)
     {
-        return rval == this || rval == BasicType.UNKNOWN || rval == UnknownType.UNKNOWN;
+        return rval == this || rval == UnknownType.UNKNOWN;
     }
     
     @Override

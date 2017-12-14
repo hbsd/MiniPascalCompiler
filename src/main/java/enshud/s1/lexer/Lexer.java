@@ -18,7 +18,7 @@ public class Lexer
     {
         // normalの確認
         new Lexer().run("data/pas/normal01.pas", "tmp/out1.ts");
-        //new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts");
+        // new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts");
     }
     
     /**
@@ -55,8 +55,8 @@ public class Lexer
     public boolean lexFromFile(String input_file)
     {
         return importFromFile(input_file)
-                .map(this::lex)
-                .orElse(false);
+            .map(this::lex)
+            .orElse(false);
     }
     
     private static Optional<List<String>> importFromFile(String input_file)
@@ -83,7 +83,7 @@ public class Lexer
         {
             for (final String line: lines)
             {
-                //System.out.println(">" + line);
+                // System.out.println(">" + line);
                 is_in_comment = lexLine(line, line_cnt, is_in_comment);
                 ++line_cnt;
             }
@@ -107,7 +107,7 @@ public class Lexer
             if (is_in_comment)
             {
                 Optional<Token> t = TokenType.SCOMMENTEND.lex(line.substring(col_idx));
-                if(t.isPresent())
+                if (t.isPresent())
                 {
                     is_in_comment = false; // finish ignoring
                 }
@@ -179,11 +179,11 @@ public class Lexer
     public static Optional<List<LexedToken>> importLexedFile(String input_file)
     {
         return importFromFile(input_file)
-                .map(lines ->
-                     lines.stream()
-                          .map(LexedToken::fromString)
-                          .collect(Collectors.toList())
-               );
+            .map(
+                lines -> lines.stream()
+                    .map(LexedToken::fromString)
+                    .collect(Collectors.toList())
+            );
     }
     
 }

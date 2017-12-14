@@ -68,10 +68,6 @@ public class BooleanLiteral implements IConstant
     }
     
     @Override
-    public void retype(IType new_type)
-    {}
-    
-    @Override
     public IType check(Procedure proc, Checker checker)
     {
         return getType();
