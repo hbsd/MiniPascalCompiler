@@ -7,6 +7,8 @@ import java.util.Optional;
 import enshud.pascal.Procedure;
 import enshud.pascal.QualifiedVariable;
 import enshud.pascal.ast.ILiteral;
+import enshud.pascal.ast.IVisitor;
+import enshud.pascal.ast.Identifier;
 import enshud.pascal.ast.statement.ProcCallStatement;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
@@ -18,10 +20,10 @@ import enshud.s4.compiler.LabelGenerator;
 
 public class PureVariable implements IVariable, ILiteral
 {
-    private final Identifier name;
-    private IType            type;
-    private QualifiedVariable         var_referenced;
-    private boolean          is_param;
+    private final Identifier  name;
+    private IType             type;
+    private QualifiedVariable var_referenced;
+    private boolean           is_param;
     
     public PureVariable(Identifier name)
     {
@@ -41,6 +43,31 @@ public class PureVariable implements IVariable, ILiteral
         return type;
     }
     
+    public void setType(IType type)
+    {
+        this.type = type;
+    }
+    
+    public QualifiedVariable getVar()
+    {
+        return var_referenced;
+    }
+    
+    public void setVar(QualifiedVariable var_referenced)
+    {
+        this.var_referenced = var_referenced;
+    }
+    
+    public boolean isParam()
+    {
+        return is_param;
+    }
+    
+    public void setIsParam(boolean is_param)
+    {
+        this.is_param = is_param;
+    }
+    
     @Override
     public int getLine()
     {
@@ -51,6 +78,12 @@ public class PureVariable implements IVariable, ILiteral
     public int getColumn()
     {
         return name.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitPureVariable(this, option);
     }
     
     @Override
@@ -137,14 +170,14 @@ public class PureVariable implements IVariable, ILiteral
         {
             code.add("", "", "; param " + var_referenced.getQualifiedName());
             final int align = var_referenced.getAlignment();
-            if(var_referenced.getProc() == proc)
+            if (var_referenced.getProc() == proc)
             {
                 code.add(inst, "", "", "GR2", "" + (align + 2), "GR5");
             }
             else
             {
                 final int depth_diff = proc.getDepth() - var_referenced.getProc().getDepth();
-                ProcCallStatement.loadStaticPointer(code, "GR2", depth_diff - 1);
+                ProcCallStatement.loadStaticLink(code, "GR2", depth_diff - 1);
                 code.add(inst, "", "", "GR2", "" + (align + 2), "GR2");
             }
         }
@@ -170,7 +203,7 @@ public class PureVariable implements IVariable, ILiteral
         if (proc != null) // go back stack frame by static link
         {
             final int depth_diff = proc.getDepth() - var_referenced.getProc().getDepth() - 1;
-            ProcCallStatement.loadStaticPointer(code, gr, depth_diff);
+            ProcCallStatement.loadStaticLink(code, gr, depth_diff);
         }
         
         if (var_referenced.getType().isArrayType())

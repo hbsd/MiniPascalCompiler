@@ -5,10 +5,11 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
+import enshud.pascal.ast.Identifier;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.ast.expression.IConstant;
 import enshud.pascal.ast.expression.IExpression;
-import enshud.pascal.ast.expression.Identifier;
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
@@ -43,6 +44,11 @@ public class ProcCallStatement implements IStatement
         return called_proc;
     }
     
+    public void setCalledProc(Procedure called_proc)
+    {
+        this.called_proc = called_proc;
+    }
+    
     @Override
     public int getLine()
     {
@@ -53,6 +59,12 @@ public class ProcCallStatement implements IStatement
     public int getColumn()
     {
         return name.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitProcCallStatement(this, option);
     }
     
     @Override
@@ -170,7 +182,7 @@ public class ProcCallStatement implements IStatement
         }
         else if (my_depth >= your_depth) // ancestor or recursive call
         {
-            loadStaticPointer(code, "GR2", my_depth - your_depth);
+            loadStaticLink(code, "GR2", my_depth - your_depth);
             
             code.add("PUSH", "", "", "0", "GR2");
         }
@@ -182,7 +194,7 @@ public class ProcCallStatement implements IStatement
     
     /// go back stack frame by static link
     /// diff == 0? my static
-    public static void loadStaticPointer(Casl2Code code, String gr, int diff)
+    public static void loadStaticLink(Casl2Code code, String gr, int diff)
     {
         code.add("LD", "", "", gr, "1", "GR5");
         IntStream.range(0, diff)

@@ -7,6 +7,8 @@ import java.util.Optional;
 import enshud.pascal.Procedure;
 import enshud.pascal.QualifiedVariable;
 import enshud.pascal.ast.ILiteral;
+import enshud.pascal.ast.IVisitor;
+import enshud.pascal.ast.Identifier;
 import enshud.pascal.ast.statement.ProcCallStatement;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
@@ -48,6 +50,26 @@ public class IndexedVariable implements IVariable, ILiteral
         return ((ArrayType)type).getBasicType();
     }
     
+    public IType getArrayType()
+    {
+        return type;
+    }
+    
+    public void setArrayType(IType type)
+    {
+        this.type = type;
+    }
+    
+    public QualifiedVariable getVar()
+    {
+        return var_referenced;
+    }
+    
+    public void setVar(QualifiedVariable v)
+    {
+        var_referenced = v;
+    }
+    
     @Override
     public int getLine()
     {
@@ -58,6 +80,12 @@ public class IndexedVariable implements IVariable, ILiteral
     public int getColumn()
     {
         return name.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitIndexedVariable(this, option);
     }
     
     @Override
@@ -157,7 +185,7 @@ public class IndexedVariable implements IVariable, ILiteral
     private void compileOuterImpl(Casl2Code code, Procedure proc)
     {
         final int depth_diff = proc.getDepth() - var_referenced.getProc().getDepth() - 1;
-        ProcCallStatement.loadStaticPointer(code, "GR1", depth_diff);
+        ProcCallStatement.loadStaticLink(code, "GR1", depth_diff);
         
         final int align = var_referenced.getAlignment();
         final int max = ((ArrayType)var_referenced.getType()).getMax();

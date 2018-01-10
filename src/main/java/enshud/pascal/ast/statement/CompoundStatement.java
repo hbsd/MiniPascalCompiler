@@ -4,6 +4,7 @@ import java.util.ListIterator;
 import java.util.Objects;
 
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
@@ -19,6 +20,13 @@ public class CompoundStatement extends NodeList<IStatement> implements IStatemen
         super();
         add(Objects.requireNonNull(stm));
     }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitCompoundStatement(this, option);
+    }
+    
     @Override
     public IType check(Procedure proc, Checker checker)
     {

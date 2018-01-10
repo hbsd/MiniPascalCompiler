@@ -5,6 +5,7 @@ import java.util.Objects;
 import enshud.s3.checker.Checker;
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.BasicType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s4.compiler.Casl2Code;
@@ -71,6 +72,12 @@ public class BooleanLiteral implements IConstant
     public IType check(Procedure proc, Checker checker)
     {
         return getType();
+    }
+    
+    @Override
+    public <T,U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitBooleanLiteral(this, option);
     }
     
     @Override

@@ -12,6 +12,16 @@ public class Casl2Code
     {
         return list.stream();
     }
+    
+    public void remove()
+    {
+        list.remove(list.size() - 1);
+    }
+    
+    public boolean addAll(Casl2Code code)
+    {
+        return list.addAll(code.list);
+    }
 
     private boolean add(Casl2Instruction inst)
     {

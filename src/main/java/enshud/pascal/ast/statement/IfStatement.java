@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.expression.BooleanLiteral;
 import enshud.pascal.ast.expression.IConstant;
 import enshud.pascal.ast.expression.IExpression;
@@ -44,6 +45,12 @@ public class IfStatement implements IStatement
     public int getColumn()
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitIfStatement(this, option);
     }
     
     @Override

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.expression.IConstant;
 import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.ast.expression.IVariable;
@@ -35,6 +36,11 @@ public class AssignStatement implements IStatement
         return right;
     }
     
+    public void setRight(IExpression right)
+    {
+        this.right = right;
+    }
+    
     @Override
     public int getLine()
     {
@@ -45,6 +51,12 @@ public class AssignStatement implements IStatement
     public int getColumn()
     {
         return left.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitAssignStatement(this, option);
     }
     
     @Override

@@ -3,6 +3,7 @@ package enshud.pascal.ast.statement;
 import java.util.Objects;
 
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
@@ -23,6 +24,12 @@ public class IfElseStatement extends IfStatement
     public CompoundStatement getElse()
     {
         return else_statements;
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitIfElseStatement(this, option);
     }
     
     @Override

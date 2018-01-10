@@ -16,7 +16,6 @@ public class Casl2Instruction
         this.comment = comment;
     }
     
-    
     @Override
     public String toString()
     {

@@ -5,6 +5,7 @@ import java.util.Objects;
 import enshud.s3.checker.Checker;
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
 import enshud.s2.parser.node.basic.TokenNode;
@@ -63,6 +64,12 @@ public class StringLiteral implements IConstant
     public int getColumn()
     {
         return str.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitStringLiteral(this, option);
     }
     
     @Override

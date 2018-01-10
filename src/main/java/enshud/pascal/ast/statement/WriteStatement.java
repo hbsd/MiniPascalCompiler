@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.type.BasicType;
@@ -25,6 +26,12 @@ public class WriteStatement implements IStatement
     public List<IExpression> getExpressions()
     {
         return exps;
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitWriteStatement(this, option);
     }
     
     @Override

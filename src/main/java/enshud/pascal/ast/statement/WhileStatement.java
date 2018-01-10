@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.expression.BooleanLiteral;
 import enshud.pascal.ast.expression.IConstant;
 import enshud.pascal.ast.expression.IExpression;
@@ -35,6 +36,16 @@ public class WhileStatement implements IStatement
         return statement;
     }
     
+    public boolean isInfiniteLoop()
+    {
+        return infinite_loop;
+    }
+    
+    public void setIsInfiniteLoop(boolean infinite_loop)
+    {
+        this.infinite_loop = infinite_loop;
+    }
+    
     @Override
     public int getLine()
     {
@@ -45,6 +56,12 @@ public class WhileStatement implements IStatement
     public int getColumn()
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitWhileStatement(this, option);
     }
     
     @Override

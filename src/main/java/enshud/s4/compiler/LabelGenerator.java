@@ -1,9 +1,10 @@
 package enshud.s4.compiler;
 
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 
 
-public class LabelGenerator
+public class LabelGenerator implements PrimitiveIterator.OfInt
 {
     private int num;
     
@@ -12,12 +13,14 @@ public class LabelGenerator
         num = 0;
     }
     
+    @Override
     public boolean hasNext()
     {
         return num < Integer.MAX_VALUE;
     }
     
-    public int next()
+    @Override
+    public int nextInt()
     {
         if(!hasNext())
         {

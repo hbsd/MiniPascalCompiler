@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import enshud.pascal.type.IType;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.NodeList;
 import enshud.pascal.ast.expression.IVariable;
 import enshud.pascal.type.BasicType;
@@ -37,6 +38,12 @@ public class ReadStatement implements IStatement
     public int getColumn()
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitReadStatement(this, option);
     }
     
     @Override

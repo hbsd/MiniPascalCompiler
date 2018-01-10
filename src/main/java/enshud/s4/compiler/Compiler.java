@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import enshud.casl.CaslSimulator;
 import enshud.s1.lexer.Lexer;
@@ -20,12 +21,13 @@ public class Compiler
     public static void main(final String[] args)
     {
         // Compilerを実行してcasを生成する
-        new Lexer().run("data/pas/normal03.pas", "tmp/out.ts");
-        new Compiler().run("tmp/out.ts", "tmp/out.cas");
-        // new Compiler().run("data/ts/normal02.ts", "tmp/out.cas");
+         new Lexer().run("data/pas/test.pas", "tmp/out.ts");
+         new Compiler().run("tmp/out.ts", "tmp/outo.cas");
+        //IntStream.rangeClosed(1, 8)
+        //    .forEach(i -> new Compiler().run("data/ts/normal0"+i+".ts", "tmp/out"+i+"o.cas"));
         
         // CaslSimulatorクラスを使ってコンパイルしたcasを，CASLアセンブラ & COMETシミュレータで実行する
-        CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
+        // CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
     }
     
     /**

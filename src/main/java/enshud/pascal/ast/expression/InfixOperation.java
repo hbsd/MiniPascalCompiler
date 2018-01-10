@@ -3,6 +3,7 @@ package enshud.pascal.ast.expression;
 
 import enshud.pascal.InfixOperator;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.INode;
@@ -39,14 +40,34 @@ public class InfixOperation implements IExpression
         return left;
     }
     
+    public void setLeft(IExpression left)
+    {
+        this.left = left;
+    }
+    
     public IExpression getRight()
     {
         return right;
     }
     
+    public void setRight(IExpression right)
+    {
+        this.right = right;
+    }
+    
     public InfixOperator getOp()
     {
         return op;
+    }
+    
+    public void setType(IType type)
+    {
+        this.type = type;
+    }
+    
+    public LexedToken getOpToken()
+    {
+        return op_token;
     }
     
     @Override
@@ -59,6 +80,12 @@ public class InfixOperation implements IExpression
     public int getColumn()
     {
         return getLeft().getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitInfixOperation(this, option);
     }
     
     @Override

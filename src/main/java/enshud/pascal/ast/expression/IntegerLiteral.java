@@ -6,6 +6,7 @@ import enshud.s3.checker.Checker;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.BasicType;
 import enshud.s4.compiler.Casl2Code;
 import enshud.s4.compiler.LabelGenerator;
@@ -56,6 +57,12 @@ public class IntegerLiteral implements IConstant
     public String toString()
     {
         return token.getString();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitIntegerLiteral(this, option);
     }
     
     @Override

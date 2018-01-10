@@ -11,9 +11,11 @@ import enshud.pascal.ast.statement.CompoundStatement;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.IType;
 import enshud.pascal.type.BasicType;
+import enshud.s3.checker.CheckVisitor;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.Casl2Code;
-import enshud.s4.compiler.LabelGenerator;
+import enshud.s4.compiler.CompileVisitor;
+import enshud.s4.compiler.OptimizeVisitor;
 
 
 public class Procedure
@@ -29,6 +31,7 @@ public class Procedure
     private final CompoundStatement    body;
     
     private static final boolean       OPTIMIZE    = true;
+    //private static final boolean       OPTIMIZE    = false;
     
     private Procedure(Checker checker, ProcedureDeclaration prg, Procedure parent, String proc_id)
     {
@@ -42,7 +45,7 @@ public class Procedure
         createSubProc(checker, prg, proc_id);
         
         body = prg.getBody();
-        body.check(this, checker);
+        body.accept(new CheckVisitor(checker), this); //.check(this, checker);
     }
     
     private void createSubProc(Checker checker, ProcedureDeclaration prg, String proc_id)
@@ -306,8 +309,10 @@ public class Procedure
     
     public void precompute()
     {
-        body.precompute(this);
+        body.accept(new OptimizeVisitor(), this);
         children.forEach(sub -> sub.precompute());
+        //body.precompute(this);
+        //children.forEach(sub -> sub.precompute());
     }
     
     
@@ -339,7 +344,10 @@ public class Procedure
             code.add("LAD", "", "; reserve local variables", "GR8", "" + (-var_decls.getAllSize()), "GR8");
         }
         
-        body.compile(code, this, new LabelGenerator());
+        //body.compile(code, this, new LabelGenerator());
+        final CompileVisitor vtr = new CompileVisitor();
+        body.accept(vtr, this);
+        code.addAll(vtr.getCode());
         
         compileReturn(code);
         if (isRoot())
@@ -351,7 +359,7 @@ public class Procedure
         children.forEach(sub -> sub.compileProc(code));
     }
     
-    public void compileReturn(Casl2Code code)
+    public static void compileReturn(Casl2Code code)
     {
         code.add("LD", "", "; point to return address", "GR8", "GR5");
         code.add("LD", "", "; restore parent's frame pointer", "GR5", "-1", "GR5");

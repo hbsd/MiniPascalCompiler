@@ -2,6 +2,7 @@ package enshud.pascal.ast.expression;
 
 import enshud.pascal.PrefixOperator;
 import enshud.pascal.Procedure;
+import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.basic.TokenNode;
@@ -35,9 +36,19 @@ public class PrefixOperation implements IExpression
         return operand;
     }
     
+    public void setOperand(IExpression operand)
+    {
+        this.operand = operand;
+    }
+    
     public PrefixOperator getOp()
     {
         return op;
+    }
+    
+    public LexedToken getOpToken()
+    {
+        return op_token;
     }
     
     @Override
@@ -50,6 +61,12 @@ public class PrefixOperation implements IExpression
     public int getColumn()
     {
         return op_token.getColumn();
+    }
+    
+    @Override
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
+    {
+        return visitor.visitPrefixOperation(this, option);
     }
     
     @Override
@@ -85,6 +102,11 @@ public class PrefixOperation implements IExpression
     public IType getType()
     {
         return type;
+    }
+    
+    public void setType(IType type)
+    {
+        this.type = type;
     }
     
     @Override

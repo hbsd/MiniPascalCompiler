@@ -2,8 +2,8 @@ package enshud.pascal.ast.declaration;
 
 import java.util.Objects;
 
+import enshud.pascal.ast.Identifier;
 import enshud.pascal.ast.NodeList;
-import enshud.pascal.ast.expression.Identifier;
 import enshud.pascal.ast.statement.CompoundStatement;
 
 

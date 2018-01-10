@@ -1,8 +1,7 @@
-package enshud.pascal.ast.expression;
+package enshud.pascal.ast;
 
 import java.util.Objects;
 
-import enshud.pascal.ast.ILiteral;
 import enshud.s2.parser.node.basic.TokenNode;
 
 
