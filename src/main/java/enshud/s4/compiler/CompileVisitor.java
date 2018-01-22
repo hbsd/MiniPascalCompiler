@@ -19,15 +19,65 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     {
         return code;
     }
-
+    
     @Override
-    public Object visitBooleanLiteral(BooleanLiteral node, Procedure option)
+    public Object visit(Procedure node, Procedure option)
     {
-        code.addLoadImm("GR2", node.getInt());
+        if (node.isRoot())
+        {
+            code.add("START", "PROGRAM", "; proc " + node.getQualifiedName());
+            code.add("XOR", "", "; buffer length", "GR6", "GR6");
+            code.add("LAD", "", "; buffer address", "GR7", "BUF");
+            code.add("PUSH", node.getId(), "; save parent's frame pointer", "0", "GR5");
+        }
+        else
+        {
+            code.add("START", node.getId(), "; proc " + node.getQualifiedName());
+            code.add("PUSH", "", "; save parent's frame pointer", "0", "GR5");
+        }
+        
+        code.add("LAD", "", "; set my frame pointer", "GR5", "1", "GR8");
+        
+        if (node.getLocals().length() > 0)
+        {
+            code.add("LAD", "", "; reserve local variables", "GR8", "" + (-node.getLocals().getAllSize()), "GR8");
+        }
+        
+        node.getBody().accept(this, node);
+        
+        compileReturn(node);
+        if (node.isRoot())
+        {
+            code.add("DS", "BUF", "; buffer for write", "256");
+        }
+        
+        code.add("END", "", "; proc " + node.getQualifiedName());
+        node.getChildren().forEach(sub -> sub.accept(this, node));
         return null;
     }
+    private void compileReturn(Procedure node)
+    {
+        code.add("LD", "", "; point to return address", "GR8", "GR5");
+        code.add("LD", "", "; restore parent's frame pointer", "GR5", "-1", "GR5");
+        code.add("RET", "", "");
+    }
+
     @Override
-    public Object visitIndexedVariable(IndexedVariable node, Procedure proc)
+    public Object visit(BooleanLiteral node, Procedure option)
+    {
+        code.addLoadImm("GR2", node.getValue().getInt());
+        return null;
+    }
+    
+    @Override
+    public Object visit(CharLiteral node, Procedure option)
+    {
+        code.addLoadImm("GR2", node.getValue().getInt());
+        return null;
+    }
+    
+    @Override
+    public Object visit(IndexedVariable node, Procedure proc)
     {
         compileIndexedVariableForData(node, proc);
         return null;
@@ -80,19 +130,19 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
     
     @Override
-    public Object visitInfixOperation(InfixOperation node, Procedure proc)
+    public Object visit(InfixOperation node, Procedure proc)
     {
         if (node.getLeft() instanceof IConstant)
         {
             if (node.getRight() instanceof IConstant)
             {
-                code.addLoadImm("GR2", ((IConstant)node.getRight()).getInt());
+                code.addLoadImm("GR2", ((IConstant)node.getRight()).getValue().getInt());
             }
             else
             {
                 node.getRight().accept(this, proc);
             }
-            code.addLoadImm("GR1", ((IConstant)node.getLeft()).getInt());
+            code.addLoadImm("GR1", ((IConstant)node.getLeft()).getValue().getInt());
         }
         else
         {
@@ -100,7 +150,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             if (node.getRight() instanceof IConstant)
             {
                 code.add("LD", "", "", "GR1", "GR2");
-                code.addLoadImm("GR2", ((IConstant)node.getRight()).getInt());
+                code.addLoadImm("GR2", ((IConstant)node.getRight()).getValue().getInt());
             }
             else
             {
@@ -113,20 +163,20 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         return null;
     }
     @Override
-    public Object visitIntegerLiteral(IntegerLiteral node, Procedure proc)
+    public Object visit(IntegerLiteral node, Procedure proc)
     {
-        code.addLoadImm("GR2", node.getInt());
+        code.addLoadImm("GR2", node.getValue().getInt());
         return null;
     }
     @Override
-    public Object visitPrefixOperation(PrefixOperation node, Procedure proc)
+    public Object visit(PrefixOperation node, Procedure proc)
     {
         node.getOperand().accept(this, proc);
         node.getOp().compile(code, l_gen);
         return null;
     }
     @Override
-    public Object visitPureVariable(PureVariable node, Procedure proc)
+    public Object visit(PureVariable node, Procedure proc)
     {
         if (node.getType().isBasicType())
         {
@@ -203,28 +253,21 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
 
     @Override
-    public Object visitStringLiteral(StringLiteral node, Procedure proc)
+    public Object visit(StringLiteral node, Procedure proc)
     {
-        if (node.getType() == BasicType.CHAR)
-        {
-            code.addLoadImm("GR2", (int)node.toString().charAt(1));
-        }
-        else
-        {
-            code.add("LAD", "", "", "GR2", "=" + node.toString());
-            code.addLoadImm("GR1", node.length());
-        }
+        code.add("LAD", "", "", "GR2", "='" + node.toString() + "'");
+        code.addLoadImm("GR1", node.length());
         return null;
     }
 
     @Override
-    public Object visitAssignStatement(AssignStatement node, Procedure proc)
+    public Object visit(AssignStatement node, Procedure proc)
     {
         node.getLeft().accept(address_visitor, proc);
         if(node.getRight() instanceof IConstant)
         {
             code.add("LD", "", "", "GR1", "GR2");
-            code.addLoadImm("GR2", ((IConstant)node.getRight()).getInt());
+            code.addLoadImm("GR2", ((IConstant)node.getRight()).getValue().getInt());
         }
         else
         {
@@ -237,37 +280,39 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
 
     @Override
-    public Object visitCompoundStatement(CompoundStatement node, Procedure proc)
+    public Object visit(CompoundStatement node, Procedure proc)
     {
         node.forEach(stm -> stm.accept(this, proc));
         return null;
     }
     
     @Override
-    public Object visitIfElseStatement(IfElseStatement node, Procedure proc)
+    public Object visit(IfElseStatement node, Procedure proc)
     {
         final int label = l_gen.next();
-        
+
+        code.add("", "", "; start of IF-ELSE");
         node.getCond().accept(this, proc);
         
         code.add("LD", "", "; set ZF", "GR2", "GR2");
-        code.add("JZE", "", "; branch of IF", "E" + label);
+        code.add("JZE", "", "; branch of IF-ELSE", "E" + label);
         
         node.getThen().accept(this, proc);
         code.add("JUMP", "", "", "F" + label);
         
-        code.add("NOP", "E" + label, "; else of IF");
+        code.add("NOP", "E" + label, "; else of IF-ELSE");
         node.getElse().accept(this, proc);
         
-        code.add("NOP", "F" + label, "; end of IF");
+        code.add("NOP", "F" + label, "; end of IF-ELSE");
         return null;
     }
     
     @Override
-    public Object visitIfStatement(IfStatement node, Procedure proc)
+    public Object visit(IfStatement node, Procedure proc)
     {
         final int label = l_gen.next();
         
+        code.add("", "", "; start of IF");
         node.getCond().accept(this, proc);
         
         code.add("LD", "", "; set ZF", "GR2", "GR2");
@@ -280,7 +325,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
     
     @Override
-    public Object visitProcCallStatement(ProcCallStatement node, Procedure proc)
+    public Object visit(ProcCallStatement node, Procedure proc)
     {
         compileArguments(node, proc);
         compileStaticFramePointer(node, proc);
@@ -303,7 +348,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             final IExpression e = node.getArgs().get(i);
             if (e instanceof IConstant)
             {
-                code.add("PUSH", "", "", "" + ((IConstant)e).getInt());
+                code.add("PUSH", "", "", "" + ((IConstant)e).getValue().getInt());
             }
             else
             {
@@ -336,11 +381,11 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     {
         code.add("LD", "", "", gr, "1", "GR5");
         IntStream.range(0, diff)
-            .forEach(i -> code.add("LD", "", "", gr, "1", gr));
+            .forEachOrdered(i -> code.add("LD", "", "", gr, "1", gr));
     }
     
     @Override
-    public Object visitReadStatement(ReadStatement node, Procedure proc)
+    public Object visit(ReadStatement node, Procedure proc)
     {
         if (node.getVariables().isEmpty())
         {
@@ -373,7 +418,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
     
     @Override
-    public Object visitWhileStatement(WhileStatement node, Procedure proc)
+    public Object visit(WhileStatement node, Procedure proc)
     {
         final int label = l_gen.next();
         
@@ -398,7 +443,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     }
     
     @Override
-    public Object visitWriteStatement(WriteStatement node, Procedure proc)
+    public Object visit(WriteStatement node, Procedure proc)
     {
         for (final IExpression e: node.getExpressions())
         {
@@ -427,13 +472,13 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     
     final IVisitor<Object, Procedure> address_visitor = new TemplateVisitor<Object, Procedure>() {
         @Override
-        public Object visitIndexedVariable(IndexedVariable node, Procedure proc)
+        public Object visit(IndexedVariable node, Procedure proc)
         {
             compileIndexedVariableForAddr(node, proc);
             return null;
         }
         @Override
-        public Object visitPureVariable(PureVariable node, Procedure proc)
+        public Object visit(PureVariable node, Procedure proc)
         {
             compilePureVariableForAddr(node, proc);
             return null;

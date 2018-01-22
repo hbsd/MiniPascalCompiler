@@ -11,7 +11,7 @@ import enshud.pascal.type.BasicType;
 public class ParameterDeclaration implements IDeclaration
 {
     private final NodeList<Identifier> names;
-    private final TypeLiteral           type;
+    private final TypeLiteral          type;
     
     public ParameterDeclaration(NodeList<Identifier> names, TypeLiteral type)
     {
@@ -52,7 +52,7 @@ public class ParameterDeclaration implements IDeclaration
     {
         return "";
     }
-
+    
     @Override
     public void printBodyln(String indent)
     {

@@ -2,7 +2,7 @@ package enshud.pascal.ast;
 
 import java.util.Objects;
 
-import enshud.s2.parser.node.basic.TokenNode;
+import enshud.s2.parser.node.TokenNode;
 
 
 public class Identifier implements ILiteral

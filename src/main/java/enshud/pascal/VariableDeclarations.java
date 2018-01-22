@@ -9,7 +9,7 @@ import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
 
 
-class VariableDeclarations
+public class VariableDeclarations
 {
     private final List<QualifiedVariable> list = new ArrayList<>();
     
@@ -18,12 +18,12 @@ class VariableDeclarations
         list.add(new QualifiedVariable(name, type, getAllSize(), proc));
     }
     
-    QualifiedVariable get(int index)
+    public QualifiedVariable get(int index)
     {
         return list.get(index);
     }
     
-    Optional<QualifiedVariable> get(String name)
+    public Optional<QualifiedVariable> get(String name)
     {
         return list
                 .stream()
@@ -39,7 +39,7 @@ class VariableDeclarations
                 .collect(Collectors.toList());
     }
     
-    int getIndex(String name)
+    public int getIndex(String name)
     {
         int i = 0;
         for (final QualifiedVariable v: list)
@@ -53,17 +53,17 @@ class VariableDeclarations
         return -1;
     }
     
-    int getSize(int index)
+    public int getSize(int index)
     {
         return list.get(index).getType().getSize();
     }
     
-    int length()
+    public int length()
     {
         return list.size();
     }
     
-    int getAllSize()
+    public int getAllSize()
     {
         if (list.isEmpty())
         {
@@ -75,7 +75,7 @@ class VariableDeclarations
         }
     }
     
-    boolean exists(String name)
+    public boolean exists(String name)
     {
         return get(name).isPresent();
     }

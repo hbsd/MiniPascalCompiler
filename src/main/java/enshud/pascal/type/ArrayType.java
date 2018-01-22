@@ -2,8 +2,6 @@ package enshud.pascal.type;
 
 import java.util.Objects;
 
-import enshud.pascal.ast.expression.IntegerLiteral;
-
 
 public class ArrayType implements IType
 {
@@ -16,11 +14,6 @@ public class ArrayType implements IType
         this.type = Objects.requireNonNull(type);
         this.min = Objects.requireNonNull(min);
         this.max = Objects.requireNonNull(max);
-    }
-    
-    public ArrayType(BasicType type, IntegerLiteral min, IntegerLiteral max)
-    {
-        this(type, min.getInt(), max.getInt());
     }
     
     public int getMin()

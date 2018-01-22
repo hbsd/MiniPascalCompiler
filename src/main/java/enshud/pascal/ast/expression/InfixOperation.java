@@ -2,15 +2,11 @@ package enshud.pascal.ast.expression;
 
 
 import enshud.pascal.InfixOperator;
-import enshud.pascal.Procedure;
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
 import enshud.s2.parser.node.INode;
-import enshud.s2.parser.node.basic.TokenNode;
-import enshud.s3.checker.Checker;
-import enshud.s4.compiler.Casl2Code;
-import enshud.s4.compiler.LabelGenerator;
+import enshud.s2.parser.node.TokenNode;
 
 
 public class InfixOperation implements IExpression
@@ -33,6 +29,15 @@ public class InfixOperation implements IExpression
     public InfixOperation(IExpression left, IExpression right, TokenNode op_token)
     {
         this(left, right, op_token.getToken());
+    }
+    
+    public InfixOperation(IExpression left, IExpression right, InfixOperator op)
+    {
+        this.left = left;
+        this.right = right;
+        this.op_token = LexedToken.DUMMY;
+        this.op = op;
+        type = null;
     }
     
     public IExpression getLeft()
@@ -85,75 +90,21 @@ public class InfixOperation implements IExpression
     @Override
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
-        return visitor.visitInfixOperation(this, option);
+        return visitor.visit(this, option);
     }
     
     @Override
-    public IType check(Procedure proc, Checker checker)
+    public boolean equals(IExpression rexp)
     {
-        IType left_type = getLeft().check(proc, checker);
-        IType right_type = getRight().check(proc, checker);
-        
-        this.type = getOp().checkType(proc, checker, op_token, left_type, right_type);
-        return this.type;
-    }
-    
-    @Override
-    public IConstant preeval(Procedure proc)
-    {
-        final IConstant l = left.preeval(proc);
-        if (l != null)
+        if (rexp instanceof InfixOperation)
         {
-            left = l;
-        }
-        
-        final IConstant r = right.preeval(proc);
-        if (r != null)
-        {
-            right = r;
-        }
-        
-        if (l == null || r == null)
-        {
-            return null;
+            final InfixOperation io = (InfixOperation)rexp;
+            return this == rexp || (this.op == io.op && this.left.equals(io.left) && this.right.equals(io.right));
         }
         else
         {
-            return getOp().eval(l.getInt(), r.getInt());
+            return false;
         }
-    }
-    
-    @Override
-    public void compile(Casl2Code code, Procedure proc, LabelGenerator l_gen)
-    {
-        if (getLeft() instanceof IConstant)
-        {
-            if (getRight() instanceof IConstant)
-            {
-                code.addLoadImm("GR2", ((IConstant)getRight()).getInt());
-            }
-            else
-            {
-                getRight().compile(code, proc, l_gen);
-            }
-            code.addLoadImm("GR1", ((IConstant)getLeft()).getInt());
-        }
-        else
-        {
-            getLeft().compile(code, proc, l_gen);
-            if (getRight() instanceof IConstant)
-            {
-                code.add("LD", "", "", "GR1", "GR2");
-                code.addLoadImm("GR2", ((IConstant)getRight()).getInt());
-            }
-            else
-            {
-                code.add("PUSH", "", "", "0", "GR2");
-                getRight().compile(code, proc, l_gen);
-                code.add("POP", "", "", "GR1");
-            }
-        }
-        getOp().compile(code, l_gen);
     }
     
     @Override

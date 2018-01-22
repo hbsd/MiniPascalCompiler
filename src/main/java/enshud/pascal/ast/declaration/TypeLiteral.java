@@ -44,7 +44,7 @@ public class TypeLiteral implements ILiteral
     
     public TypeLiteral(BasicType rtype, IntegerLiteral min, IntegerLiteral max, LexedToken token)
     {
-        this(new ArrayType(rtype, min, max), token);
+        this(new ArrayType(rtype, min.getValue().getInt(), max.getValue().getInt()), token);
     }
     
     public IType getType()

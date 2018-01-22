@@ -33,7 +33,7 @@ public class Checker
         // semerrの確認
         // new Checker().run("data/ts/semerr01.ts");
         // new Checker().run("data/ts/semerr04.ts");
-        IntStream.rangeClosed(1, 8).forEach(
+        IntStream.rangeClosed(1, 8).forEachOrdered(
             i -> {
                 System.err.println("semerr" + i);
                 new Lexer().run("data/pas/semerr0" + i + ".pas", "tmp/out.ts");
@@ -123,13 +123,13 @@ public class Checker
         if (num < 0)
         {
             errors.stream()
-                .forEach(System.err::println);
+                .forEachOrdered(System.err::println);
         }
         else
         {
             errors.stream()
                 .limit(num)
-                .forEach(System.err::println);
+                .forEachOrdered(System.err::println);
         }
     }
     

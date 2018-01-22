@@ -15,7 +15,7 @@ public class QualifiedVariable
     public QualifiedVariable(String name, IType type, int alignment, Procedure proc)
     {
         this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(type);
+        this.type = type;
         this.alignment = alignment;
         this.proc = proc;
     }
@@ -42,7 +42,9 @@ public class QualifiedVariable
     
     public String getQualifiedName()
     {
-        return getProc().getQualifiedName() + "." + getName();
+        return proc == null
+                ? getName()
+                : getProc().getQualifiedName() + "." + getName();
     }
     
     @Override

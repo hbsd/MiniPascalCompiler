@@ -18,11 +18,11 @@ public class StringType implements IType
     
     public static StringType create(int size)
     {
-        if (size == 1)
+        /*if (size == 1)
         {
-            return StringType.CHAR;
+            throw new IllegalArgumentException("String length must not be 1.");
         }
-        else if (memo.containsKey(size))
+        else */if (memo.containsKey(size))
         {
             return memo.get(size);
         }

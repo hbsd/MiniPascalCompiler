@@ -12,13 +12,16 @@ import enshud.s1.lexer.LexedToken;
 import enshud.s1.lexer.TokenType;
 
 import static enshud.s1.lexer.TokenType.*;
+import static enshud.s2.parser.parsers.Parsers.*;
 
 import enshud.s2.parser.ParserInput;
+import enshud.s2.parser.node.EmptyNode;
+import enshud.s2.parser.node.FailureNode;
 import enshud.s2.parser.node.INode;
-import enshud.s2.parser.node.basic.*;
+import enshud.s2.parser.node.SequenceNode;
+import enshud.s2.parser.node.TokenNode;
 import enshud.s2.parser.parsers.IParser;
 
-import static enshud.s2.parser.parsers.basic.Parsers.*;
 
 @SuppressWarnings("unchecked")
 public enum PascalParser implements IParser
@@ -169,19 +172,19 @@ public enum PascalParser implements IParser
         {
             final SequenceNode n = (SequenceNode)node;
             
-            if(n.get(0) instanceof EmptyNode)
+            if (n.get(0) instanceof EmptyNode)
             {
                 return n.get(1);
             }
             else
             {
-                switch(((TokenNode)n.get(0)).getType())
+                switch (((TokenNode)n.get(0)).getType())
                 {
                 case SPLUS:
                     return n.get(1);
-                case SMINUS:{
-                    int num = ((IntegerLiteral)n.get(1)).getInt();
-                    return new IntegerLiteral(-num);
+                case SMINUS: {
+                    int num = ((IntegerLiteral)n.get(1)).getValue().getInt();
+                    return IntegerLiteral.create(-num);
                 }
                 default:
                     assert false;
@@ -190,10 +193,11 @@ public enum PascalParser implements IParser
                 
             }
             
-            /*return new SignedInteger(
-                n.get(0) instanceof EmptyNode? SignLiteral.NONE: (SignLiteral)n.get(0),
-                (IntegerLiteral)n.get(1)
-            );*/
+            /*
+             * return new SignedInteger( n.get(0) instanceof EmptyNode?
+             * SignLiteral.NONE: (SignLiteral)n.get(0), (IntegerLiteral)n.get(1)
+             * );
+             */
         }
     },
     SIGN(9) {
@@ -257,7 +261,9 @@ public enum PascalParser implements IParser
                 n.get(2) instanceof EmptyNode? new NodeList<>(): (NodeList<ParameterDeclaration>)n.getAsSeq(2).get(1),
                 n.get(4) instanceof EmptyNode? new NodeList<>()
                         : (NodeList<LocalDeclaration>)n.getAsSeq(4).get(1),
-                (NodeList<ProcedureDeclaration>)n.get(5), // TODO: let procedure have child procedures
+                (NodeList<ProcedureDeclaration>)n.get(5), // TODO: let procedure
+                                                          // have child
+                                                          // procedures
                 (CompoundStatement)n.get(6)
             );
         }
@@ -483,26 +489,20 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            /*final SequenceNode n = (SequenceNode)node;
-            
-            if (n.get(1) instanceof EmptyNode)
-            {
-                return new Expression((SimpleExpression)n.get(0));
-            }
-            else
-            {
-                final SequenceNode right = n.getAsSeq(1);
-                return new CompareExpression(
-                    (SimpleExpression)n.get(0),
-                    (CompareOperator)right.get(0),
-                    (SimpleExpression)right.get(1)
-                );
-            }*/
+            /*
+             * final SequenceNode n = (SequenceNode)node;
+             * 
+             * if (n.get(1) instanceof EmptyNode) { return new
+             * Expression((SimpleExpression)n.get(0)); } else { final
+             * SequenceNode right = n.getAsSeq(1); return new CompareExpression(
+             * (SimpleExpression)n.get(0), (CompareOperator)right.get(0),
+             * (SimpleExpression)right.get(1) ); }
+             */
             
             IExpression left = (IExpression)((SequenceNode)node).get(0);
             final INode right = ((SequenceNode)node).get(1);
             
-            if(right instanceof EmptyNode)
+            if (right instanceof EmptyNode)
             {
                 return left;
             }
@@ -528,22 +528,22 @@ public enum PascalParser implements IParser
             IExpression head = (IExpression)n.get(1);
             final SequenceNode tail = n.getAsSeq(2);
             
-            if(!(n.get(0) instanceof EmptyNode))
+            if (!(n.get(0) instanceof EmptyNode))
             {
                 head = new PrefixOperation(head, (TokenNode)n.get(0));
             }
             
-            if(tail.isEmpty())
+            if (tail.isEmpty())
             {
                 return head;
             }
-
+            
             for (final INode c: tail.getChildren())
             {
                 final SequenceNode sn = (SequenceNode)c;
                 head = new InfixOperation(head, (IExpression)sn.get(1), (TokenNode)sn.get(0));
             }
-
+            
             return head;
         }
     },
@@ -560,17 +560,17 @@ public enum PascalParser implements IParser
             IExpression head = (IExpression)((SequenceNode)node).get(0);
             final SequenceNode tail = ((SequenceNode)node).getAsSeq(1);
             
-            if(tail.isEmpty())
+            if (tail.isEmpty())
             {
                 return head;
             }
-
+            
             for (final INode c: tail.getChildren())
             {
                 final SequenceNode sn = (SequenceNode)c;
                 head = new InfixOperation(head, (IExpression)sn.get(1), (TokenNode)sn.get(0));
             }
-
+            
             return head;
         }
     },
@@ -774,7 +774,10 @@ public enum PascalParser implements IParser
         @Override
         protected INode success(INode node)
         {
-            return new StringLiteral((TokenNode)node);
+            final TokenNode tok = (TokenNode)node;
+            return (tok.getString().length() == 3)
+                    ? new CharLiteral(tok)
+                    : new StringLiteral(tok);
         }
     },
     NAME(41) {

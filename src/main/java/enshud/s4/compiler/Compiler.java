@@ -6,10 +6,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import enshud.casl.CaslSimulator;
-import enshud.s1.lexer.Lexer;
+import enshud.pascal.Procedure;
+import enshud.pascal.ast.TemplateVisitor;
 import enshud.s3.checker.Checker;
 
 
@@ -21,13 +21,34 @@ public class Compiler
     public static void main(final String[] args)
     {
         // Compilerを実行してcasを生成する
-         new Lexer().run("data/pas/test.pas", "tmp/out.ts");
-         new Compiler().run("tmp/out.ts", "tmp/outo.cas");
-        //IntStream.rangeClosed(1, 8)
-        //    .forEach(i -> new Compiler().run("data/ts/normal0"+i+".ts", "tmp/out"+i+"o.cas"));
+        // new enshud.s1.lexer.Lexer().run("data/pas/test.pas", "tmp/out.ts");
+        // new Compiler().run("tmp/out.ts", "tmp/outo.cas");
+        /*java.util.stream.IntStream.rangeClosed(1, 10)
+            .forEachOrdered(
+                i -> new Compiler().run(
+                    String.format("data/ts/normal%02d.ts", i),
+                    String.format("tmp/out%02do2.cas", i)
+                )
+            );*/
+        new Compiler().run("data/ts/normal01.ts", "tmp/out.cas");
+        /*Checker.fromLexedFile("data/ts/normal01.ts")
+            .flatMap(c -> c.getProgram())
+            .ifPresent(p -> {
+                p.accept(new IntmCodeVisitor(), p);
+                p.accept(new TemplateVisitor<Object, Procedure>() {
+                    @Override
+                    public Object visit(Procedure node, Procedure proc)
+                    {
+                        System.out.println(node.getBBList());
+                        node.getChildren()
+                            .forEach(p -> p.accept(this, p));
+                        return null;
+                    }
+                }, p);
+            });*/
         
         // CaslSimulatorクラスを使ってコンパイルしたcasを，CASLアセンブラ & COMETシミュレータで実行する
-        // CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
+        CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "36", "48");
     }
     
     /**
@@ -69,8 +90,14 @@ public class Compiler
     public static Optional<Casl2Code> fromLexedFile(String input_file)
     {
         return Checker.fromLexedFile(input_file)
-            .flatMap(checker -> checker.getProgram())
-            .map(proc -> proc.compile(new Casl2Code()));
+            .flatMap(Checker::getProgram)
+            .map(
+                proc -> {
+                    final CompileVisitor vtr = new CompileVisitor();
+                    proc.accept(vtr, null);
+                    return vtr.getCode();
+                }
+            );
     }
     
     public static boolean outputToFile(String output_name, List<? extends CharSequence> code)

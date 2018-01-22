@@ -1,33 +1,47 @@
 package enshud.pascal.ast.expression;
 
-import java.util.Objects;
-
-import enshud.s3.checker.Checker;
-import enshud.pascal.type.IType;
-import enshud.pascal.Procedure;
 import enshud.pascal.ast.IVisitor;
-import enshud.pascal.type.BasicType;
 import enshud.pascal.type.StringType;
-import enshud.s2.parser.node.basic.TokenNode;
-import enshud.s4.compiler.Casl2Code;
-import enshud.s4.compiler.LabelGenerator;
+import enshud.pascal.value.StringValue;
+import enshud.s2.parser.node.TokenNode;
 
 
 public class StringLiteral implements IConstant
 {
-    private final TokenNode str;
-    private IType           type;
+    private final StringValue val;
+    private final int         line;
+    private final int         col;
     
-    public StringLiteral(TokenNode str)
+    public StringLiteral(TokenNode str_tok)
     {
-        this.str = Objects.requireNonNull(str);
-        type = StringType.create(length());
+        this(
+            str_tok.getString().substring(1, str_tok.getString().length() - 1),
+            str_tok.getLine(),
+            str_tok.getColumn()
+        );
+    }
+    
+    public StringLiteral(String str, int line, int col)
+    {
+        this.val = StringValue.create(str);
+        this.line = line;
+        this.col = col;
+    }
+    
+    public static StringLiteral create(String str)
+    {
+        return new StringLiteral(str, -1, -1);
     }
     
     @Override
+    public StringValue getValue()
+    {
+        return val;
+    }
+    
     public int getInt()
     {
-        if(getType() == StringType.CHAR)
+        if (getType() == StringType.CHAR)
         {
             return (int)toString().charAt(1);
         }
@@ -40,56 +54,49 @@ public class StringLiteral implements IConstant
     @Override
     public String toString()
     {
-        return str.getString();
+        return val.getString();
     }
     
     public int length()
     {
-        return toString().length() - 2;
+        return val.getType().getSize();
     }
     
     @Override
-    public IType getType()
+    public StringType getType()
     {
-        return type;
+        return val.getType();
     }
     
     @Override
     public int getLine()
     {
-        return str.getLine();
+        return line;
     }
     
     @Override
     public int getColumn()
     {
-        return str.getColumn();
+        return col;
+    }
+    
+    @Override
+    public boolean equals(IExpression rexp)
+    {
+        if (rexp instanceof StringLiteral)
+        {
+            return this == rexp || this.toString() == ((StringLiteral)rexp).toString();
+        }
+        else
+        {
+            return false;
+        }
     }
     
     @Override
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
-        return visitor.visitStringLiteral(this, option);
-    }
-    
-    @Override
-    public IType check(Procedure proc, Checker checker)
-    {
-        return type;
-    }
-    
-    @Override
-    public void compile(Casl2Code code, Procedure proc, LabelGenerator l_gen)
-    {
-        if (type == BasicType.CHAR)
-        {
-            code.addLoadImm("GR2", (int)toString().charAt(1));
-        }
-        else
-        {
-            code.add("LAD", "", "", "GR2", "=" + toString());
-            code.addLoadImm("GR1", length());
-        }
+        return visitor.visit(this, option);
     }
 }
 

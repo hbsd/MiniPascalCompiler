@@ -8,21 +8,30 @@ import enshud.pascal.ast.TemplateVisitor;
 import enshud.pascal.ast.expression.*;
 import enshud.pascal.ast.statement.*;
 
+
 public class OptimizeVisitor extends TemplateVisitor<IStatement, Procedure>
 {
     @Override
-    public IStatement visitAssignStatement(AssignStatement node, Procedure proc)
+    public IStatement visit(Procedure node, Procedure proc)
     {
-        final IConstant res = node.getRight().accept(exp_visitor, proc);
-        if (res != null)
+        node.getBody().accept(this, node);
+        node.getChildren().forEach(sub -> sub.accept(this, node));
+        return null;
+    }
+    
+    @Override
+    public IStatement visit(AssignStatement node, Procedure proc)
+    {
+        final IExpression res = node.getRight().accept(exp_visitor, proc);
+        if (res.isConstant())
         {
             node.setRight(res);
         }
         return node;
     }
-
+    
     @Override
-    public IStatement visitCompoundStatement(CompoundStatement node, Procedure proc)
+    public IStatement visit(CompoundStatement node, Procedure proc)
     {
         final ListIterator<IStatement> it = node.listIterator();
         while (it.hasNext())
@@ -39,144 +48,132 @@ public class OptimizeVisitor extends TemplateVisitor<IStatement, Procedure>
         }
         return node.isEmpty()? null: node;
     }
-
+    
     @Override
-    public IStatement visitIfElseStatement(IfElseStatement node, Procedure proc)
+    public IStatement visit(IfElseStatement node, Procedure proc)
     {
-        final IStatement sup = visitIfStatement(node, proc);
+        final IStatement sup = node.getIfPart().accept(this, proc);
         node.getElse().accept(this, proc);
-        return (sup != null)? sup: node.getElse();
+        return (sup == null)? node.getElse(): (sup instanceof CompoundStatement)? sup: node;
     }
-
+    
     @Override
-    public IStatement visitIfStatement(IfStatement node, Procedure proc)
+    public IStatement visit(IfStatement node, Procedure proc)
     {
-        final IConstant res = node.getCond().accept(exp_visitor, proc);
+        final IExpression res = node.getCond().accept(exp_visitor, proc);
+        node.getThen().accept(this, proc);
         
-        if (res == null)
+        if (res instanceof BooleanLiteral)
         {
-            node.getThen().accept(this, proc);
-            return node;
+            return ((BooleanLiteral)res).getValue().getBool()? node.getThen(): null;
         }
-        if (((BooleanLiteral)res).getBool())
-        {
-            node.getThen().accept(this, proc);
-            return node.getThen();
-        }
-        else
-        {
-            return null;
-        }
+        
+        return node;
     }
-
+    
     @Override
-    public IStatement visitProcCallStatement(ProcCallStatement node, Procedure proc)
+    public IStatement visit(ProcCallStatement node, Procedure proc)
     {
         node.getArgs().forEach(e -> e.accept(exp_visitor, proc));
         return node;
     }
-
+    
     @Override
-    public IStatement visitReadStatement(ReadStatement node, Procedure proc)
+    public IStatement visit(ReadStatement node, Procedure proc)
     {
         node.getVariables().forEach(v -> v.accept(exp_visitor, proc));
         return node;
     }
-
+    
     @Override
-    public IStatement visitWhileStatement(WhileStatement node, Procedure proc)
+    public IStatement visit(WhileStatement node, Procedure proc)
     {
-        final IConstant res = node.getCond().accept(exp_visitor, proc);
-        if (res == null)
+        final IExpression res = node.getCond().accept(exp_visitor, proc);
+        if (res instanceof BooleanLiteral)
         {
-            node.getStatement().accept(this, proc);
-            return node;
+            if (((BooleanLiteral)res).getValue().getBool())
+            {
+                node.setIsInfiniteLoop(true);
+            }
+            else
+            {
+                return null;
+            }
         }
-        else if (((BooleanLiteral)res).getBool())
-        {
-            node.getStatement().accept(this, proc);
-            node.setIsInfiniteLoop(true);
-            return node;
-        }
-        else
-        {
-            return null;
-        }
+        node.getStatement().accept(this, proc);
+        return node;
     }
-
+    
     @Override
-    public IStatement visitWriteStatement(WriteStatement node, Procedure proc)
+    public IStatement visit(WriteStatement node, Procedure proc)
     {
         node.getExpressions().forEach(e -> e.accept(exp_visitor, proc));
         return node;
     }
     
-    final IVisitor<IConstant, Procedure> exp_visitor = new TemplateVisitor<IConstant, Procedure>() {
+    final IVisitor<IExpression, Procedure> exp_visitor = new TemplateVisitor<IExpression, Procedure>() {
         @Override
-        public IConstant visitBooleanLiteral(BooleanLiteral node, Procedure proc)
+        public IConstant visit(BooleanLiteral node, Procedure proc)
         {
             return node;
         }
-
+        
         @Override
-        public IConstant visitIndexedVariable(IndexedVariable node, Procedure proc)
+        public IExpression visit(CharLiteral node, Procedure option)
         {
-            return null;
+            return node;
         }
-
+        
         @Override
-        public IConstant visitInfixOperation(InfixOperation node, Procedure proc)
+        public IExpression visit(IndexedVariable node, Procedure proc)
         {
-            final IConstant l = node.getLeft().accept(this, proc);
-            if (l != null)
+            return node;
+        }
+        
+        @Override
+        public IExpression visit(InfixOperation node, Procedure proc)
+        {
+            final IExpression l = node.getLeft().accept(this, proc);
+            if (l.isConstant())
             {
                 node.setLeft(l);
             }
-            
-            final IConstant r = node.getRight().accept(this, proc);
-            if (r != null)
+            final IExpression r = node.getRight().accept(this, proc);
+            if (r.isConstant())
             {
                 node.setRight(r);
             }
-            
-            if (l == null || r == null)
-            {
-                return null;
-            }
-            else
-            {
-                return node.getOp().eval(l.getInt(), r.getInt());
-            }
+            return node.getOp().eval(node);
         }
-
+        
         @Override
-        public IConstant visitIntegerLiteral(IntegerLiteral node, Procedure proc)
+        public IConstant visit(IntegerLiteral node, Procedure proc)
         {
             return node;
         }
-
+        
         @Override
-        public IConstant visitPrefixOperation(PrefixOperation node, Procedure proc)
+        public IExpression visit(PrefixOperation node, Procedure proc)
         {
-            IConstant res = node.getOperand().accept(this, proc);
-            if (res == null)
+            final IExpression res = node.getOperand().accept(this, proc);
+            if (!res.isConstant())
             {
-                return null;
+                return node;
             }
             
             node.setOperand(res);
             
-            return node.getOp().eval(res.getInt());
+            return node.getOp().eval(node);
         }
-
+        
         @Override
-        public IConstant visitPureVariable(PureVariable node, Procedure proc)
+        public IExpression visit(PureVariable node, Procedure proc)
         {
-            return null;
+            return node;
         }
-
+        
         @Override
-        public IConstant visitStringLiteral(StringLiteral node, Procedure proc)
+        public IConstant visit(StringLiteral node, Procedure proc)
         {
             return node;
         }

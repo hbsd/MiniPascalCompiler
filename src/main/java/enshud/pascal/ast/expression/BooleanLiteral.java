@@ -2,25 +2,26 @@ package enshud.pascal.ast.expression;
 
 import java.util.Objects;
 
-import enshud.s3.checker.Checker;
-import enshud.pascal.type.IType;
-import enshud.pascal.Procedure;
+import enshud.pascal.value.BooleanValue;
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.BasicType;
 import enshud.s1.lexer.LexedToken;
-import enshud.s4.compiler.Casl2Code;
-import enshud.s4.compiler.LabelGenerator;
 
 
 public class BooleanLiteral implements IConstant
 {
-    private boolean          val;
+    private BooleanValue     val;
     private final LexedToken token;
     
-    public BooleanLiteral(boolean val)
+    private BooleanLiteral(boolean val)
     {
-        this.val = val;
+        this.val = BooleanValue.create(val);
         this.token = LexedToken.DUMMY;
+    }
+    
+    public static BooleanLiteral create(boolean val)
+    {
+        return new BooleanLiteral(val);
     }
     
     public BooleanLiteral(LexedToken token)
@@ -29,10 +30,10 @@ public class BooleanLiteral implements IConstant
         switch (token.getType())
         {
         case SFALSE:
-            val = false;
+            val = BooleanValue.FALSE;
             break;
         case STRUE:
-            val = true;
+            val = BooleanValue.TRUE;
             break;
         default:
             assert false;
@@ -40,18 +41,13 @@ public class BooleanLiteral implements IConstant
     }
     
     @Override
-    public int getInt()
-    {
-        return getBool()? 1: 0;
-    }
-    
-    public boolean getBool()
+    public BooleanValue getValue()
     {
         return val;
     }
     
     @Override
-    public IType getType()
+    public BasicType getType()
     {
         return BasicType.BOOLEAN;
     }
@@ -69,27 +65,28 @@ public class BooleanLiteral implements IConstant
     }
     
     @Override
-    public IType check(Procedure proc, Checker checker)
+    public boolean equals(IExpression rexp)
     {
-        return getType();
+        if (rexp instanceof BooleanLiteral)
+        {
+            return this == rexp || this.val == ((BooleanLiteral)rexp).val;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     @Override
-    public <T,U> T accept(IVisitor<T, U> visitor, U option)
+    public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
-        return visitor.visitBooleanLiteral(this, option);
-    }
-    
-    @Override
-    public void compile(Casl2Code code, Procedure proc, LabelGenerator l_gen)
-    {
-        code.addLoadImm("GR2", getInt());
+        return visitor.visit(this, option);
     }
     
     @Override
     public String toString()
     {
-        return "" + getBool();
+        return val.toString();
     }
 }
 

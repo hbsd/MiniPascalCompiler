@@ -10,10 +10,10 @@ import enshud.pascal.ast.statement.CompoundStatement;
 public class ProcedureDeclaration implements IDeclaration
 {
     private final Identifier                     name;
-    private final NodeList<ParameterDeclaration>            params;
-    private final NodeList<LocalDeclaration>  vars;
+    private final NodeList<ParameterDeclaration> params;
+    private final NodeList<LocalDeclaration>     vars;
     private final NodeList<ProcedureDeclaration> subprocs;
-    private final CompoundStatement                  body;
+    private final CompoundStatement              body;
     
     public ProcedureDeclaration(
         Identifier name,

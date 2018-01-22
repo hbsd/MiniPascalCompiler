@@ -1,14 +1,10 @@
 package enshud.pascal.ast.expression;
 
 import enshud.pascal.PrefixOperator;
-import enshud.pascal.Procedure;
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
-import enshud.s2.parser.node.basic.TokenNode;
-import enshud.s3.checker.Checker;
-import enshud.s4.compiler.Casl2Code;
-import enshud.s4.compiler.LabelGenerator;
+import enshud.s2.parser.node.TokenNode;
 
 
 public class PrefixOperation implements IExpression
@@ -29,6 +25,14 @@ public class PrefixOperation implements IExpression
     public PrefixOperation(IExpression operand, TokenNode op_token)
     {
         this(operand, op_token.getToken());
+    }
+    
+    public PrefixOperation(IExpression operand, PrefixOperator op)
+    {
+        this.operand = operand;
+        this.op_token = LexedToken.DUMMY;
+        this.op = op;
+        this.type = null;
     }
     
     public IExpression getOperand()
@@ -66,36 +70,7 @@ public class PrefixOperation implements IExpression
     @Override
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
-        return visitor.visitPrefixOperation(this, option);
-    }
-    
-    @Override
-    public IType check(Procedure proc, Checker checker)
-    {
-        final IType t = getOperand().check(proc, checker);
-        type = getOp().checkType(proc, checker, op_token, t);
-        return type;
-    }
-    
-    @Override
-    public IConstant preeval(Procedure proc)
-    {
-        IConstant res = getOperand().preeval(proc);
-        if (res == null)
-        {
-            return null;
-        }
-        
-        operand = res;
-        
-        return getOp().eval(res.getInt());
-    }
-    
-    @Override
-    public void compile(Casl2Code code, Procedure proc, LabelGenerator l_gen)
-    {
-        getOperand().compile(code, proc, l_gen);
-        getOp().compile(code, l_gen);
+        return visitor.visit(this, option);
     }
     
     @Override
@@ -107,6 +82,20 @@ public class PrefixOperation implements IExpression
     public void setType(IType type)
     {
         this.type = type;
+    }
+    
+    @Override
+    public boolean equals(IExpression rexp)
+    {
+        if(rexp instanceof PrefixOperation)
+        {
+            PrefixOperation po = (PrefixOperation)rexp;
+            return this == rexp || (this.op == po.op && this.operand.equals(po.operand));
+        }
+        else
+        {
+            return false;
+        }
     }
     
     @Override

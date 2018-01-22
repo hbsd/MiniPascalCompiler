@@ -2,7 +2,10 @@ package enshud.pascal;
 
 import enshud.pascal.ast.expression.BooleanLiteral;
 import enshud.pascal.ast.expression.IConstant;
+import enshud.pascal.ast.expression.IExpression;
+import enshud.pascal.ast.expression.InfixOperation;
 import enshud.pascal.ast.expression.IntegerLiteral;
+import enshud.pascal.ast.expression.PrefixOperation;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
@@ -23,9 +26,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new IntegerLiteral(left + right);
+            return IntegerLiteral.create(left + right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return (left == 0)? right: null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return evalLeft(right, left);
         }
         
         @Override
@@ -44,9 +59,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new IntegerLiteral(left - right);
+            return IntegerLiteral.create(left - right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return (left == 0)? right: null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return evalLeft(right, left);
         }
         
         @Override
@@ -66,9 +93,22 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new IntegerLiteral(left * right);
+            return IntegerLiteral.create(left * right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return (left == 0)? IntegerLiteral.create(0)
+                    : (left == 1)? right: (left == -1)? new PrefixOperation(right, PrefixOperator.MINUS): null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return evalLeft(right, left);
         }
         
         @Override
@@ -87,9 +127,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new IntegerLiteral(left / right);
+            return IntegerLiteral.create(left / right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return (right == 1)? left: (right == -1)? new PrefixOperation(left, PrefixOperator.MINUS): null;
         }
         
         @Override
@@ -108,9 +160,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new IntegerLiteral(left % right);
+            return IntegerLiteral.create(left % right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return (right == 1)? IntegerLiteral.create(0): null;
         }
         
         @Override
@@ -131,9 +195,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left == 1 || right == 1);
+            return BooleanLiteral.create(left == 1 || right == 1);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return (left == 1)? BooleanLiteral.create(true): right;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return evalLeft(right, left);
         }
         
         @Override
@@ -152,9 +228,21 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left == 1 && right == 1);
+            return BooleanLiteral.create(left == 1 && right == 1);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return (left == 0)? BooleanLiteral.create(false): right;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return evalLeft(right, left);
         }
         
         @Override
@@ -172,9 +260,34 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        public IExpression eval(InfixOperation infix)
         {
-            return new BooleanLiteral(left == right);
+            if(infix.getLeft().equals(infix.getRight()))
+            {
+                return BooleanLiteral.create(true);
+            }
+            else
+            {
+                return super.eval(infix);
+            }
+        }
+        
+        @Override
+        protected IConstant evalBoth(int left, int right)
+        {
+            return BooleanLiteral.create(left == right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return null;
         }
         
         @Override
@@ -197,9 +310,34 @@ public enum InfixOperator
         }
         
         @Override
-        public IConstant eval(int left, int right)
+        public IExpression eval(InfixOperation infix)
         {
-            return new BooleanLiteral(left != right);
+            if(infix.getLeft().equals(infix.getRight()))
+            {
+                return BooleanLiteral.create(false);
+            }
+            else
+            {
+                return super.eval(infix);
+            }
+        }
+        
+        @Override
+        protected IConstant evalBoth(int left, int right)
+        {
+            return BooleanLiteral.create(left != right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return null;
         }
         
         @Override
@@ -221,10 +359,37 @@ public enum InfixOperator
             return checkCompareOp(proc, checker, op_tok, givenl, givenr);
         }
         
+        // f< t !t< f !t< t !f< f
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left < right);
+            return BooleanLiteral.create(left < right);
+        }
+
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            if(right.getType() == BasicType.BOOLEAN)
+            {
+                return (left == 1)? BooleanLiteral.create(false): right;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            if(left.getType() == BasicType.BOOLEAN)
+            {
+                return (right == 0)? BooleanLiteral.create(false): new PrefixOperation(left, PrefixOperator.NOT);
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
@@ -242,10 +407,37 @@ public enum InfixOperator
             return checkCompareOp(proc, checker, op_tok, givenl, givenr);
         }
         
+        // f<=t !t<=f  t<=t  f<=f
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left <= right);
+            return BooleanLiteral.create(left <= right);
+        }
+
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            if(right.getType() == BasicType.BOOLEAN)
+            {
+                return (left == 0)? BooleanLiteral.create(true): right;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            if(left.getType() == BasicType.BOOLEAN)
+            {
+                return (right == 1)? BooleanLiteral.create(true): new PrefixOperation(left, PrefixOperator.NOT);
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
@@ -263,10 +455,37 @@ public enum InfixOperator
             return checkCompareOp(proc, checker, op_tok, givenl, givenr);
         }
         
+        // !f> t  t> f !t> t !f> f
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left > right);
+            return BooleanLiteral.create(left > right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            if(right.getType() == BasicType.BOOLEAN)
+            {
+                return (left == 0)? BooleanLiteral.create(false): new PrefixOperation(right, PrefixOperator.NOT);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            if(left.getType() == BasicType.BOOLEAN)
+            {
+                return (right == 1)? BooleanLiteral.create(false): left;
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
@@ -283,10 +502,37 @@ public enum InfixOperator
             return checkCompareOp(proc, checker, op_tok, givenl, givenr);
         }
         
+        // !f>=t  t>=f  t>=t f>=f
         @Override
-        public IConstant eval(int left, int right)
+        protected IConstant evalBoth(int left, int right)
         {
-            return new BooleanLiteral(left >= right);
+            return BooleanLiteral.create(left >= right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            if(right.getType() == BasicType.BOOLEAN)
+            {
+                return (left == 1)? BooleanLiteral.create(true): new PrefixOperation(right, PrefixOperator.NOT);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            if(left.getType() == BasicType.BOOLEAN)
+            {
+                return (right == 0)? BooleanLiteral.create(true): left;
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
@@ -393,11 +639,29 @@ public enum InfixOperator
         {
             checker.addErrorMessage(
                 proc, op_tok,
-                "incompatible type: left type " + givenl + " differs from right type " + givenr + " of " + this + " operator."
+                "incompatible type: left type " + givenl + " differs from right type " + givenr + " of " + this
+                        + " operator."
             );
         }
     }
     
-    public abstract IConstant eval(int left, int right);
+    
+    public IExpression eval(InfixOperation infix)
+    {
+        final IExpression l = infix.getLeft();
+        final IExpression r = infix.getRight();
+        final IExpression res = (l.isConstant() && r.isConstant())
+                ? evalBoth(((IConstant)l).getValue().getInt(), ((IConstant)r).getValue().getInt())
+                : l.isConstant()? evalLeft(((IConstant)l).getValue().getInt(), r)
+                        : r.isConstant()? evalRight(l, ((IConstant)r).getValue().getInt()): null;
+        return (res == null)? infix: res;
+    }
+    
+    protected abstract IExpression evalLeft(int left, IExpression right);
+    
+    protected abstract IExpression evalRight(IExpression left, int right);
+    
+    protected abstract IConstant evalBoth(int left, int right);
+    
     public abstract void compile(Casl2Code code, LabelGenerator l_gen); // left->GR1,right->GR2
 }

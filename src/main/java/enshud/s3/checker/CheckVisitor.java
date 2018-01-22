@@ -2,6 +2,7 @@ package enshud.s3.checker;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import enshud.pascal.Procedure;
 import enshud.pascal.QualifiedVariable;
@@ -13,37 +14,51 @@ import enshud.pascal.type.IType;
 import enshud.pascal.type.StringType;
 import enshud.pascal.type.UnknownType;
 
+
 public class CheckVisitor implements IVisitor<IType, Procedure>
 {
     private final Checker checker;
+    
     public CheckVisitor(Checker checker)
     {
         this.checker = checker;
     }
     
     @Override
-    public IType visitBooleanLiteral(BooleanLiteral node, Procedure proc)
+    public IType visit(Procedure node, Procedure proc)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public IType visit(BooleanLiteral node, Procedure proc)
     {
         return node.getType();
     }
-
+    
     @Override
-    public IType visitIndexedVariable(IndexedVariable node, Procedure proc)
+    public IType visit(CharLiteral node, Procedure option)
+    {
+        return node.getType();
+    }
+    
+    @Override
+    public IType visit(IndexedVariable node, Procedure proc)
     {
         final String nm = node.getName().toString();
-        final Optional<QualifiedVariable> var = proc.getVar(nm);
+        final Optional<QualifiedVariable> var = proc.findLocal(nm);
         node.setArrayType(
             var.map(v -> v.getType())
-               .orElse(UnknownType.UNKNOWN)
+                .orElse(UnknownType.UNKNOWN)
         );
         
         if (!var.isPresent())
         {
-            List<QualifiedVariable> vs = proc.searchForVarFuzzy(nm);
+            final List<QualifiedVariable> vs = proc.searchForLocalFuzzy(nm);
+            final String msg = vs.isEmpty()? "": (" did you mean variable " + vs + "?");
             checker.addErrorMessage(
                 proc, node.getName(),
-                "variable '" + nm + "' is not defined."
-                        + (vs.isEmpty()? "": (" did you mean variable " + vs + "?"))
+                "variable '" + nm + "' is not defined." + msg
             );
         }
         else if (node.getArrayType().isBasicType())
@@ -60,6 +75,7 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         checkIndex(node, proc);
         return node.getType();
     }
+    
     private void checkIndex(IndexedVariable node, Procedure proc)
     {
         final IType idx_type = node.getIndex().accept(this, proc);
@@ -67,41 +83,42 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         {
             checker.addErrorMessage(
                 proc, node.getIndex(),
-                "incompatible type: cannot use " + idx_type + " type as index of '" + node.getName() + "'. must be INTEGER."
+                "incompatible type: cannot use " + idx_type + " type as index of '" + node.getName()
+                        + "'. must be INTEGER."
             );
         }
     }
-
+    
     @Override
-    public IType visitInfixOperation(InfixOperation node, Procedure proc)
+    public IType visit(InfixOperation node, Procedure proc)
     {
-        IType left_type = node.getLeft().accept(this, proc);
-        IType right_type = node.getRight().accept(this, proc);
+        final IType left_type = node.getLeft().accept(this, proc);
+        final IType right_type = node.getRight().accept(this, proc);
         
         node.setType(node.getOp().checkType(proc, checker, node.getOpToken(), left_type, right_type));
         return node.getType();
     }
-
+    
     @Override
-    public IType visitIntegerLiteral(IntegerLiteral node, Procedure proc)
+    public IType visit(IntegerLiteral node, Procedure proc)
     {
         return node.getType();
     }
-
+    
     @Override
-    public IType visitPrefixOperation(PrefixOperation node, Procedure proc)
+    public IType visit(PrefixOperation node, Procedure proc)
     {
         final IType t = node.getOperand().accept(this, proc);
         node.setType(node.getOp().checkType(proc, checker, node.getOpToken(), t));
         return node.getType();
     }
-
+    
     @Override
-    public IType visitPureVariable(PureVariable node, Procedure proc)
+    public IType visit(PureVariable node, Procedure proc)
     {
         final String nm = node.getName().toString();
         
-        final Optional<QualifiedVariable> param = proc.getParam(nm);
+        final Optional<QualifiedVariable> param = proc.findParam(nm);
         
         if (param.isPresent())
         {
@@ -111,10 +128,10 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         }
         else
         {
-            final Optional<QualifiedVariable> var = proc.getVar(nm);
+            final Optional<QualifiedVariable> var = proc.findLocal(nm);
             node.setType(
                 var.map(v -> v.getType())
-                   .orElse(UnknownType.UNKNOWN)
+                    .orElse(UnknownType.UNKNOWN)
             );
             if (var.isPresent())
             {
@@ -131,27 +148,28 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         
         return node.getType();
     }
+    
     private void checkFuzzy(PureVariable node, Procedure proc)
     {
         final String nm = node.getName().toString();
         final List<QualifiedVariable> vs = proc.searchForParamFuzzy(nm);
-        vs.addAll(proc.searchForVarFuzzy(nm));
+        vs.addAll(proc.searchForLocalFuzzy(nm));
         
+        final String msg = vs.isEmpty()? "": (" did you mean variable " + vs + "?");
         checker.addErrorMessage(
             proc, node.getName(),
-            "variable '" + nm + "' is not defined."
-                    + (vs.isEmpty()? "": (" did you mean variable " + vs + "?"))
+            "variable '" + nm + "' is not defined." + msg
         );
     }
-
+    
     @Override
-    public IType visitStringLiteral(StringLiteral node, Procedure proc)
+    public IType visit(StringLiteral node, Procedure proc)
     {
         return node.getType();
     }
-
+    
     @Override
-    public IType visitAssignStatement(AssignStatement node, Procedure proc)
+    public IType visit(AssignStatement node, Procedure proc)
     {
         IType left_type = node.getLeft().accept(this, proc);
         IType right_type = node.getRight().accept(this, proc);
@@ -207,24 +225,24 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         }
         return null;
     }
-
+    
     @Override
-    public IType visitCompoundStatement(CompoundStatement node, Procedure proc)
+    public IType visit(CompoundStatement node, Procedure proc)
     {
         node.forEach(stm -> stm.accept(this, proc));
         return null;
     }
-
+    
     @Override
-    public IType visitIfElseStatement(IfElseStatement node, Procedure proc)
+    public IType visit(IfElseStatement node, Procedure proc)
     {
-        visitIfStatement(node, proc);
+        visit(node.getIfPart(), proc);
         node.getElse().accept(this, proc);
         return null;
     }
-
+    
     @Override
-    public IType visitIfStatement(IfStatement node, Procedure proc)
+    public IType visit(IfStatement node, Procedure proc)
     {
         final IType type = node.getCond().accept(this, proc);
         if (!type.equals(BasicType.BOOLEAN) && !type.isUnknown())
@@ -238,12 +256,12 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         node.getThen().accept(this, proc);
         return null;
     }
-
+    
     @Override
-    public IType visitProcCallStatement(ProcCallStatement node, Procedure proc)
+    public IType visit(ProcCallStatement node, Procedure proc)
     {
         node.setCalledProc(
-            proc.getSubProc(node.getName().toString())
+            proc.findSubProc(node.getName().toString())
                 .orElse(null)
         );
         
@@ -251,7 +269,7 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         {
             checkWhenNotFound(node, proc);
         }
-        else if (node.getArgs().size() != node.getCalledProc().getParamLength())
+        else if (node.getArgs().size() != node.getCalledProc().getParams().length())
         {
             checkWhenInvalidLength(node, proc);
         }
@@ -261,52 +279,54 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         }
         return null;
     }
+    
     private void checkWhenNotFound(ProcCallStatement node, Procedure proc)
     {
-        List<Procedure> p = proc.getSubProcFuzzy(node.getName().toString());
+        final List<Procedure> p = proc.searchForSubProcFuzzy(node.getName().toString());
         checker.addErrorMessage(
             proc, node.getName(),
             "procedure '" + node.getName() + "' is not defined."
                     + (p.isEmpty()? "": (" did you mean procedure " + p + "?"))
         );
         
-        node.getArgs().forEach(exp -> exp.check(proc, checker));
+        node.getArgs().forEach(exp -> exp.accept(this, proc));
     }
     
     private void checkArgumentTypes(ProcCallStatement node, Procedure proc)
     {
-        int i = 0;
-        for (final IExpression exp: node.getArgs())
-        {
-            final IType ptype = node.getCalledProc().getParamType(i);
-            final IType atype = exp.check(proc, checker);
-            
-            if (!ptype.equals(atype))
-            {
-                checker.addErrorMessage(
-                    proc, node,
-                    "incompatible type: cannot pass " + atype + " type to " + Checker.getOrderString(i + 1)
-                            + " argument of procedure '" + node.getName() + "'. must be " + ptype + "."
-                );
+        IntStream.range(0, node.getArgs().size()).forEachOrdered(
+            i -> {
+                final IType ptype = node.getCalledProc().getParams().get(i).getType();
+                final IType atype = node.getArgs().get(i).accept(this, proc);
+                
+                if (!ptype.equals(atype))
+                {
+                    checker.addErrorMessage(
+                        proc, node,
+                        "incompatible type: cannot pass " + atype + " type to " + Checker.getOrderString(i + 1)
+                                + " argument of procedure '" + node.getName() + "'. must be " + ptype + "."
+                    );
+                }
             }
-            ++i;
-        }
+        );
     }
     
     private void checkWhenInvalidLength(ProcCallStatement node, Procedure proc)
     {
         final String msg1 = node.getArgs().size() == 0? "no": "" + node.getArgs().size();
-        final String msg2 = node.getCalledProc().getParamLength() == 0? "no": "" + node.getCalledProc().getParamLength();
+        final int len = node.getCalledProc().getParams().length();
+        final String msg2 = len == 0? "no": "" + len;
         
         checker.addErrorMessage(
-            proc, node, "cannot call procedure '" + node.getName() + "' by " + msg1 + " arguments. must be " + msg2 + " args."
+            proc, node,
+            "cannot call procedure '" + node.getName() + "' by " + msg1 + " arguments. must be " + msg2 + " args."
         );
         
         node.getArgs().forEach(exp -> exp.accept(this, proc));
     }
-
+    
     @Override
-    public IType visitReadStatement(ReadStatement node, Procedure proc)
+    public IType visit(ReadStatement node, Procedure proc)
     {
         int i = 1;
         for (final IVariable var: node.getVariables())
@@ -330,9 +350,9 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         }
         return null;
     }
-
+    
     @Override
-    public IType visitWhileStatement(WhileStatement node, Procedure proc)
+    public IType visit(WhileStatement node, Procedure proc)
     {
         final IType type = node.getCond().accept(this, proc);
         if (!type.equals(BasicType.BOOLEAN) && !type.isUnknown())
@@ -342,17 +362,17 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
                 "incompatible type: cannot use " + type + " type as condition of while-statement. must be BOOLEAN."
             );
         }
-        node.getStatement().check(proc, checker);
+        node.getStatement().accept(this, proc);
         return null;
     }
-
+    
     @Override
-    public IType visitWriteStatement(WriteStatement node, Procedure proc)
+    public IType visit(WriteStatement node, Procedure proc)
     {
         int i = 1;
         for (final IExpression exp: node.getExpressions())
         {
-            IType type = exp.accept(this, proc);
+            final IType type = exp.accept(this, proc);
             
             if (!type.equals(BasicType.INTEGER) && !type.equals(BasicType.CHAR) && !type.isArrayOf(BasicType.CHAR))
             {
@@ -361,15 +381,9 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
                             + " argument of writeln must be INTEGER, CHAR, or array of CHAR, but is " + type + "."
                 );
             }
-            /*else if (type.isUnknown())
-            {
-                checker.addErrorMessage(
-                    proc, exp, "cannot identify the type of " + Checker.getOrderString(i) + " argument of writeln."
-                );
-            }*/
             ++i;
         }
         return null;
     }
-
+    
 }

@@ -3,7 +3,9 @@ package enshud.pascal;
 
 import enshud.pascal.ast.expression.BooleanLiteral;
 import enshud.pascal.ast.expression.IConstant;
+import enshud.pascal.ast.expression.IExpression;
 import enshud.pascal.ast.expression.IntegerLiteral;
+import enshud.pascal.ast.expression.PrefixOperation;
 import enshud.pascal.type.BasicType;
 import enshud.pascal.type.IType;
 import enshud.s1.lexer.LexedToken;
@@ -22,9 +24,9 @@ public enum PrefixOperator
         }
         
         @Override
-        public IConstant eval(int operand)
+        protected IConstant eval(int operand)
         {
-            return new IntegerLiteral(operand);
+            return IntegerLiteral.create(operand);
         }
         
         @Override
@@ -41,9 +43,23 @@ public enum PrefixOperator
         }
         
         @Override
-        public IConstant eval(int operand)
+        public IExpression eval(PrefixOperation prefix)
         {
-            return new IntegerLiteral(-operand);
+            if(prefix.getOperand() instanceof PrefixOperation)
+            {
+                final PrefixOperation po = (PrefixOperation)prefix.getOperand();
+                if(po.getOp() == MINUS)
+                {
+                    return po.getOperand();
+                }
+            }
+            return super.eval(prefix);
+        }
+        
+        @Override
+        protected IConstant eval(int operand)
+        {
+            return IntegerLiteral.create(-operand);
         }
         
         @Override
@@ -62,9 +78,23 @@ public enum PrefixOperator
         }
         
         @Override
-        public IConstant eval(int operand)
+        public IExpression eval(PrefixOperation prefix)
         {
-            return new BooleanLiteral(operand == 0);
+            if(prefix.getOperand() instanceof PrefixOperation)
+            {
+                final PrefixOperation po = (PrefixOperation)prefix.getOperand();
+                if(po.getOp() == NOT)
+                {
+                    return po.getOperand();
+                }
+            }
+            return super.eval(prefix);
+        }
+        
+        @Override
+        protected IConstant eval(int operand)
+        {
+            return BooleanLiteral.create(operand == 0);
         }
         
         @Override
@@ -107,7 +137,15 @@ public enum PrefixOperator
         return result;
     }
     
-    public abstract IConstant eval(int operand);
+    public IExpression eval(PrefixOperation prefix)
+    {
+        final IExpression opd = prefix.getOperand();
+        final IExpression res = (opd.isConstant())
+                ? eval(((IConstant)opd).getValue().getInt()): null;
+        return (res == null)? prefix: res;
+    }
+    
+    protected abstract IConstant eval(int operand);
     
     public abstract void compile(Casl2Code code, LabelGenerator l_gen); // left->GR1,right->GR2
 }
