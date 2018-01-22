@@ -15,13 +15,10 @@ import enshud.pascal.type.BasicType;
 import enshud.s3.checker.CheckVisitor;
 import enshud.s3.checker.Checker;
 import enshud.s4.compiler.OptimizeVisitor;
-import enshud.s4.compiler.tacode.BasicBlockList;
 
 
 public class Procedure extends ProcedureBase implements IAcceptable
 {
-    private BasicBlockList bbl;
-    
     private static final boolean OPTIMIZE = true;
     //private static final boolean OPTIMIZE = false;
     
@@ -242,16 +239,6 @@ public class Procedure extends ProcedureBase implements IAcceptable
         {
             return null;
         }
-    }
-    
-    public void setBBList(BasicBlockList bbl)
-    {
-        this.bbl = bbl;
-    }
-    
-    public BasicBlockList getBBList()
-    {
-        return bbl;
     }
     
     public void optimize()
