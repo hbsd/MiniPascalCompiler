@@ -34,6 +34,16 @@ abstract class ProcedureBase
         return name;
     }
     
+    public VariableDeclarations getLocalDecls()
+    {
+        return local_decls;
+    }
+    
+    public VariableDeclarations getParamDecls()
+    {
+        return param_decls;
+    }
+    
     public void setName(String name)
     {
         this.name = name;

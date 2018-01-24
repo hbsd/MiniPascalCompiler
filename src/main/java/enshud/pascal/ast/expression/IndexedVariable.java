@@ -13,7 +13,7 @@ import enshud.pascal.type.IType;
 public class IndexedVariable implements IVariable, ILiteral
 {
     private final Identifier  name;
-    private final IExpression index;
+    private IExpression       index;
     private IType             type;
     private QualifiedVariable var_referenced;
     
@@ -30,9 +30,20 @@ public class IndexedVariable implements IVariable, ILiteral
         return name;
     }
     
+    public String getQualifiedName()
+    {
+        return var_referenced.getQualifiedName();
+    }
+    
     public IExpression getIndex()
     {
         return index;
+    }
+    
+    public void setIndex(IExpression index)
+    {
+        this.index = index;
+        
     }
     
     @Override
@@ -41,9 +52,9 @@ public class IndexedVariable implements IVariable, ILiteral
         return ((ArrayType)type).getBasicType();
     }
     
-    public IType getArrayType()
+    public ArrayType getArrayType()
     {
-        return type;
+        return (ArrayType)type;
     }
     
     public void setArrayType(IType type)
@@ -82,7 +93,7 @@ public class IndexedVariable implements IVariable, ILiteral
     @Override
     public boolean equals(IExpression rexp)
     {
-        if(rexp instanceof IndexedVariable)
+        if (rexp instanceof IndexedVariable)
         {
             final IndexedVariable v = (IndexedVariable)rexp;
             return this == rexp || (this.getVar() == v.getVar() && getIndex().equals(v.getIndex()));

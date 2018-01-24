@@ -8,9 +8,9 @@ import enshud.pascal.ast.expression.IExpression;
 
 public class WhileStatement implements IStatement
 {
-    private final IExpression     cond;
-    private final IStatement statement;
-    private boolean          infinite_loop = false;
+    private IExpression cond;
+    private IStatement  statement;
+    private boolean     infinite_loop = false;
     
     public WhileStatement(IExpression cond, IStatement statement)
     {
@@ -21,6 +21,11 @@ public class WhileStatement implements IStatement
     public IExpression getCond()
     {
         return cond;
+    }
+    
+    public void setCond(IExpression cond)
+    {
+        this.cond = cond;
     }
     
     public IStatement getStatement()
@@ -67,6 +72,11 @@ public class WhileStatement implements IStatement
     {
         cond.println(indent + " |", "Condition of While");
         statement.println(indent + "  ", "Do of While");
+    }
+    
+    public void setStatement(IStatement stm)
+    {
+        statement = stm;
     }
 }
 

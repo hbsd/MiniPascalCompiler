@@ -7,8 +7,13 @@ import enshud.pascal.ast.NodeList;
 
 
 @SuppressWarnings("serial")
-public class CompoundStatement extends NodeList<IStatement> implements IStatement
+public class CompoundStatement  extends NodeList<IStatement> implements IStatement
 {
+    public CompoundStatement()
+    {
+        super();
+    }
+    
     public CompoundStatement(IStatement stm)
     {
         super();
@@ -19,12 +24,6 @@ public class CompoundStatement extends NodeList<IStatement> implements IStatemen
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
         return visitor.visit(this, option);
-    }
-    
-    @Override
-    public void printHead(String indent, String msg)
-    {
-        super.printHead(indent, msg);
     }
 }
 

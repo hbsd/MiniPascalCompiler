@@ -29,6 +29,15 @@ public class PureVariable implements IVariable, ILiteral
         return name;
     }
     
+    public String getQualifiedName()
+    {
+        if(var_referenced == null)
+        {
+            System.out.println(getName()+","+getLine());
+        }
+        return var_referenced.getQualifiedName();
+    }
+    
     @Override
     public IType getType()
     {

@@ -137,11 +137,9 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
             {
                 node.setVar(var.get());
                 node.setIsParam(false);
-                node.setType(var.get().getType());
             }
             else
             {
-                node.setType(UnknownType.UNKNOWN);
                 checkFuzzy(node, proc);
             }
         }

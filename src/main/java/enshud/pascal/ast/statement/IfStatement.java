@@ -8,7 +8,7 @@ import enshud.pascal.ast.expression.IExpression;
 
 public class IfStatement implements IStatement
 {
-    private final IExpression       cond;
+    private IExpression             cond;
     private final CompoundStatement then_statements;
     
     public IfStatement(IExpression cond, CompoundStatement then_statements)
@@ -20,6 +20,11 @@ public class IfStatement implements IStatement
     public IExpression getCond()
     {
         return cond;
+    }
+    
+    public void setCond(IExpression cond)
+    {
+        this.cond = cond;
     }
     
     public CompoundStatement getThen()

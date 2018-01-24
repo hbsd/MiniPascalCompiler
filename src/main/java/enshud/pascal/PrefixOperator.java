@@ -45,10 +45,10 @@ public enum PrefixOperator
         @Override
         public IExpression eval(PrefixOperation prefix)
         {
-            if(prefix.getOperand() instanceof PrefixOperation)
+            if (prefix.getOperand() instanceof PrefixOperation)
             {
                 final PrefixOperation po = (PrefixOperation)prefix.getOperand();
-                if(po.getOp() == MINUS)
+                if (po.getOp() == MINUS)
                 {
                     return po.getOperand();
                 }
@@ -80,10 +80,10 @@ public enum PrefixOperator
         @Override
         public IExpression eval(PrefixOperation prefix)
         {
-            if(prefix.getOperand() instanceof PrefixOperation)
+            if (prefix.getOperand() instanceof PrefixOperation)
             {
                 final PrefixOperation po = (PrefixOperation)prefix.getOperand();
-                if(po.getOp() == NOT)
+                if (po.getOp() == NOT)
                 {
                     return po.getOperand();
                 }
@@ -140,9 +140,9 @@ public enum PrefixOperator
     public IExpression eval(PrefixOperation prefix)
     {
         final IExpression opd = prefix.getOperand();
-        final IExpression res = (opd.isConstant())
-                ? eval(((IConstant)opd).getValue().getInt()): null;
-        return (res == null)? prefix: res;
+        return (opd.isConstant())
+                ? eval(((IConstant)opd).getValue().getInt())
+                : null;
     }
     
     protected abstract IConstant eval(int operand);

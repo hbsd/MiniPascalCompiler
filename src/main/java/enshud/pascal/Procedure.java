@@ -14,13 +14,13 @@ import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.CheckVisitor;
 import enshud.s3.checker.Checker;
-import enshud.s4.compiler.OptimizeVisitor;
+import enshud.s4.compiler.OptimizeVisitor2;
 
 
 public class Procedure extends ProcedureBase implements IAcceptable
 {
     private static final boolean OPTIMIZE = true;
-    //private static final boolean OPTIMIZE = false;
+    // private static final boolean OPTIMIZE = false;
     
     private Procedure(Checker checker, ProcedureDeclaration prg, Procedure parent, String proc_id)
     {
@@ -51,7 +51,6 @@ public class Procedure extends ProcedureBase implements IAcceptable
     public static Procedure create(Checker checker, ProcedureDeclaration prg)
     {
         final Procedure p = new Procedure(checker, prg, null, "P0");
-        p.optimize();
         return p;
     }
     
@@ -245,7 +244,15 @@ public class Procedure extends ProcedureBase implements IAcceptable
     {
         if (OPTIMIZE)
         {
-            accept(new OptimizeVisitor(), this);
+            OptimizeVisitor2 ov;
+            int i = 0;
+            do
+            {
+                ov = new OptimizeVisitor2();
+                accept(ov, this);
+                // System.out.println(i+":"+ov.changed);
+                ++i;
+            } while (ov.changed > 0);
         }
     }
     

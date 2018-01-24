@@ -13,10 +13,10 @@ public class NodeList<T extends INode> extends ArrayList<T> implements IASTNode
         super();
     }
     
-    public NodeList(T n)
+    public NodeList(T e)
     {
         super();
-        add(Objects.requireNonNull(n));
+        add(Objects.requireNonNull(e));
     }
     
     @Override
