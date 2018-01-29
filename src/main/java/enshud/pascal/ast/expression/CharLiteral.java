@@ -8,9 +8,9 @@ import enshud.s2.parser.node.TokenNode;
 
 public class CharLiteral implements IConstant
 {
-    private final CharValue                    val;
-    private final int                          line;
-    private final int                          col;
+    private final CharValue val;
+    private final int       line;
+    private final int       col;
     
     public CharLiteral(TokenNode ch_tok)
     {
@@ -34,7 +34,7 @@ public class CharLiteral implements IConstant
     {
         return val;
     }
-
+    
     @Override
     public BasicType getType()
     {
@@ -70,6 +70,12 @@ public class CharLiteral implements IConstant
         {
             return false;
         }
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return "'" + (char)getValue().getInt() + "'";
     }
     
     @Override

@@ -45,7 +45,7 @@ public class StringValue implements IValue
     @Override
     public String toString()
     {
-        return "Str(" + str + ")";
+        return str;
     }
     
     public int length()

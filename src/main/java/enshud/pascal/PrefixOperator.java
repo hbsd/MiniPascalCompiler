@@ -34,6 +34,12 @@ public enum PrefixOperator
         {
             // Empty
         }
+        
+        @Override
+        public String toString()
+        {
+            return "+";
+        }
     },
     MINUS {
         @Override
@@ -69,6 +75,12 @@ public enum PrefixOperator
             code.add("XOR", "", "", "GR2", "GR2");
             code.add("SUBA", "", "", "GR2", "GR1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return "-";
+        }
     },
     NOT {
         @Override
@@ -101,6 +113,12 @@ public enum PrefixOperator
         public void compile(Casl2Code code, LabelGenerator l_gen)
         {
             code.add("XOR", "", "", "GR2", "=1");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "not ";
         }
     };
     

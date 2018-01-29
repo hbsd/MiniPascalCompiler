@@ -1,25 +1,21 @@
 package enshud.s4.compiler;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import enshud.pascal.Procedure;
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.TemplateVisitor;
 import enshud.pascal.ast.expression.*;
 import enshud.pascal.ast.statement.*;
-import enshud.pascal.type.ArrayType;
-import enshud.pascal.type.BasicType;
 
 
 public class VarSurviveVisitor implements IVisitor<Object, Procedure>
 {
-    private final Set<Procedure>         memo = new HashSet<>();
-    private final Map<String, IConstant> vars;
+    private final Set<Procedure> memo = new HashSet<>();
+    private final ValueTable     vars;
     
-    public VarSurviveVisitor(Map<String, IConstant> vars)
+    public VarSurviveVisitor(ValueTable vars)
     {
         this.vars = vars;
     }
@@ -156,31 +152,14 @@ public class VarSurviveVisitor implements IVisitor<Object, Procedure>
         @Override
         public Object visit(IndexedVariable node, Procedure proc)
         {
-            if (node.getIndex().isConstant())
-            {
-                vars.put(node.getQualifiedName() + "[" + ((IConstant)node.getIndex()).getValue().getInt() + "]", null);
-            }
-            else
-            {
-                IntStream.rangeClosed(node.getArrayType().getMin(), node.getArrayType().getMax())
-                    .forEach(i -> vars.put(node.getQualifiedName() + "[" + i + "]", null));
-            }
+            vars.put(node, null);
             return null;
         }
         
         @Override
         public Object visit(PureVariable node, Procedure proc)
         {
-            if (node.getType() instanceof BasicType)
-            {
-                vars.put(node.getQualifiedName(), null);
-            }
-            else
-            {
-                final ArrayType at = (ArrayType)node.getType();
-                IntStream.rangeClosed(at.getMin(), at.getMax())
-                    .forEach(i -> vars.put(node.getQualifiedName() + "[" + i + "]", null));
-            }
+            vars.put(node, null);
             return null;
         }
     };

@@ -2,6 +2,9 @@ package enshud.pascal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import enshud.pascal.ast.statement.CompoundStatement;
 
@@ -32,6 +35,12 @@ abstract class ProcedureBase
     public String getName()
     {
         return name;
+    }
+    
+    public Set<QualifiedVariable> getVars()
+    {
+        return Stream.concat(param_decls.stream(), local_decls.stream())
+                .collect(Collectors.toSet());
     }
     
     public VariableDeclarations getLocalDecls()
@@ -72,16 +81,6 @@ abstract class ProcedureBase
     public void setBody(CompoundStatement body)
     {
         this.body = body;
-    }
-    
-    public VariableDeclarations getLocals()
-    {
-        return local_decls;
-    }
-    
-    public VariableDeclarations getParams()
-    {
-        return param_decls;
     }
     
     protected Procedure getParent()

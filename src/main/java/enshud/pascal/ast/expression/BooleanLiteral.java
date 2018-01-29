@@ -84,6 +84,12 @@ public class BooleanLiteral implements IConstant
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return "" + val.getBool();
+    }
+    
+    @Override
     public String toString()
     {
         return val.toString();

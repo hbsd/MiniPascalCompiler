@@ -2,6 +2,7 @@ package enshud.pascal.ast.statement;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import enshud.pascal.Procedure;
 import enshud.pascal.ast.IVisitor;
@@ -65,6 +66,18 @@ public class ProcCallStatement implements IStatement
     public String toString()
     {
         return "" + name;
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        if(getArgs().size() == 0)
+        {
+            return indent + getCalledProc();
+        }
+        return getArgs().stream()
+                .map(v -> v.toOriginalCode(""))
+                .collect(Collectors.joining(", ", indent + getCalledProc() + "(", ")"));
     }
     
     @Override

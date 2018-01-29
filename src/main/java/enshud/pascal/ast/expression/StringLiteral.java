@@ -81,6 +81,12 @@ public class StringLiteral implements IConstant
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return "'" + getValue().getString() + "'";
+    }
+    
+    @Override
     public boolean equals(IExpression rexp)
     {
         if (rexp instanceof StringLiteral)

@@ -3,6 +3,8 @@ package enshud.pascal;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import enshud.pascal.ast.IAcceptable;
@@ -14,7 +16,8 @@ import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.CheckVisitor;
 import enshud.s3.checker.Checker;
-import enshud.s4.compiler.OptimizeVisitor2;
+import enshud.s4.compiler.OptimizeVisitor;
+import enshud.s4.compiler.VarUseVisitor;
 
 
 public class Procedure extends ProcedureBase implements IAcceptable
@@ -54,9 +57,19 @@ public class Procedure extends ProcedureBase implements IAcceptable
         return p;
     }
     
+    public Set<QualifiedVariable> getAvailableVars()
+    {
+        final Set<QualifiedVariable> s = getVars();
+        if(!isRoot())
+        {
+            s.addAll(parent.getAvailableVars());
+        }
+        return s;
+    }
+    
     public Optional<QualifiedVariable> findParam(String name)
     {
-        final Optional<QualifiedVariable> param = getParams().get(name);
+        final Optional<QualifiedVariable> param = getParamDecls().get(name);
         return (param.isPresent() || isRoot())
                 ? param
                 : getParent().findParam(name);
@@ -64,13 +77,13 @@ public class Procedure extends ProcedureBase implements IAcceptable
     
     public List<QualifiedVariable> searchForParamFuzzy(String name)
     {
-        return getParams().searchForFuzzy(name);
+        return getParamDecls().searchForFuzzy(name);
     }
     
     
     public Optional<QualifiedVariable> findLocal(String name)
     {
-        Optional<QualifiedVariable> v = getLocals().get(name);
+        Optional<QualifiedVariable> v = getLocalDecls().get(name);
         return v.isPresent()? v
                 : isRoot()? Optional.empty()
                         : getParent().findLocal(name);
@@ -78,7 +91,7 @@ public class Procedure extends ProcedureBase implements IAcceptable
     
     public List<QualifiedVariable> searchForLocalFuzzy(String name)
     {
-        final List<QualifiedVariable> var = getLocals().searchForFuzzy(name);
+        final List<QualifiedVariable> var = getLocalDecls().searchForFuzzy(name);
         if (!isRoot())
         {
             var.addAll(getParent().searchForLocalFuzzy(name));
@@ -139,7 +152,7 @@ public class Procedure extends ProcedureBase implements IAcceptable
                         }
                         else
                         {
-                            getParams().add(n, t, this);
+                            getParamDecls().add(n, t, this);
                         }
                     }
                 );
@@ -159,17 +172,17 @@ public class Procedure extends ProcedureBase implements IAcceptable
                 decl.getNames().forEach(
                     id -> {
                         final String n = id.toString();
-                        if (getParams().exists(n))
+                        if (getParamDecls().exists(n))
                         {
                             checker.addErrorMessage(this, id, "'" + n + "' is already defined as parameter.");
                         }
-                        else if (getLocals().exists(n))
+                        else if (getLocalDecls().exists(n))
                         {
                             checker.addErrorMessage(this, id, "'" + n + "' is already defined as local variable.");
                         }
                         else
                         {
-                            getLocals().add(n, decl.getType(), this);
+                            getLocalDecls().add(n, decl.getType(), this);
                         }
                     }
                 );
@@ -222,11 +235,11 @@ public class Procedure extends ProcedureBase implements IAcceptable
         {
             return "parent proc";
         }
-        else if (getParams().exists(sub_n))
+        else if (getParamDecls().exists(sub_n))
         {
             return "parameter";
         }
-        else if (getLocals().exists(sub_n))
+        else if (getLocalDecls().exists(sub_n))
         {
             return "local variable";
         }
@@ -244,15 +257,18 @@ public class Procedure extends ProcedureBase implements IAcceptable
     {
         if (OPTIMIZE)
         {
-            OptimizeVisitor2 ov;
+            OptimizeVisitor ov;
+            VarUseVisitor vuv;
             int i = 0;
             do
             {
-                ov = new OptimizeVisitor2();
+                ov = new OptimizeVisitor();
                 accept(ov, this);
-                // System.out.println(i+":"+ov.changed);
+                vuv = new VarUseVisitor();
+                accept(vuv, this);
+                //System.out.println(i + ": " + ov.changed + ": " + vuv.changed);
                 ++i;
-            } while (ov.changed > 0);
+            } while (i < 100 && (ov.changed > 0 || vuv.changed > 0));
         }
     }
     
@@ -260,6 +276,74 @@ public class Procedure extends ProcedureBase implements IAcceptable
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
         return visitor.visit(this, option);
+    }
+    
+    public String toOriginalCode(String indent)
+    {
+        if (isRoot())
+        {
+            return new StringBuilder()
+                .append(indent).append("program ").append(getName()).append("();").append(System.lineSeparator())
+                .append(localToOriginalCode(indent + "    "))
+                .append(childrenToOriginalCode(indent + "    "))
+                .append(getBody().toOriginalCode(indent + "    ")).append('.')
+                .toString();
+        }
+        else
+        {
+            return new StringBuilder()
+                    .append(indent).append("procedure ").append(getName()).append(paramToOriginalCode("")).append(";").append(System.lineSeparator())
+                    .append(localToOriginalCode(indent + "    "))
+                    .append(childrenToOriginalCode(indent + "    "))
+                    .append(getBody().toOriginalCode(indent + "    ")).append(';')
+                    .toString();
+        }
+    }
+    
+    private String childrenToOriginalCode(String indent)
+    {
+        if (children.size() == 0)
+        {
+            return "";
+        }
+        else
+        {
+            return children.stream()
+                .map(p -> p.toOriginalCode(indent))
+                .collect(Collectors.joining(System.lineSeparator(), "", System.lineSeparator()));
+        }
+    }
+    
+    private String localToOriginalCode(String indent)
+    {
+        if (local_decls.length() == 0)
+        {
+            return "";
+        }
+        else
+        {
+            return local_decls.stream()
+                .map(qv -> qv.getName() + ": " + qv.getType() + ";")
+                .collect(
+                    Collectors.joining(
+                        System.lineSeparator() + indent + "    ", indent + "var ", System.lineSeparator()
+                    )
+                );
+        }
+    }
+    
+    private String paramToOriginalCode(String indent)
+    {
+        if (param_decls.length() == 0)
+        {
+            return "";
+        }
+        else
+        {
+            return param_decls.stream()
+                .map(qv -> qv.getName() + ": " + qv.getType())
+                .collect(Collectors.joining(", ", "(", ")"));
+        }
     }
 }
 

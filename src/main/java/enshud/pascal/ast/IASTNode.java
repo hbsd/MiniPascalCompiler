@@ -16,4 +16,6 @@ public interface IASTNode extends INode
     {
         return !isSuccess();
     }
+    
+    String toOriginalCode(String indent);
 }

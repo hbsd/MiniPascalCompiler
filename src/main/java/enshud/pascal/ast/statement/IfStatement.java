@@ -57,6 +57,15 @@ public class IfStatement implements IStatement
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return new StringBuilder()
+                .append(indent).append("if ").append(getCond().toOriginalCode("")).append(" then").append(System.lineSeparator())
+                .append(getThen().toOriginalCode(indent))
+                .toString();
+    }
+    
+    @Override
     public void printBodyln(String indent)
     {
         cond.println(indent + " |", "Condition of IfElse");

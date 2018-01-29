@@ -87,7 +87,7 @@ public class PrefixOperation implements IExpression
     @Override
     public boolean equals(IExpression rexp)
     {
-        if(rexp instanceof PrefixOperation)
+        if (rexp instanceof PrefixOperation)
         {
             PrefixOperation po = (PrefixOperation)rexp;
             return this == rexp || (this.op == po.op && this.operand.equals(po.operand));
@@ -102,6 +102,15 @@ public class PrefixOperation implements IExpression
     public String toString()
     {
         return getOp().toString();
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        final String e = getOperand() instanceof IConstant || getOperand() instanceof IVariable
+                ? getOperand().toOriginalCode("")
+                : "(" + getOperand().toOriginalCode("") + ")";
+        return getOp() + e;
     }
     
     @Override

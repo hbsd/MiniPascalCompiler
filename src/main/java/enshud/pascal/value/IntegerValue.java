@@ -49,6 +49,6 @@ public class IntegerValue implements IValue
     @Override
     public String toString()
     {
-        return "Int(" + val + ")";
+        return "" + val;
     }
 }

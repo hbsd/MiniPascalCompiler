@@ -1,5 +1,10 @@
 package enshud.s4.compiler;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import enshud.pascal.Procedure;
@@ -10,10 +15,78 @@ import enshud.pascal.ast.statement.*;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.BasicType;
 
+
 public class CompileVisitor implements IVisitor<Object, Procedure>
 {
-    private final Casl2Code code = new Casl2Code();
-    private final LabelGenerator l_gen = new LabelGenerator();
+    private final Casl2Code      code       = new Casl2Code();
+    private final LabelGenerator l_gen      = new LabelGenerator();
+    private boolean              use_mul    = false;
+    private boolean              use_divmod = false;
+    private boolean              use_rdint  = false;
+    private boolean              use_rdch   = false;
+    private boolean              use_rdstr  = false;
+    private boolean              use_rdln   = false;
+    private boolean              use_wrint  = false;
+    private boolean              use_wrch   = false;
+    private boolean              use_wrstr  = false;
+    private boolean              use_wrln   = false;
+    
+    public void appendLibcas(final String file_name)
+    {
+        if (use_mul || use_rdint)
+        {
+            appendLibcas(file_name, "data/lib/mul.cas");
+        }
+        if (use_divmod || use_wrint)
+        {
+            appendLibcas(file_name, "data/lib/divmod.cas");
+        }
+        if (use_rdint)
+        {
+            appendLibcas(file_name, "data/lib/rdint.cas");
+        }
+        if (use_rdch)
+        {
+            appendLibcas(file_name, "data/lib/rdch.cas");
+        }
+        if (use_rdstr)
+        {
+            appendLibcas(file_name, "data/lib/rdstr.cas");
+        }
+        if (use_rdln)
+        {
+            appendLibcas(file_name, "data/lib/rdln.cas");
+        }
+        if (use_wrint)
+        {
+            appendLibcas(file_name, "data/lib/wrint.cas");
+        }
+        if (use_wrch)
+        {
+            appendLibcas(file_name, "data/lib/wrch.cas");
+        }
+        if (use_wrstr)
+        {
+            appendLibcas(file_name, "data/lib/wrstr.cas");
+        }
+        if (use_wrln)
+        {
+            appendLibcas(file_name, "data/lib/wrln.cas");
+        }
+    }
+    
+    private static void appendLibcas(final String fileName, final String libFileName)
+    {
+        try
+        {
+            final List<String> libcas = Files.readAllLines(Paths.get(libFileName));
+            Files.write(Paths.get(fileName), libcas, StandardOpenOption.APPEND);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
     
     public Casl2Code getCode()
     {
@@ -38,9 +111,9 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         
         code.add("LAD", "", "; set my frame pointer", "GR5", "1", "GR8");
         
-        if (node.getLocals().length() > 0)
+        if (node.getLocalDecls().length() > 0)
         {
-            code.add("LAD", "", "; reserve local variables", "GR8", "" + (-node.getLocals().getAllSize()), "GR8");
+            code.add("LAD", "", "; reserve local variables", "GR8", "" + (-node.getLocalDecls().getAllSize()), "GR8");
         }
         
         node.getBody().accept(this, node);
@@ -55,13 +128,14 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         node.getChildren().forEach(sub -> sub.accept(this, node));
         return null;
     }
+    
     private void compileReturn(Procedure node)
     {
         code.add("LD", "", "; point to return address", "GR8", "GR5");
         code.add("LD", "", "; restore parent's frame pointer", "GR5", "-1", "GR5");
         code.add("RET", "", "");
     }
-
+    
     @Override
     public Object visit(BooleanLiteral node, Procedure option)
     {
@@ -86,47 +160,61 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     public void compileIndexedVariableForData(IndexedVariable node, Procedure proc)
     {
         compileIndexedVariableImpl(node, proc);
-        code.add("LD", "", "", "GR2", "0", "GR1");
+        code.add("LD", "", "", "GR2", "0", "GR2");
     }
     
     public void compileIndexedVariableForAddr(IndexedVariable node, Procedure proc)
     {
         compileIndexedVariableImpl(node, proc);
-        code.add("LD", "", "", "GR2", "GR1");
     }
     
     private void compileIndexedVariableImpl(IndexedVariable node, Procedure proc)
     {
         code.add("", "", "; var " + node.getVar().getQualifiedName() + "[]");
         
-        node.getIndex().accept(this, proc);
-        if (node.getVar().getProc() == proc)
+        if (node.getIndex() instanceof IConstant)
         {
-            compileIndexedVariableLocalImpl(node, proc);
+            final int idx = ((IConstant)node.getIndex()).getValue().getInt();
+            if (node.getVar().getProc() == proc)
+            {
+                compileIndexedVariableLocalImpl(node, proc, "GR2", idx);
+            }
+            else
+            {
+                compileIndexedVariableOuterImpl(node, proc, "GR2", idx);
+            }
         }
         else
         {
-            compileIndexedVariableOuterImpl(node, proc);
+            node.getIndex().accept(this, proc);
+            if (node.getVar().getProc() == proc)
+            {
+                compileIndexedVariableLocalImpl(node, proc, "GR1", 0);
+            }
+            else
+            {
+                compileIndexedVariableOuterImpl(node, proc, "GR1", 0);
+            }
+            code.add("ADDL", "", "; add index", "GR2", "GR1");
         }
-        code.add("ADDL", "", "; add index", "GR1", "GR2");
     }
     
-    private void compileIndexedVariableLocalImpl(IndexedVariable node, Procedure proc)
+    private void compileIndexedVariableLocalImpl(IndexedVariable node, Procedure proc, String gr, int idx)
     {
         final int align = node.getVar().getAlignment();
         final int max = ((ArrayType)node.getVar().getType()).getMax();
-        code.add("LAD", "", "", "GR1", "" + (-align - 2 - max), "GR5");
+        code.add("LAD", "", "", gr, "" + (-align - 2 - max + idx), "GR5");
     }
     
     /// proc == null? Local Var: Outer Var
-    private void compileIndexedVariableOuterImpl(IndexedVariable node, Procedure proc)
+    private void compileIndexedVariableOuterImpl(IndexedVariable node, Procedure proc, String gr, int idx)
     {
         final int depth_diff = proc.getDepth() - node.getVar().getProc().getDepth() - 1;
-        loadStaticLink("GR1", depth_diff);
+        loadStaticLink(gr, depth_diff);
         
         final int align = node.getVar().getAlignment();
         final int max = ((ArrayType)node.getVar().getType()).getMax();
-        code.addAddlImm("GR1", -align - 2 - max);
+        code.addAddlImm(gr, -align - 2 - max + idx);
     }
     
     @Override
@@ -160,14 +248,28 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             }
         }
         node.getOp().compile(code, l_gen);
+        switch (node.getOp())
+        {
+        case MUL:
+            use_mul = true;
+            break;
+        case DIV:
+        case MOD:
+            use_divmod = true;
+            break;
+        default:
+            break;
+        }
         return null;
     }
+    
     @Override
     public Object visit(IntegerLiteral node, Procedure proc)
     {
         code.addLoadImm("GR2", node.getValue().getInt());
         return null;
     }
+    
     @Override
     public Object visit(PrefixOperation node, Procedure proc)
     {
@@ -175,6 +277,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         node.getOp().compile(code, l_gen);
         return null;
     }
+    
     @Override
     public Object visit(PureVariable node, Procedure proc)
     {
@@ -188,6 +291,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         }
         return null;
     }
+    
     public void compilePureVariableForData(PureVariable node, Procedure proc)
     {
         compilePureVariableImpl(node, "LD", proc);
@@ -204,7 +308,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         {
             code.add("", "", "; param " + node.getVar().getQualifiedName());
             final int align = node.getVar().getAlignment();
-            if(node.getVar().getProc() == proc)
+            if (node.getVar().getProc() == proc)
             {
                 code.add(inst, "", "", "GR2", "" + (align + 2), "GR5");
             }
@@ -244,14 +348,15 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         {
             final int len = ((ArrayType)node.getVar().getType()).getSize();
             code.add(inst, "", "", "GR2", "" + (-align - 1 - len), gr);
-            code.addLoadImm("GR1", node.getVar().getType().getSize()); // array length
+            code.addLoadImm("GR1", node.getVar().getType().getSize()); // array
+                                                                       // length
         }
         else
         {
             code.add(inst, "", "", "GR2", "" + (-align - 2), gr);
         }
     }
-
+    
     @Override
     public Object visit(StringLiteral node, Procedure proc)
     {
@@ -259,12 +364,12 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         code.addLoadImm("GR1", node.length());
         return null;
     }
-
+    
     @Override
     public Object visit(AssignStatement node, Procedure proc)
     {
         node.getLeft().accept(address_visitor, proc);
-        if(node.getRight() instanceof IConstant)
+        if (node.getRight() instanceof IConstant)
         {
             code.add("LD", "", "", "GR1", "GR2");
             code.addLoadImm("GR2", ((IConstant)node.getRight()).getValue().getInt());
@@ -278,7 +383,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         code.add("ST", "", "", "GR2", "0", "GR1");
         return null;
     }
-
+    
     @Override
     public Object visit(CompoundStatement node, Procedure proc)
     {
@@ -290,7 +395,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     public Object visit(IfElseStatement node, Procedure proc)
     {
         final int label = l_gen.next();
-
+        
         code.add("", "", "; start of IF-ELSE");
         node.getCond().accept(this, proc);
         
@@ -319,7 +424,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         code.add("JZE", "", "; branch of IF", "F" + label);
         
         node.getThen().accept(this, proc);
-
+        
         code.add("NOP", "F" + label, "; end of IF");
         return null;
     }
@@ -330,11 +435,11 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         compileArguments(node, proc);
         compileStaticFramePointer(node, proc);
         
-        //f(code, proc.getName().charAt(0), '[');
+        // f(code, proc.getName().charAt(0), '[');
         
         code.add("CALL", "", "; proc " + node.getCalledProc().getQualifiedName(), node.getCalledProc().getId());
         
-        //f(code, proc.getName().charAt(0), ']');
+        // f(code, proc.getName().charAt(0), ']');
         
         // remove rest child frame
         code.addAddlImm("GR8", node.getArgs().size() + 1);
@@ -377,6 +482,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             new Exception(proc.getQualifiedName() + " cannot call " + node.getCalledProc().getQualifiedName());
         }
     }
+    
     private void loadStaticLink(String gr, int diff)
     {
         code.add("LD", "", "", gr, "1", "GR5");
@@ -389,6 +495,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
     {
         if (node.getVariables().isEmpty())
         {
+            use_rdln = true;
             code.add("CALL", "", "", "RDLN");
             return null;
         }
@@ -398,14 +505,17 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
                 v.accept(address_visitor, proc);
                 if (v.getType() == BasicType.CHAR)
                 {
+                    use_rdch = true;
                     code.add("CALL", "", "", "RDCH");
                 }
                 else if (v.getType() == BasicType.INTEGER)
                 {
+                    use_rdint = true;
                     code.add("CALL", "", "", "RDINT");
                 }
                 else if (v.getType().isArrayOf(BasicType.CHAR))
                 {
+                    use_rdstr = true;
                     code.add("CALL", "", "", "RDSTR");
                 }
                 else
@@ -427,8 +537,8 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
         if (!node.isInfiniteLoop())
         {
             node.getCond().accept(this, proc);
-
-            code.add("LD", "",                   "", "GR2", "GR2");
+            
+            code.add("LD", "", "", "GR2", "GR2");
             code.add("JZE", "", "; branch of WHILE", "F" + label);
         }
         
@@ -451,14 +561,17 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             
             if (e.getType() == BasicType.CHAR)
             {
+                use_wrch = true;
                 code.add("CALL", "", "", "WRTCH");
             }
             else if (e.getType() == BasicType.INTEGER)
             {
+                use_wrint = true;
                 code.add("CALL", "", "", "WRTINT");
             }
             else if (e.getType().isArrayOf(BasicType.CHAR))
             {
+                use_wrstr = true;
                 code.add("CALL", "", "", "WRTSTR");
             }
             else
@@ -466,6 +579,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
                 assert false: "type error: (" + e.getLine() + "," + e.getColumn() + ")" + e.getType();
             }
         }
+        use_wrln = true;
         code.add("CALL", "", "", "WRTLN");
         return null;
     }
@@ -477,6 +591,7 @@ public class CompileVisitor implements IVisitor<Object, Procedure>
             compileIndexedVariableForAddr(node, proc);
             return null;
         }
+        
         @Override
         public Object visit(PureVariable node, Procedure proc)
         {

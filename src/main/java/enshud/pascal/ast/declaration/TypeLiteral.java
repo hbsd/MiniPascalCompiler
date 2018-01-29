@@ -69,5 +69,11 @@ public class TypeLiteral implements ILiteral
     {
         return type.toString();
     }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        throw new UnsupportedOperationException();
+    }
 }
 

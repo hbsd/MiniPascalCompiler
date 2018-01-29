@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import enshud.pascal.type.IType;
 import enshud.s3.checker.Checker;
@@ -29,6 +30,11 @@ public class VariableDeclarations
                 .stream()
                 .filter(v -> v.getName().equals(name))
                 .findFirst();
+    }
+    
+    public Stream<QualifiedVariable> stream()
+    {
+        return list.stream();
     }
     
     List<QualifiedVariable> searchForFuzzy(String name)

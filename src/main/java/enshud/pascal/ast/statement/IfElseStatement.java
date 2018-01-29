@@ -40,13 +40,13 @@ public class IfElseStatement implements IStatement
     @Override
     public int getLine()
     {
-        throw new UnsupportedOperationException();
+        return if_part.getLine();
     }
     
     @Override
     public int getColumn()
     {
-        throw new UnsupportedOperationException();
+        return if_part.getColumn();
     }
     
     @Override
@@ -59,6 +59,17 @@ public class IfElseStatement implements IStatement
     public String toString()
     {
         return "Then & Else";
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return new StringBuilder()
+                .append(indent).append("if ").append(getCond().toOriginalCode("")).append(" then").append(System.lineSeparator())
+                .append(getThen().toOriginalCode(indent)).append(System.lineSeparator())
+                .append(indent).append("else").append(System.lineSeparator())
+                .append(getElse().toOriginalCode(indent))
+                .toString();
     }
     
     @Override

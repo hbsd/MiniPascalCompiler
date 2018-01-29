@@ -14,5 +14,11 @@ public interface IDeclaration extends IASTNode
         System.out.print(": ");
         INode.printGreenln(msg != null? msg: toString());
     }
+    
+    @Override
+    default String toOriginalCode(String indent)
+    {
+        throw new UnsupportedOperationException();
+    }
 }
 

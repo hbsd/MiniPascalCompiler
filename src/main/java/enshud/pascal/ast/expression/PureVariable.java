@@ -101,6 +101,12 @@ public class PureVariable implements IVariable, ILiteral
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return "" + getName();
+    }
+    
+    @Override
     public void printHead(String indent, String msg)
     {
         ILiteral.super.printHead(indent, msg);

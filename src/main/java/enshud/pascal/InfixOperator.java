@@ -48,6 +48,12 @@ public enum InfixOperator
         {
             code.add("ADDA", "", "", "GR2", "GR1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " + ";
+        }
     },
     SUB {
         @Override
@@ -82,6 +88,12 @@ public enum InfixOperator
             code.add("SUBA", "", "", "GR1", "GR2");
             code.add("LD", "", "", "GR2", "GR1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " - ";
+        }
     },
     MUL {
         @Override
@@ -101,8 +113,31 @@ public enum InfixOperator
         @Override
         protected IExpression evalLeft(int left, IExpression right)
         {
-            return (left == 0)? IntegerLiteral.create(0)
-                    : (left == 1)? right: (left == -1)? new PrefixOperation(right, PrefixOperator.MINUS): null;
+            if (left == 0)
+            {
+                return IntegerLiteral.create(0);
+            }
+            else if (left == 1)
+            {
+                return right;
+            }
+            else if (left == -1)
+            {
+                return new PrefixOperation(right, PrefixOperator.MINUS);
+            }
+            else if (0 == ~(left ^ (left - 1)))
+            {
+                int v = 0;
+                for (; left > 1; left /= 2)
+                {
+                    ++v;
+                }
+                return new InfixOperation(right, IntegerLiteral.create(v), InfixOperator.SLA);
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
@@ -115,6 +150,12 @@ public enum InfixOperator
         public void compile(Casl2Code code, LabelGenerator l_gen)
         {
             code.add("CALL", "", "", "MULT");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " * ";
         }
     },
     DIV {
@@ -141,13 +182,39 @@ public enum InfixOperator
         @Override
         protected IExpression evalRight(IExpression left, int right)
         {
-            return (right == 1)? left: (right == -1)? new PrefixOperation(left, PrefixOperator.MINUS): null;
+            if(right == 1)
+            {
+                return left;
+            }
+            else if(right == -1)
+            {
+                return new PrefixOperation(left, PrefixOperator.MINUS);
+            }
+            else if (0 == ~(right ^ (right - 1)))
+            {
+                int v = 0;
+                for (; right > 1; right /= 2)
+                {
+                    ++v;
+                }
+                return new InfixOperation(left, IntegerLiteral.create(v), InfixOperator.SRA);
+            }
+            else
+            {
+                return null;
+            }
         }
         
         @Override
         public void compile(Casl2Code code, LabelGenerator l_gen)
         {
             code.add("CALL", "", "", "DIV");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " div ";
         }
     },
     MOD {
@@ -183,6 +250,12 @@ public enum InfixOperator
             code.add("CALL", "", "", "DIV");
             code.add("LD", "", "", "GR2", "GR1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " mod ";
+        }
     },
     
     OR {
@@ -217,6 +290,12 @@ public enum InfixOperator
         {
             code.add("OR", "", "", "GR2", "GR1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " or ";
+        }
     },
     AND {
         @Override
@@ -249,6 +328,92 @@ public enum InfixOperator
         public void compile(Casl2Code code, LabelGenerator l_gen)
         {
             code.add("AND", "", "", "GR2", "GR1");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " and ";
+        }
+    },
+    
+    SLA {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
+        @Override
+        protected IConstant evalBoth(int left, int right)
+        {
+            return IntegerLiteral.create(left << right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return null;
+        }
+        
+        @Override
+        public void compile(Casl2Code code, LabelGenerator l_gen)
+        {
+            code.add("SLA", "", "", "GR2", "0", "GR1");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " << ";
+        }
+    },
+    
+    SRA {
+        @Override
+        public IType checkType(Procedure proc, Checker checker, LexedToken op_tok, IType givenl, IType givenr)
+        {
+            return check_(
+                proc, checker, op_tok, givenl, givenr, BasicType.INTEGER, BasicType.INTEGER, BasicType.INTEGER
+            );
+        }
+        
+        @Override
+        protected IConstant evalBoth(int left, int right)
+        {
+            return IntegerLiteral.create(left << right);
+        }
+        
+        @Override
+        protected IExpression evalLeft(int left, IExpression right)
+        {
+            return null;
+        }
+        
+        @Override
+        protected IExpression evalRight(IExpression left, int right)
+        {
+            return null;
+        }
+        
+        @Override
+        public void compile(Casl2Code code, LabelGenerator l_gen)
+        {
+            code.add("SRA", "", "", "GR2", "0", "GR1");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " >> ";
         }
     },
     
@@ -301,6 +466,12 @@ public enum InfixOperator
             code.add("LAD", "Z" + label, "", "GR2", "1");
             code.add("NOP", "Q" + label, "; ^ =");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " = ";
+        }
     },
     NOTEQUAL {
         @Override
@@ -351,6 +522,12 @@ public enum InfixOperator
             code.add("LAD", "Z" + label, "", "GR2", "1");
             code.add("NOP", "Q" + label, "; ^ <>");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " <> ";
+        }
     },
     LESS {
         @Override
@@ -398,6 +575,12 @@ public enum InfixOperator
             code.add("SUBA", "", "; <", "GR1", "GR2");
             code.add("LD", "", "", "GR2", "GR1");
             code.add("SRL", "", "", "GR2", "15");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " < ";
         }
     },
     LESSEQUAL {
@@ -447,6 +630,12 @@ public enum InfixOperator
             code.add("SRL", "", "", "GR2", "15");
             code.add("XOR", "", "", "GR2", "=1");
         }
+        
+        @Override
+        public String toString()
+        {
+            return " <= ";
+        }
     },
     GREAT {
         @Override
@@ -493,6 +682,12 @@ public enum InfixOperator
         {
             code.add("SUBA", "", "; >", "GR2", "GR1");
             code.add("SRL", "", "", "GR2", "15");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " > ";
         }
     },
     GREATEQUAL {
@@ -542,6 +737,12 @@ public enum InfixOperator
             code.add("LD", "", "", "GR2", "GR1");
             code.add("SRL", "", "", "GR2", "15");
             code.add("XOR", "", "", "GR2", "=1");
+        }
+        
+        @Override
+        public String toString()
+        {
+            return " >= ";
         }
     };
     

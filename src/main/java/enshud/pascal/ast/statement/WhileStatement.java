@@ -68,6 +68,15 @@ public class WhileStatement implements IStatement
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return new StringBuilder()
+                .append(indent).append("while ").append(getCond().toOriginalCode("")).append(" do").append(System.lineSeparator())
+                .append(getStatement().toOriginalCode((getStatement() instanceof CompoundStatement)? indent: indent+"    "))
+                .toString();
+    }
+    
+    @Override
     public void printBodyln(String indent)
     {
         cond.println(indent + " |", "Condition of While");

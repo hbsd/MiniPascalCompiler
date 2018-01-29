@@ -32,6 +32,12 @@ public class Identifier implements ILiteral
         return id.getString();
     }
     
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return toString();
+    }
+    
     public String getValidString()
     {
         final String s = id.getString();

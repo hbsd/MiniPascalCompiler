@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import enshud.casl.CaslSimulator;
-import enshud.pascal.Procedure;
-import enshud.pascal.ast.TemplateVisitor;
 import enshud.s3.checker.Checker;
 
 
@@ -21,17 +18,20 @@ public class Compiler
     public static void main(final String[] args)
     {
         // Compilerを実行してcasを生成する
-        // new enshud.s1.lexer.Lexer().run("data/pas/test.pas", "tmp/out.ts");
-        // new Compiler().run("tmp/out.ts", "tmp/outo.cas");
+        ///*
+        new enshud.s1.lexer.Lexer().run("data/pas/calc.pas", "tmp/out.ts");
+        new Compiler().run("tmp/out.ts", "tmp/out.cas");
+        //CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "1+2*3/(3-4)");
+        // */
         
-        java.util.stream.IntStream.rangeClosed(1, 10)
-            .forEachOrdered( i ->
-                new Compiler().run(
+        /*java.util.stream.IntStream.rangeClosed(1, 10)
+            .forEachOrdered(
+                i -> new Compiler().run(
                     String.format("data/ts/normal%02d.ts", i),
-                    String.format("tmp/out%02do3.cas", i)
+                    String.format("tmp/out%02dn.cas", i)
                 )
-            );
-         
+            );*/
+        
         //new Compiler().run("data/ts/normal03.ts", "tmp/out.cas");
         /*
          * Checker.fromLexedFile("data/ts/normal01.ts") .flatMap(c ->
@@ -65,43 +65,39 @@ public class Compiler
      */
     public void run(final String inputFileName, final String outputFileName)
     {
-        fromLexedFile(inputFileName)
-            .map(
-                cis -> cis
-                    .stream()
-                    .map(ci -> ci.toString())
-                    .collect(Collectors.toList())
-            )
-            .ifPresent(
-                code -> {
-                    if (outputToFile(outputFileName, code))
-                    {
-                        CaslSimulator.appendLibcas(outputFileName);
-                        System.out.println("OK");
-                    }
-                }
-            );
+        fromLexedFile(inputFileName, outputFileName);
     }
     
-    public static Optional<Casl2Code> fromLexedFile(String input_file)
+    public static void fromLexedFile(String input_file, final String output_file)
     {
-        return Checker.fromLexedFile(input_file)
+        Checker.fromLexedFile(input_file)
             .flatMap(Checker::getProgram)
             .map(
                 p -> {
                     p.optimize();
-                    //p.getBody().println();
+                    // p.getBody().println();
+                    //System.out.println(p.toOriginalCode(""));
                     return p;
                 }
             )
-            .map(
+            .ifPresent(
                 proc -> {
                     final CompileVisitor vtr = new CompileVisitor();
                     proc.accept(vtr, null);
-                    return vtr.getCode();
+                    final List<String> str = vtr.getCode().stream()
+                            .map(ci -> ci.toString())
+                            .collect(Collectors.toList());
+                    if (outputToFile(output_file, str))
+                    {
+                        vtr.appendLibcas(output_file);
+                        // CaslSimulator.appendLibcas(outputFileName);
+                        System.out.println("OK");
+                    }
                 }
             );
+    
     }
+    
     
     public static boolean outputToFile(String output_name, List<? extends CharSequence> code)
     {

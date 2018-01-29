@@ -3,15 +3,32 @@ package enshud.pascal.type;
 
 public enum BasicType implements IType
 {
-    INTEGER,
+    INTEGER{
+        @Override
+        public String toString()
+        {
+            return "integer";
+        }
+    },
     CHAR {
         @Override
         public boolean equals(IType rval)
         {
             return super.equals(rval) || rval.isArrayOf(BasicType.CHAR);
         }
+        @Override
+        public String toString()
+        {
+            return "char";
+        }
     },
-    BOOLEAN;
+    BOOLEAN{
+        @Override
+        public String toString()
+        {
+            return "boolean";
+        }
+    };
     
     @Override
     public int getSize()

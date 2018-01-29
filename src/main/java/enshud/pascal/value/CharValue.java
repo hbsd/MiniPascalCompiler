@@ -49,6 +49,6 @@ public class CharValue implements IValue
     @Override
     public String toString()
     {
-        return "Char(" + val + ")";
+        return "" + val;
     }
 }

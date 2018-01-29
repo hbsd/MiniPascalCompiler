@@ -117,6 +117,12 @@ public class IndexedVariable implements IVariable, ILiteral
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return getName() + "[" + getIndex().toOriginalCode("") + "]";
+    }
+    
+    @Override
     public void printBodyln(String indent)
     {
         index.println(indent + "  ");

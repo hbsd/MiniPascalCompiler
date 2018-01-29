@@ -10,7 +10,7 @@ import enshud.pascal.ast.expression.IVariable;
 public class AssignStatement implements IStatement
 {
     private final IVariable left;
-    private IExpression          right;
+    private IExpression     right;
     
     public AssignStatement(IVariable left, IExpression right)
     {
@@ -55,6 +55,12 @@ public class AssignStatement implements IStatement
     public String toString()
     {
         return "";
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return indent + getLeft().toOriginalCode("") + " := " + getRight().toOriginalCode("");
     }
     
     @Override

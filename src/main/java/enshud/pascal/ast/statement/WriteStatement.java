@@ -2,6 +2,7 @@ package enshud.pascal.ast.statement;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.NodeList;
@@ -44,6 +45,14 @@ public class WriteStatement implements IStatement
     public int getColumn()
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return getExpressions().stream()
+                .map(e -> e.toOriginalCode(""))
+                .collect(Collectors.joining(", ", indent + "writeln(", ")"));
     }
     
     @Override

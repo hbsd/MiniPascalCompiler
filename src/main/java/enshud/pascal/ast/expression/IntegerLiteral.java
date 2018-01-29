@@ -75,6 +75,12 @@ public class IntegerLiteral implements IConstant
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        return "" + getValue().getInt();
+    }
+    
+    @Override
     public <T, U> T accept(IVisitor<T, U> visitor, U option)
     {
         return visitor.visit(this, option);

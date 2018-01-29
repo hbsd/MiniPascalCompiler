@@ -51,4 +51,10 @@ public class NodeList<T extends INode> extends ArrayList<T> implements IASTNode
     {
         return get(0).getColumn();
     }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

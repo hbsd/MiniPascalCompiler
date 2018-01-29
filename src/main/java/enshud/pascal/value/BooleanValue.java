@@ -20,7 +20,7 @@ public enum BooleanValue implements IValue
         @Override
         public String toString()
         {
-            return "Bool(false)";
+            return "false";
         }
     },
     TRUE{
@@ -39,7 +39,7 @@ public enum BooleanValue implements IValue
         @Override
         public String toString()
         {
-            return "Bool(true)";
+            return "true";
         }
     };
     

@@ -267,7 +267,7 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
         {
             checkWhenNotFound(node, proc);
         }
-        else if (node.getArgs().size() != node.getCalledProc().getParams().length())
+        else if (node.getArgs().size() != node.getCalledProc().getParamDecls().length())
         {
             checkWhenInvalidLength(node, proc);
         }
@@ -294,7 +294,7 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
     {
         IntStream.range(0, node.getArgs().size()).forEachOrdered(
             i -> {
-                final IType ptype = node.getCalledProc().getParams().get(i).getType();
+                final IType ptype = node.getCalledProc().getParamDecls().get(i).getType();
                 final IType atype = node.getArgs().get(i).accept(this, proc);
                 
                 if (!ptype.equals(atype))
@@ -312,7 +312,7 @@ public class CheckVisitor implements IVisitor<IType, Procedure>
     private void checkWhenInvalidLength(ProcCallStatement node, Procedure proc)
     {
         final String msg1 = node.getArgs().size() == 0? "no": "" + node.getArgs().size();
-        final int len = node.getCalledProc().getParams().length();
+        final int len = node.getCalledProc().getParamDecls().length();
         final String msg2 = len == 0? "no": "" + len;
         
         checker.addErrorMessage(

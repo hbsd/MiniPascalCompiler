@@ -120,6 +120,18 @@ public class InfixOperation implements IExpression
     }
     
     @Override
+    public String toOriginalCode(String indent)
+    {
+        final String l = getLeft() instanceof IConstant || getLeft() instanceof IVariable
+                ? getLeft().toOriginalCode("")
+                : "(" + getLeft().toOriginalCode("") + ")";
+        final String r = getRight() instanceof IConstant || getRight() instanceof IVariable
+                ? getRight().toOriginalCode("")
+                : "(" + getRight().toOriginalCode("") + ")";
+        return l + getOp() + r;
+    }
+    
+    @Override
     public void printBodyln(String indent)
     {
         getLeft().println(indent + " |");

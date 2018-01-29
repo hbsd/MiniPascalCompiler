@@ -2,6 +2,7 @@ package enshud.pascal.ast.statement;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import enshud.pascal.ast.IVisitor;
 import enshud.pascal.ast.NodeList;
@@ -44,6 +45,14 @@ public class ReadStatement implements IStatement
     public String toString()
     {
         return "";
+    }
+    
+    @Override
+    public String toOriginalCode(String indent)
+    {
+        return getVariables().stream()
+                .map(v -> v.toOriginalCode(""))
+                .collect(Collectors.joining(", ", indent + "readln(", ")"));
     }
     
     @Override
