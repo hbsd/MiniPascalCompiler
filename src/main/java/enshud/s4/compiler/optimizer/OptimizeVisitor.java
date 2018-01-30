@@ -1,4 +1,4 @@
-package enshud.s4.compiler;
+package enshud.s4.compiler.optimizer;
 
 import java.util.ListIterator;
 import java.util.stream.IntStream;
@@ -194,6 +194,7 @@ public class OptimizeVisitor extends TemplateVisitor<IStatement, Procedure>
     @Override
     public IStatement visit(WhileStatement node, Procedure proc)
     {
+        final ValueTable old = new ValueTable(vtbl);
         node.accept(new VarSurviveVisitor(vtbl), proc);
         
         final IExpression res = node.getCond().accept(exp_vtr, proc);
@@ -204,6 +205,9 @@ public class OptimizeVisitor extends TemplateVisitor<IStatement, Procedure>
         }
         
         final IStatement stm = node.getStatement().accept(this, proc);
+
+        vtbl.merge(old);
+        
         if (stm == null)
         {
             add_change(node);

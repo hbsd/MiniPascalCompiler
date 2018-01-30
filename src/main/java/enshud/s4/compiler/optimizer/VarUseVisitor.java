@@ -1,4 +1,4 @@
-package enshud.s4.compiler;
+package enshud.s4.compiler.optimizer;
 
 import java.util.HashSet;
 import java.util.List;

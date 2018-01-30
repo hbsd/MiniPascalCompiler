@@ -19,18 +19,20 @@ public class Compiler
     {
         // Compilerを実行してcasを生成する
         ///*
-        new enshud.s1.lexer.Lexer().run("data/pas/calc.pas", "tmp/out.ts");
+        new enshud.s1.lexer.Lexer().run("data/pas/test2.pas", "tmp/out.ts");
         new Compiler().run("tmp/out.ts", "tmp/out.cas");
-        //CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "1+2*3/(3-4)");
+        //CaslSimulator.run("tmp/out.cas", "tmp/out.ans", "1+2*3/(3-5)");
         // */
         
-        /*java.util.stream.IntStream.rangeClosed(1, 10)
+        /*
+        java.util.stream.IntStream.rangeClosed(1, 10)
             .forEachOrdered(
                 i -> new Compiler().run(
                     String.format("data/ts/normal%02d.ts", i),
-                    String.format("tmp/out%02dn.cas", i)
+                    String.format("tmp/out%02do3.cas", i)
                 )
-            );*/
+            );
+        //*/
         
         //new Compiler().run("data/ts/normal03.ts", "tmp/out.cas");
         /*
@@ -76,7 +78,7 @@ public class Compiler
                 p -> {
                     p.optimize();
                     // p.getBody().println();
-                    //System.out.println(p.toOriginalCode(""));
+                    System.out.println(p.toOriginalCode(""));
                     return p;
                 }
             )

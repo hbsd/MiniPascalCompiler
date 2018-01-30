@@ -1,5 +1,5 @@
 program calc(input);
-    var input   : array [0..63] of char;
+    var input   : array [0..31] of char;
         pos     : integer;
         rToDigit: integer;
         rExp : integer;
@@ -39,9 +39,7 @@ program calc(input);
             procedure factor;
                 var c: char;
                 begin
-                    writeln('>factor');
                     c := input[pos];
-                    writeln(c);
                     if (c >= '0') and (c <= '9') then begin
                         pos := pos + 1;
                         toDigit(c);
@@ -49,21 +47,15 @@ program calc(input);
                     end else begin if c = '(' then begin
                         pos := pos + 1;
                         exp;
-                        writeln(input[pos]);
                         pos := pos + 1;
-                        rFactor := rExpImpl
-                    end end;
-                    writeln('<factor = ', rFactor)
+                        rFactor := rExp
+                    end end
                 end;
             begin
-                writeln('>term');
                 factor;
                 rTerm := rFactor;
                 op := input[pos];
-                writeln(op);
-                while (op = '*') or (op = '/') do
-                begin
-                    writeln('|term = ', rTerm);
+                while (op = '*') or (op = '/') do begin
                     pos := pos + 1;
                     factor;
                     if op = '*' then begin
@@ -71,21 +63,15 @@ program calc(input);
                     end else begin
                         rTerm := rTerm div rFactor
                     end;
-                    op := input[pos];
-                    writeln(op)
-                end;
-                writeln('<term = ', rTerm)
+                    op := input[pos]
+                end
             end;
         procedure expImpl;
             begin
-                writeln('>exp');
                 term;
                 rExpImpl := rTerm;
                 op := input[pos];
-                writeln(op);
-                while (op = '+') or (op = '-') do
-                begin
-                    writeln('|exp = ', rExpImpl);
+                while (op = '+') or (op = '-') do begin
                     pos := pos + 1;
                     term;
                     if op = '+' then begin
@@ -93,10 +79,8 @@ program calc(input);
                     end else begin
                         rExpImpl := rExpImpl - rTerm
                     end;
-                    op := input[pos];
-                    writeln(op)
-                end;
-                writeln('<exp = ', rExpImpl)
+                    op := input[pos]
+                end
             end;
         begin
             expImpl;
@@ -106,5 +90,6 @@ program calc(input);
         readln(input);
         pos := 0;
         exp;
+        writeln(input, ' = ', rExp);
         writeln(input, ' = ', rExp)
     end.

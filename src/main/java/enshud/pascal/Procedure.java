@@ -16,14 +16,14 @@ import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.BasicType;
 import enshud.s3.checker.CheckVisitor;
 import enshud.s3.checker.Checker;
-import enshud.s4.compiler.OptimizeVisitor;
-import enshud.s4.compiler.VarUseVisitor;
+import enshud.s4.compiler.optimizer.OptimizeVisitor;
+import enshud.s4.compiler.optimizer.VarUseVisitor;
 
 
 public class Procedure extends ProcedureBase implements IAcceptable
 {
     private static final boolean OPTIMIZE = true;
-    // private static final boolean OPTIMIZE = false;
+    //private static final boolean OPTIMIZE = false;
     
     private Procedure(Checker checker, ProcedureDeclaration prg, Procedure parent, String proc_id)
     {
@@ -342,7 +342,7 @@ public class Procedure extends ProcedureBase implements IAcceptable
         {
             return param_decls.stream()
                 .map(qv -> qv.getName() + ": " + qv.getType())
-                .collect(Collectors.joining(", ", "(", ")"));
+                .collect(Collectors.joining("; ", "(", ")"));
         }
     }
 }

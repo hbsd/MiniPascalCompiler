@@ -1,4 +1,4 @@
-package enshud.s4.compiler;
+package enshud.s4.compiler.optimizer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -100,6 +100,7 @@ public class VarSurviveVisitor implements IVisitor<Object, Procedure>
     @Override
     public Object visit(IfElseStatement node, Procedure proc)
     {
+        node.getCond().accept(this, proc);
         node.getIfPart().getThen().accept(this, proc);
         node.getElse().accept(this, proc);
         return null;
@@ -108,6 +109,7 @@ public class VarSurviveVisitor implements IVisitor<Object, Procedure>
     @Override
     public Object visit(IfStatement node, Procedure proc)
     {
+        node.getCond().accept(this, proc);
         node.getThen().accept(this, proc);
         return null;
     }
@@ -137,6 +139,7 @@ public class VarSurviveVisitor implements IVisitor<Object, Procedure>
     @Override
     public Object visit(WhileStatement node, Procedure proc)
     {
+        node.getCond().accept(this, proc);
         node.getStatement().accept(this, proc);
         return null;
     }

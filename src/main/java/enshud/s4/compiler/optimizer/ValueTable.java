@@ -1,4 +1,4 @@
-package enshud.s4.compiler;
+package enshud.s4.compiler.optimizer;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -162,5 +162,11 @@ public class ValueTable
         {
             return e;
         }
+    }
+    
+    @Override
+    public String toString()
+    {
+        return tbl.toString();
     }
 }
