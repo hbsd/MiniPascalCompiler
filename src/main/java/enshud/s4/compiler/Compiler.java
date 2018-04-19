@@ -78,7 +78,7 @@ public class Compiler
                 p -> {
                     p.optimize();
                     // p.getBody().println();
-                    System.out.println(p.toOriginalCode(""));
+                    //System.out.println(p.toOriginalCode(""));
                     return p;
                 }
             )
